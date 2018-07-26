@@ -2,6 +2,7 @@ package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.product.model.EquipmentGroup;
+import com.flexicore.product.model.ProductType;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +14,13 @@ public class EquipmentCreate {
     private Double lon;
     private String serial;
     private LocalDateTime warrantyExpiration;
+    private String productTypeId;
+    @JsonIgnore
+    private ProductType ProductType;
+
+    private String clazzName;
+    @JsonIgnore
+    private Class<?> clazz;
 
 
     public String getName() {
@@ -70,6 +78,45 @@ public class EquipmentCreate {
 
     public EquipmentCreate setWarrantyExpiration(LocalDateTime warrantyExpiration) {
         this.warrantyExpiration = warrantyExpiration;
+        return this;
+    }
+
+    public String getProductTypeId() {
+        return productTypeId;
+    }
+
+    public EquipmentCreate setProductTypeId(String productTypeId) {
+        this.productTypeId = productTypeId;
+        return this;
+    }
+
+    @JsonIgnore
+    public ProductType getProductType() {
+        return ProductType;
+    }
+
+    public EquipmentCreate setProductType(ProductType productType) {
+        ProductType = productType;
+        return this;
+    }
+
+    public String getClazzName() {
+        return clazzName;
+    }
+
+    public EquipmentCreate setClazzName(String clazzName) {
+        this.clazzName = clazzName;
+        return this;
+    }
+
+    @JsonIgnore
+    public Class<?> getClazz() {
+        return clazz;
+    }
+
+
+    public EquipmentCreate setClazz(Class<?> clazz) {
+        this.clazz = clazz;
         return this;
     }
 }

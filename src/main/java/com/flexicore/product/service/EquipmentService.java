@@ -3,14 +3,13 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
-import com.flexicore.product.containers.request.EquipmentCreate;
-import com.flexicore.product.containers.request.EquipmentFiltering;
-import com.flexicore.product.containers.request.EquipmentUpdate;
-import com.flexicore.product.containers.request.LinkToGroup;
+import com.flexicore.model.QueryInformationHolder;
+import com.flexicore.product.containers.request.*;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.EquipmentToGroup;
+import com.flexicore.product.model.ProductType;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaselinkService;
 
@@ -44,8 +43,8 @@ public class EquipmentService implements ServicePlugin {
         return equipmentRepository.getAllEquipments(c,filtering,securityContext);
     }
 
-    public Equipment createEquipment(EquipmentCreate equipmentCreate, SecurityContext securityContext) {
-        Equipment equipment=Equipment.s().CreateUnchecked(equipmentCreate.getName(),securityContext.getUser());
+    public<T extends Equipment> T createEquipment(Class<T> c,EquipmentCreate equipmentCreate, SecurityContext securityContext) {
+        T equipment=Baseclass.createUnckehcked(c,equipmentCreate.getName(),securityContext.getUser());
         equipment.Init();
         updateEquipmentNoMerge(equipmentCreate,equipment);
         equipmentRepository.merge(equipment);
@@ -88,6 +87,10 @@ public class EquipmentService implements ServicePlugin {
             equipment.setSerial(equipmentCreate.getSerial());
             update=true;
         }
+        if(equipmentCreate.getProductType()!=null && (equipment.getProductType()==null||!equipment.getProductType().getId().equals(equipmentCreate.getProductType().getId()))){
+            equipment.setProductType(equipmentCreate.getProductType());
+            update=true;
+        }
         return update;
 
     }
@@ -97,5 +100,17 @@ public class EquipmentService implements ServicePlugin {
             equipmentRepository.merge(equipmentUpdate.getEquipment());
         }
         return equipmentUpdate.getEquipment();
+    }
+
+    public List<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
+        QueryInformationHolder<ProductType> queryInformationHolder=new QueryInformationHolder<>(productTypeFiltering,ProductType.class,securityContext);
+        return equipmentRepository.getAllFiltered(queryInformationHolder);
+    }
+
+    public ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
+        ProductType productType=ProductType.s().CreateUnchecked(productTypeCreate.getName(),securityContext.getUser());
+        productType.Init();
+        productType.setDescription(productTypeCreate.getDescription());
+        return productType;
     }
 }

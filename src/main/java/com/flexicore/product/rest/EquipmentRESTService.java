@@ -3,6 +3,7 @@ package com.flexicore.product.rest;
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
+import com.flexicore.annotations.rest.Update;
 import com.flexicore.annotations.rest.Write;
 import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
@@ -37,6 +38,8 @@ import java.util.stream.Collectors;
 @Path("plugins/Equipments")
 @SwaggerDefinition(tags = {
         @Tag(name = "Equipments", description = "Equipments Services"),
+        @Tag(name = "EquipmentGroups", description = "EquipmentGroups Services")
+
 })
 @Api(tags = {"Equipments"})
 
@@ -70,6 +73,8 @@ public class EquipmentRESTService implements RestServicePlugin {
 
             } catch (ClassNotFoundException e) {
                 logger.log(Level.SEVERE,"unable to get class: "+filtering.getCanonicalClassName());
+                throw new BadRequestException("No Class with name "+filtering.getCanonicalClassName());
+
             }
         }
         List<EquipmentGroup> groups=filtering.getGroupIds().isEmpty()?new ArrayList<>():groupService.listByIds(EquipmentGroup.class,filtering.getGroupIds(),securityContext);
@@ -96,18 +101,62 @@ public class EquipmentRESTService implements RestServicePlugin {
         return service.getAllEquipments(c,filtering, securityContext);
     }
 
+    @POST
+    @Produces("application/json")
+    @Write
+    @ApiOperation(value = "createProductType", notes = "Creates ProductType")
+    @Path("createProductType")
+    public ProductType createProductType(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            ProductTypeCreate productTypeCreate,
+            @Context SecurityContext securityContext) {
+
+        return service.createProductType(productTypeCreate, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
+    @Write
+    @ApiOperation(value = "getAllProductTypes", notes = "lists all ProductTypes")
+    @Path("getAllProductTypes")
+    public List<ProductType> getAllProductTypes(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            ProductTypeFiltering productTypeFiltering,
+            @Context SecurityContext securityContext) {
+
+        return service.getAllProductTypes(productTypeFiltering, securityContext);
+    }
+
 
     @POST
     @Produces("application/json")
     @Read
     @ApiOperation(value = "createEquipment", notes = "Creates Equipment")
     @Path("createEquipment")
-    public Equipment createEquipment(
+    public<T extends Equipment> T createEquipment(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentCreate equipmentCreate,
             @Context SecurityContext securityContext) {
+        validateEquipmentCreate(equipmentCreate,securityContext);
+        Class<T> c= (Class<T>) Equipment.class;
+        if(equipmentCreate.getClazzName()!=null){
+            try {
+                c= (Class<T>) Class.forName(equipmentCreate.getClazzName());
+            } catch (ClassNotFoundException e) {
+                logger.log(Level.SEVERE,"unable to get class: "+equipmentCreate.getClazzName(),e);
+                throw new BadRequestException("No Class with name "+equipmentCreate.getClazzName());
+            }
+        }
+        return service.createEquipment(c,equipmentCreate, securityContext);
+    }
 
-        return service.createEquipment(equipmentCreate, securityContext);
+    private void validateEquipmentCreate(EquipmentCreate equipmentCreate, SecurityContext securityContext) {
+
+        ProductType productType=equipmentCreate.getProductTypeId()!=null?service.getByIdOrNull(equipmentCreate.getProductTypeId(),ProductType.class,null,securityContext):null;
+        if(productType==null && equipmentCreate.getProductTypeId()!=null){
+            throw new BadRequestException("No Product type with Id "+equipmentCreate.getProductTypeId());
+        }
+        equipmentCreate.setProductType(productType);
     }
 
 
@@ -136,7 +185,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Write
+    @Update
     @ApiOperation(value = "updateEquipment", notes = "Updates Equipment")
     @Path("updateEquipment")
     public Equipment updateEquipment(
@@ -148,6 +197,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             throw new BadRequestException("no Equipment with id "+equipmentUpdate.getId());
         }
         equipmentUpdate.setEquipment(equipment);
+        validateEquipmentCreate(equipmentUpdate,securityContext);
 
 
         return service.updateEquipment(equipmentUpdate,securityContext);
