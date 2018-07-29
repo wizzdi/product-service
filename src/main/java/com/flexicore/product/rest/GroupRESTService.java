@@ -70,7 +70,7 @@ public class GroupRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Read
-    @ApiOperation(value = "getRootEquipmentGroup", notes = "return Root EquipmentGroup")
+    @ApiOperation(value = "getRootEquipmentGroup", notes = "return Root EquipmentGroupHolder")
     @Path("getRootEquipmentGroup")
     public EquipmentGroup getRootEquipmentGroup(
             @HeaderParam("authenticationKey") String authenticationKey,

@@ -9,6 +9,7 @@ import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.product.containers.request.*;
+import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.*;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.GroupService;
@@ -61,11 +62,35 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Produces("application/json")
     @Read
     @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
-    @Path("getAllGenericDevices")
+    @Path("getAllEquipments")
     public <T extends Equipment> List<T> getAllEquipments(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentFiltering filtering,
             @Context SecurityContext securityContext) {
+        Class<T> c = validateFiltering(filtering, securityContext);
+
+        return service.getAllEquipments(c,filtering, securityContext);
+    }
+
+
+    @POST
+    @Produces("application/json")
+    @Read
+    @ApiOperation(value = "getAllEquipmentsGrouped", notes = "Gets All Equipments Filtered and Grouped")
+    @Path("getAllEquipmentsGrouped")
+    public <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EquipmentGroupFiltering filtering,
+            @Context SecurityContext securityContext) {
+        Class<T> c = validateFiltering(filtering, securityContext);
+        if(filtering.getPrecision() > 12 || filtering.getPrecision() < 1){
+            throw new BadRequestException(" Precision must be a value between 1 and 12");
+        }
+
+        return service.getAllEquipmentsGrouped(c,filtering, securityContext);
+    }
+
+    private <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext) {
         Class<T> c= (Class<T>) Equipment.class;
         if(filtering.getCanonicalClassName()!=null &&!filtering.getCanonicalClassName().isEmpty()){
             try {
@@ -85,7 +110,7 @@ public class EquipmentRESTService implements RestServicePlugin {
         filtering.setEquipmentGroups(groups);
         ProductType productType=filtering.getProductTypeId()!=null?null:service.getByIdOrNull(filtering.getProductTypeId(),ProductType.class,null,securityContext);
         if(filtering.getProductTypeId()!=null && productType==null){
-            throw new BadRequestException("No Product type with id "+productType);
+            throw new BadRequestException("No Product type with id "+filtering.getProductTypeId());
         }
         filtering.setProductType(productType);
         List<ProductStatus> status=filtering.getProductStatusIds().isEmpty()?new ArrayList<>():service.listByIds(ProductStatus.class,filtering.getProductStatusIds(),securityContext);
@@ -94,11 +119,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             throw new BadRequestException("could not find status with ids "+filtering.getProductStatusIds().parallelStream().collect(Collectors.joining(",")));
         }
         filtering.setProductStatusList(status);
-
-
-
-
-        return service.getAllEquipments(c,filtering, securityContext);
+        return c;
     }
 
     @POST

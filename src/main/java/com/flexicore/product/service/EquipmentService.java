@@ -1,22 +1,31 @@
 package com.flexicore.product.service;
 
+import ch.hsr.geohash.GeoHash;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.product.containers.request.*;
+import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.data.EquipmentRepository;
-import com.flexicore.product.model.Equipment;
-import com.flexicore.product.model.EquipmentGroup;
-import com.flexicore.product.model.EquipmentToGroup;
-import com.flexicore.product.model.ProductType;
+import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaselinkService;
+import org.apache.commons.beanutils.PropertyUtils;
 
 import javax.inject.Inject;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @PluginInfo(version = 1)
 public class EquipmentService implements ServicePlugin {
@@ -26,9 +35,12 @@ public class EquipmentService implements ServicePlugin {
     private EquipmentRepository equipmentRepository;
 
     @Inject
-    @PluginInfo(version = 1)
     private BaselinkService baselinkService;
 
+    @Inject
+    private Logger logger;
+
+    private static Map<String,Method> setterCache=new ConcurrentHashMap<>();
 
 
     public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContext securityContext) {
@@ -39,76 +51,114 @@ public class EquipmentService implements ServicePlugin {
         return equipmentRepository.getByIdOrNull(id, c, batchString, securityContext);
     }
 
-    public <T extends Equipment> List<T> getAllEquipments(Class<T> c,EquipmentFiltering filtering, SecurityContext securityContext) {
-        return equipmentRepository.getAllEquipments(c,filtering,securityContext);
+    public <T extends Equipment> List<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
+        return equipmentRepository.getAllEquipments(c, filtering, securityContext);
     }
 
-    public<T extends Equipment> T createEquipment(Class<T> c,EquipmentCreate equipmentCreate, SecurityContext securityContext) {
-        T equipment=Baseclass.createUnckehcked(c,equipmentCreate.getName(),securityContext.getUser());
+    public <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c,EquipmentGroupFiltering filtering, SecurityContext securityContext) {
+        return equipmentRepository.getAllEquipmentsGrouped(c,filtering, securityContext);
+    }
+
+    public <T extends Equipment> T createEquipment(Class<T> c, EquipmentCreate equipmentCreate, SecurityContext securityContext) {
+        T equipment = Baseclass.createUnckehcked(c, equipmentCreate.getName(), securityContext.getUser());
         equipment.Init();
-        updateEquipmentNoMerge(equipmentCreate,equipment);
+        updateEquipmentNoMerge(equipmentCreate, equipment);
         equipmentRepository.merge(equipment);
         return equipment;
     }
 
-    public EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext){
-       return baselinkService.linkEntities(linkToGroup.getEquipment(),linkToGroup.getEquipmentGroup(),EquipmentToGroup.class);
+    public EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext) {
+        return baselinkService.linkEntities(linkToGroup.getEquipment(), linkToGroup.getEquipmentGroup(), EquipmentToGroup.class);
 
     }
 
 
-
-    public boolean updateEquipmentNoMerge(EquipmentCreate equipmentCreate,Equipment equipment){
-        boolean update=false;
-        if(equipmentCreate.getName()!=null &&! equipmentCreate.getName().equals(equipment.getName())){
+    public boolean updateEquipmentNoMerge(EquipmentCreate equipmentCreate, Equipment equipment) {
+        boolean update = false;
+        if (equipmentCreate.getName() != null && !equipmentCreate.getName().equals(equipment.getName())) {
             equipment.setName(equipmentCreate.getName());
-            update=true;
+            update = true;
         }
 
-        if(equipmentCreate.getDescription()!=null &&! equipmentCreate.getDescription().equals(equipment.getDescription())){
+        if (equipmentCreate.getDescription() != null && !equipmentCreate.getDescription().equals(equipment.getDescription())) {
             equipment.setDescription(equipmentCreate.getDescription());
-            update=true;
+            update = true;
         }
-        if(equipmentCreate.getWarrantyExpiration()!=null &&! equipmentCreate.getWarrantyExpiration().equals(equipment.getWarrantyExpiration())){
+        if (equipmentCreate.getWarrantyExpiration() != null && !equipmentCreate.getWarrantyExpiration().equals(equipment.getWarrantyExpiration())) {
             equipment.setWarrantyExpiration(equipmentCreate.getWarrantyExpiration());
-            update=true;
+            update = true;
         }
 
-        if(equipmentCreate.getLat()!=null &&! equipmentCreate.getLat().equals(equipment.getLat())){
+        boolean updateLatLon = false;
+        if (equipmentCreate.getLat() != null && !equipmentCreate.getLat().equals(equipment.getLat())) {
             equipment.setLat(equipmentCreate.getLat());
-            update=true;
+            update = true;
+            updateLatLon = true;
         }
 
-        if(equipmentCreate.getLon()!=null &&! equipmentCreate.getLon().equals(equipment.getLon())){
+        if (equipmentCreate.getLon() != null && !equipmentCreate.getLon().equals(equipment.getLon())) {
             equipment.setLon(equipmentCreate.getLon());
-            update=true;
+            update = true;
+            updateLatLon = true;
         }
-        if(equipmentCreate.getSerial()!=null &&! equipmentCreate.getSerial().equals(equipment.getSerial())){
+        if (updateLatLon) {
+            generateGeoHash(equipment);
+
+        }
+
+        if (equipmentCreate.getSerial() != null && !equipmentCreate.getSerial().equals(equipment.getSerial())) {
             equipment.setSerial(equipmentCreate.getSerial());
-            update=true;
+            update = true;
         }
-        if(equipmentCreate.getProductType()!=null && (equipment.getProductType()==null||!equipment.getProductType().getId().equals(equipmentCreate.getProductType().getId()))){
+        if (equipmentCreate.getProductType() != null && (equipment.getProductType() == null || !equipment.getProductType().getId().equals(equipmentCreate.getProductType().getId()))) {
             equipment.setProductType(equipmentCreate.getProductType());
-            update=true;
+            update = true;
         }
+
         return update;
 
     }
 
+    private Method getSetterOrNull(String name){
+        try {
+            return Equipment.class.getMethod(name, String.class);
+        } catch (NoSuchMethodException e) {
+            logger.log(Level.SEVERE,"unable to get setter",e);
+        }
+        return null;
+    }
+
+    private void generateGeoHash(Equipment equipment) {
+        for (int i = 1; i < 13; i++) {
+            String setterName = "setGeoHash" + i;
+            try {
+                String geoHash=GeoHash.geoHashStringWithCharacterPrecision(equipment.getLat(),equipment.getLon(),i);
+                Method method = setterCache.computeIfAbsent(setterName,f->getSetterOrNull(f));
+                if(method!=null){
+                    method.invoke(equipment,geoHash);
+
+                }
+            } catch ( InvocationTargetException | IllegalAccessException e) {
+                logger.log(Level.SEVERE,"could not set property "+setterName +" via setter");
+            }
+
+        }
+    }
+
     public Equipment updateEquipment(EquipmentUpdate equipmentUpdate, SecurityContext securityContext) {
-        if(updateEquipmentNoMerge(equipmentUpdate,equipmentUpdate.getEquipment())){
+        if (updateEquipmentNoMerge(equipmentUpdate, equipmentUpdate.getEquipment())) {
             equipmentRepository.merge(equipmentUpdate.getEquipment());
         }
         return equipmentUpdate.getEquipment();
     }
 
     public List<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
-        QueryInformationHolder<ProductType> queryInformationHolder=new QueryInformationHolder<>(productTypeFiltering,ProductType.class,securityContext);
+        QueryInformationHolder<ProductType> queryInformationHolder = new QueryInformationHolder<>(productTypeFiltering, ProductType.class, securityContext);
         return equipmentRepository.getAllFiltered(queryInformationHolder);
     }
 
     public ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
-        ProductType productType=ProductType.s().CreateUnchecked(productTypeCreate.getName(),securityContext.getUser());
+        ProductType productType = ProductType.s().CreateUnchecked(productTypeCreate.getName(), securityContext.getUser());
         productType.Init();
         productType.setDescription(productTypeCreate.getDescription());
         return productType;
