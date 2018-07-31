@@ -6,6 +6,7 @@ import com.flexicore.model.Baseclass;
 import com.flexicore.model.Clazz;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ public class AlertFiltering extends FilteringInformationHolder {
     private String humanReadableTextLike;
 
     private String alertType;
-    private Set<String> baseclassIds;
+    private Set<String> baseclassIds=new HashSet<>();
     @JsonIgnore
     private List<Baseclass> baseclass;
     private String clazzName;

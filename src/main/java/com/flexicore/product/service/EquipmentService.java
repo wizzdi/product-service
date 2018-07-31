@@ -2,24 +2,19 @@ package com.flexicore.product.service;
 
 import ch.hsr.geohash.GeoHash;
 import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.data.EquipmentRepository;
+import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
-import com.flexicore.product.rest.EquipmentRESTService;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaselinkService;
-import org.apache.commons.beanutils.PropertyUtils;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Context;
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -32,7 +27,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
-public class EquipmentService implements ServicePlugin {
+public class EquipmentService implements  IEquipmentService {
 
     @Inject
     @PluginInfo(version = 1)
@@ -59,14 +54,17 @@ public class EquipmentService implements ServicePlugin {
         return equipmentRepository.getByIdOrNull(id, c, batchString, securityContext);
     }
 
+    @Override
     public <T extends Equipment> List<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         return equipmentRepository.getAllEquipments(c, filtering, securityContext);
     }
 
-    public <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c,EquipmentGroupFiltering filtering, SecurityContext securityContext) {
+    @Override
+    public <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext) {
         return equipmentRepository.getAllEquipmentsGrouped(c,filtering, securityContext);
     }
 
+    @Override
     public <T extends Equipment> T createEquipment(Class<T> c, EquipmentCreate equipmentCreate, SecurityContext securityContext) {
         T equipment = Baseclass.createUnckehcked(c, equipmentCreate.getName(), securityContext.getUser());
         equipment.Init();
@@ -75,12 +73,14 @@ public class EquipmentService implements ServicePlugin {
         return equipment;
     }
 
+    @Override
     public EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext) {
         return baselinkService.linkEntities(linkToGroup.getEquipment(), linkToGroup.getEquipmentGroup(), EquipmentToGroup.class);
 
     }
 
 
+    @Override
     public boolean updateEquipmentNoMerge(EquipmentCreate equipmentCreate, Equipment equipment) {
         boolean update = false;
         if (equipmentCreate.getName() != null && !equipmentCreate.getName().equals(equipment.getName())) {
@@ -153,6 +153,7 @@ public class EquipmentService implements ServicePlugin {
         }
     }
 
+    @Override
     public Equipment updateEquipment(EquipmentUpdate equipmentUpdate, SecurityContext securityContext) {
         if (updateEquipmentNoMerge(equipmentUpdate, equipmentUpdate.getEquipment())) {
             equipmentRepository.merge(equipmentUpdate.getEquipment());
@@ -160,11 +161,13 @@ public class EquipmentService implements ServicePlugin {
         return equipmentUpdate.getEquipment();
     }
 
+    @Override
     public List<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
         QueryInformationHolder<ProductType> queryInformationHolder = new QueryInformationHolder<>(productTypeFiltering, ProductType.class, securityContext);
         return equipmentRepository.getAllFiltered(queryInformationHolder);
     }
 
+    @Override
     public ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
         ProductType productType = ProductType.s().CreateUnchecked(productTypeCreate.getName(), securityContext.getUser());
         productType.Init();
@@ -172,6 +175,7 @@ public class EquipmentService implements ServicePlugin {
         return productType;
     }
 
+    @Override
     public <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext) {
         Class<T> c= (Class<T>) Equipment.class;
         if(filtering.getCanonicalClassName()!=null &&!filtering.getCanonicalClassName().isEmpty()){

@@ -4,7 +4,6 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractNoSqlRepositoryPlugin;
 import com.flexicore.product.containers.request.AlertFiltering;
 import com.flexicore.product.model.Alert;
-import com.flexicore.security.SecurityContext;
 import com.flexicore.service.MongoConnectionService;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
@@ -30,6 +29,7 @@ import static com.mongodb.client.model.Sorts.descending;
 import static com.mongodb.client.model.Sorts.orderBy;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+
 
 
 @PluginInfo(version = 1)
@@ -80,38 +80,47 @@ public class AlertNoSQLRepository extends AbstractNoSqlRepositoryPlugin {
         MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Alert> collection = db.getCollection(COLLECTION_NAME, Alert.class).withCodecRegistry(pojoCodecRegistry);
 
-        Bson pred=and();
+        Bson pred=null;
         if(alertFiltering.getAlertDateStart()!=null){
+
             Date start=Date.from(alertFiltering.getAlertDateStart().toInstant(ZoneOffset.UTC));
-            pred=and(pred,gte(ALERT_DATE,start));
+            Bson gte = gte(ALERT_DATE, start);
+            pred=pred==null?gte:and(pred, gte);
         }
 
         if(alertFiltering.getAlertDateEnd()!=null){
             Date end=Date.from(alertFiltering.getAlertDateEnd().toInstant(ZoneOffset.UTC));
-            pred=and(pred,lte(ALERT_DATE,end));
+            Bson lte = lte(ALERT_DATE, end);
+            pred=pred==null?lte:and(pred, lte);
         }
         if(!alertFiltering.getBaseclass().isEmpty()){
             Set<String> baseclasIds = alertFiltering.getBaseclass().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-            pred=and(pred,in(BASECLASS_ID, baseclasIds));
+            Bson in = in(BASECLASS_ID, baseclasIds);
+            pred=pred==null?in:and(pred, in);
         }
 
         if(alertFiltering.getClazz()!=null){
-            pred=and(pred,eq(CLAZZ_NAME, alertFiltering.getClazz().getName()));
+            Bson eq = eq(CLAZZ_NAME, alertFiltering.getClazz().getName());
+            pred=pred==null?eq:and(pred, eq);
         }
 
         if(alertFiltering.getAlertType()!=null){
-            pred=and(pred,eq(ALERT_TYPE, alertFiltering.getAlertType()));
+            Bson eq = eq(ALERT_TYPE, alertFiltering.getAlertType());
+            pred=pred==null?eq:and(pred, eq);
         }
 
         if(alertFiltering.getSeverityStart()!=null){
-            pred=and(pred,gte(SEVERITY, alertFiltering.getSeverityStart()));
+            Bson gte = gte(SEVERITY, alertFiltering.getSeverityStart());
+            pred=pred==null?gte:and(pred, gte);
         }
 
         if(alertFiltering.getSeverityEnd()!=null){
-            pred=and(pred,lte(SEVERITY, alertFiltering.getSeverityEnd()));
+            Bson lte = lte(SEVERITY, alertFiltering.getSeverityEnd());
+            pred=pred==null?lte:and(pred, lte);
         }
 
-        FindIterable<Alert> iter=collection.find(pred,Alert.class).sort(orderBy(descending(ALERT_DATE)));
+        FindIterable<Alert> base = pred==null?collection.find(Alert.class):collection.find(pred, Alert.class);
+        FindIterable<Alert> iter= base.sort(orderBy(descending(ALERT_DATE)));
         if(alertFiltering.getCurrentPage()!=null && alertFiltering.getPageSize()!=null&& alertFiltering.getCurrentPage() > -1 && alertFiltering.getPageSize()> 0){
             iter.limit(alertFiltering.getPageSize()).skip(alertFiltering.getPageSize()*alertFiltering.getCurrentPage());
         }
