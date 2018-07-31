@@ -23,11 +23,9 @@ import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Created by Asaf on 04/06/2017.
@@ -38,6 +36,7 @@ import java.util.stream.Collectors;
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/Equipments")
 @SwaggerDefinition(tags = {
+        @Tag(name = "Alerts", description = "Alert Services"),
         @Tag(name = "Equipments", description = "Equipments Services"),
         @Tag(name = "EquipmentGroups", description = "EquipmentGroups Services")
 
@@ -67,7 +66,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentFiltering filtering,
             @Context SecurityContext securityContext) {
-        Class<T> c = validateFiltering(filtering, securityContext);
+        Class<T> c = service.validateFiltering(filtering, securityContext);
 
         return service.getAllEquipments(c,filtering, securityContext);
     }
@@ -82,44 +81,12 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentGroupFiltering filtering,
             @Context SecurityContext securityContext) {
-        Class<T> c = validateFiltering(filtering, securityContext);
+        Class<T> c = service.validateFiltering(filtering, securityContext);
         if(filtering.getPrecision() > 12 || filtering.getPrecision() < 1){
             throw new BadRequestException(" Precision must be a value between 1 and 12");
         }
 
         return service.getAllEquipmentsGrouped(c,filtering, securityContext);
-    }
-
-    private <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext) {
-        Class<T> c= (Class<T>) Equipment.class;
-        if(filtering.getCanonicalClassName()!=null &&!filtering.getCanonicalClassName().isEmpty()){
-            try {
-                 c= (Class<T>) Class.forName(filtering.getCanonicalClassName());
-
-            } catch (ClassNotFoundException e) {
-                logger.log(Level.SEVERE,"unable to get class: "+filtering.getCanonicalClassName());
-                throw new BadRequestException("No Class with name "+filtering.getCanonicalClassName());
-
-            }
-        }
-        List<EquipmentGroup> groups=filtering.getGroupIds().isEmpty()?new ArrayList<>():groupService.listByIds(EquipmentGroup.class,filtering.getGroupIds(),securityContext);
-        filtering.getGroupIds().removeAll(groups.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
-        if(!filtering.getGroupIds().isEmpty()){
-            throw new BadRequestException("could not find groups with ids "+filtering.getGroupIds().parallelStream().collect(Collectors.joining(",")));
-        }
-        filtering.setEquipmentGroups(groups);
-        ProductType productType=filtering.getProductTypeId()!=null?null:service.getByIdOrNull(filtering.getProductTypeId(),ProductType.class,null,securityContext);
-        if(filtering.getProductTypeId()!=null && productType==null){
-            throw new BadRequestException("No Product type with id "+filtering.getProductTypeId());
-        }
-        filtering.setProductType(productType);
-        List<ProductStatus> status=filtering.getProductStatusIds().isEmpty()?new ArrayList<>():service.listByIds(ProductStatus.class,filtering.getProductStatusIds(),securityContext);
-        filtering.getProductStatusIds().removeAll(status.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
-        if(!filtering.getProductStatusIds().isEmpty()){
-            throw new BadRequestException("could not find status with ids "+filtering.getProductStatusIds().parallelStream().collect(Collectors.joining(",")));
-        }
-        filtering.setProductStatusList(status);
-        return c;
     }
 
     @POST

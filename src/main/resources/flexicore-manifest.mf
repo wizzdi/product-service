@@ -1,0 +1,4 @@
+uuid=${project.groupId}.${project.artifactId}
+version=${project.version}
+provides=com.flexicore.product.interfaces.IAlertService
+

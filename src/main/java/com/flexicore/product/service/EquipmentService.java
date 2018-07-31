@@ -9,11 +9,14 @@ import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.model.*;
+import com.flexicore.product.rest.EquipmentRESTService;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaselinkService;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.Context;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
@@ -26,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
 public class EquipmentService implements ServicePlugin {
@@ -36,6 +40,10 @@ public class EquipmentService implements ServicePlugin {
 
     @Inject
     private BaselinkService baselinkService;
+
+    @Inject
+    @PluginInfo(version = 1)
+    private GroupService groupService;
 
     @Inject
     private Logger logger;
@@ -163,4 +171,38 @@ public class EquipmentService implements ServicePlugin {
         productType.setDescription(productTypeCreate.getDescription());
         return productType;
     }
+
+    public <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext) {
+        Class<T> c= (Class<T>) Equipment.class;
+        if(filtering.getCanonicalClassName()!=null &&!filtering.getCanonicalClassName().isEmpty()){
+            try {
+                 c= (Class<T>) Class.forName(filtering.getCanonicalClassName());
+
+            } catch (ClassNotFoundException e) {
+                logger.log(Level.SEVERE,"unable to get class: "+filtering.getCanonicalClassName());
+                throw new BadRequestException("No Class with name "+filtering.getCanonicalClassName());
+
+            }
+        }
+        List<EquipmentGroup> groups=filtering.getGroupIds().isEmpty()?new ArrayList<>(): groupService.listByIds(EquipmentGroup.class,filtering.getGroupIds(),securityContext);
+        filtering.getGroupIds().removeAll(groups.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+        if(!filtering.getGroupIds().isEmpty()){
+            throw new BadRequestException("could not find groups with ids "+filtering.getGroupIds().parallelStream().collect(Collectors.joining(",")));
+        }
+        filtering.setEquipmentGroups(groups);
+        ProductType productType=filtering.getProductTypeId()!=null?null:getByIdOrNull(filtering.getProductTypeId(),ProductType.class,null,securityContext);
+        if(filtering.getProductTypeId()!=null && productType==null){
+            throw new BadRequestException("No Product type with id "+filtering.getProductTypeId());
+        }
+        filtering.setProductType(productType);
+        List<ProductStatus> status=filtering.getProductStatusIds().isEmpty()?new ArrayList<>():listByIds(ProductStatus.class,filtering.getProductStatusIds(),securityContext);
+        filtering.getProductStatusIds().removeAll(status.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+        if(!filtering.getProductStatusIds().isEmpty()){
+            throw new BadRequestException("could not find status with ids "+filtering.getProductStatusIds().parallelStream().collect(Collectors.joining(",")));
+        }
+        filtering.setProductStatusList(status);
+        return c;
+    }
+
+
 }

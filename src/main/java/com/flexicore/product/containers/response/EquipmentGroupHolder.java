@@ -1,20 +1,24 @@
 package com.flexicore.product.containers.response;
 
+import ch.hsr.geohash.BoundingBox;
 import ch.hsr.geohash.GeoHash;
-import ch.hsr.geohash.WGS84Point;
 
 public class EquipmentGroupHolder {
 
-    private double lat;
-    private double lon;
+    private double latMin;
+    private double lonMin;
+    private double latMax;
+    private double lonMax;
     private Long count;
 
 
 
     public EquipmentGroupHolder(String geoHash, Long count) {
-        WGS84Point point = geoHash!=null?GeoHash.fromGeohashString(geoHash).getPoint():null;
-        lat=point!=null?point.getLatitude():-1d;
-        lon=point!=null?point.getLongitude():-1d;
+        BoundingBox point = geoHash!=null?GeoHash.fromGeohashString(geoHash).getBoundingBox():null;
+        latMin=point!=null?point.getMinLat():-1d;
+        lonMin=point!=null?point.getMinLon():-1d;
+        latMax=point!=null?point.getMaxLat():-1d;
+        lonMax=point!=null?point.getMaxLon():-1d;
         this.count = count;
     }
 
@@ -29,21 +33,40 @@ public class EquipmentGroupHolder {
         return this;
     }
 
-    public double getLat() {
-        return lat;
+
+    public double getLatMin() {
+        return latMin;
     }
 
-    public EquipmentGroupHolder setLat(double lat) {
-        this.lat = lat;
+    public EquipmentGroupHolder setLatMin(double latMin) {
+        this.latMin = latMin;
         return this;
     }
 
-    public double getLon() {
-        return lon;
+    public double getLonMin() {
+        return lonMin;
     }
 
-    public EquipmentGroupHolder setLon(double lon) {
-        this.lon = lon;
+    public EquipmentGroupHolder setLonMin(double lonMin) {
+        this.lonMin = lonMin;
+        return this;
+    }
+
+    public double getLatMax() {
+        return latMax;
+    }
+
+    public EquipmentGroupHolder setLatMax(double latMax) {
+        this.latMax = latMax;
+        return this;
+    }
+
+    public double getLonMax() {
+        return lonMax;
+    }
+
+    public EquipmentGroupHolder setLonMax(double lonMax) {
+        this.lonMax = lonMax;
         return this;
     }
 }
