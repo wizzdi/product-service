@@ -10,6 +10,7 @@ import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
+import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.GroupService;
@@ -68,7 +69,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             @Context SecurityContext securityContext) {
         Class<T> c = service.validateFiltering(filtering, securityContext);
 
-        return service.getAllEquipments(c,filtering, securityContext);
+        return service.getAllEquipments(c, filtering, securityContext);
     }
 
 
@@ -82,11 +83,11 @@ public class EquipmentRESTService implements RestServicePlugin {
             EquipmentGroupFiltering filtering,
             @Context SecurityContext securityContext) {
         Class<T> c = service.validateFiltering(filtering, securityContext);
-        if(filtering.getPrecision() > 12 || filtering.getPrecision() < 1){
+        if (filtering.getPrecision() > 12 || filtering.getPrecision() < 1) {
             throw new BadRequestException(" Precision must be a value between 1 and 12");
         }
 
-        return service.getAllEquipmentsGrouped(c,filtering, securityContext);
+        return service.getAllEquipmentsGrouped(c, filtering, securityContext);
     }
 
     @POST
@@ -118,31 +119,72 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
+    @Write
+    @ApiOperation(value = "createProductStatus", notes = "Creates ProductStatus")
+    @Path("createProductStatus")
+    public ProductStatus createProductStatus(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            ProductStatusCreate productStatusCreate,
+            @Context SecurityContext securityContext) {
+
+        return service.getOrCreateProductStatus(productStatusCreate, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
+    @Write
+    @ApiOperation(value = "getAllProductStatus", notes = "lists all ProductStatus")
+    @Path("getAllProductTypes")
+    public List<ProductStatus> getAllProductStatus(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            ProductStatusFiltering productTypeFiltering,
+            @Context SecurityContext securityContext) {
+
+        return service.getAllProductStatus(productTypeFiltering, securityContext);
+    }
+
+
+    @POST
+    @Produces("application/json")
+    @Write
+    @ApiOperation(value = "getProductGroupedByStatus", notes = "returns product stats grouped by status")
+    @Path("getProductGroupedByStatus")
+    public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EquipmentFiltering equipmentFiltering,
+            @Context SecurityContext securityContext) {
+        Class<T> c = service.validateFiltering(equipmentFiltering, securityContext);
+
+        return service.getProductGroupedByStatus(c,equipmentFiltering, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
     @Read
     @ApiOperation(value = "createEquipment", notes = "Creates Equipment")
     @Path("createEquipment")
-    public<T extends Equipment> T createEquipment(
+    public <T extends Equipment> T createEquipment(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentCreate equipmentCreate,
             @Context SecurityContext securityContext) {
-        validateEquipmentCreate(equipmentCreate,securityContext);
-        Class<T> c= (Class<T>) Equipment.class;
-        if(equipmentCreate.getClazzName()!=null){
+        validateEquipmentCreate(equipmentCreate, securityContext);
+        Class<T> c = (Class<T>) Equipment.class;
+        if (equipmentCreate.getClazzName() != null) {
             try {
-                c= (Class<T>) Class.forName(equipmentCreate.getClazzName());
+                c = (Class<T>) Class.forName(equipmentCreate.getClazzName());
             } catch (ClassNotFoundException e) {
-                logger.log(Level.SEVERE,"unable to get class: "+equipmentCreate.getClazzName(),e);
-                throw new BadRequestException("No Class with name "+equipmentCreate.getClazzName());
+                logger.log(Level.SEVERE, "unable to get class: " + equipmentCreate.getClazzName(), e);
+                throw new BadRequestException("No Class with name " + equipmentCreate.getClazzName());
             }
         }
-        return service.createEquipment(c,equipmentCreate, securityContext);
+        return service.createEquipment(c, equipmentCreate, securityContext);
     }
 
     private void validateEquipmentCreate(EquipmentCreate equipmentCreate, SecurityContext securityContext) {
 
-        ProductType productType=equipmentCreate.getProductTypeId()!=null?service.getByIdOrNull(equipmentCreate.getProductTypeId(),ProductType.class,null,securityContext):null;
-        if(productType==null && equipmentCreate.getProductTypeId()!=null){
-            throw new BadRequestException("No Product type with Id "+equipmentCreate.getProductTypeId());
+        ProductType productType = equipmentCreate.getProductTypeId() != null ? service.getByIdOrNull(equipmentCreate.getProductTypeId(), ProductType.class, null, securityContext) : null;
+        if (productType == null && equipmentCreate.getProductTypeId() != null) {
+            throw new BadRequestException("No Product type with Id " + equipmentCreate.getProductTypeId());
         }
         equipmentCreate.setProductType(productType);
     }
@@ -157,14 +199,14 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             LinkToGroup linkToGroup,
             @Context SecurityContext securityContext) {
-        Equipment equipment=linkToGroup.getEquipmentId()!=null?service.getByIdOrNull(linkToGroup.getEquipmentId(),Equipment.class,null,securityContext):null;
-        if(equipment==null){
-            throw new BadRequestException("no Equipment with id "+linkToGroup.getEquipmentId());
+        Equipment equipment = linkToGroup.getEquipmentId() != null ? service.getByIdOrNull(linkToGroup.getEquipmentId(), Equipment.class, null, securityContext) : null;
+        if (equipment == null) {
+            throw new BadRequestException("no Equipment with id " + linkToGroup.getEquipmentId());
         }
         linkToGroup.setEquipment(equipment);
-        EquipmentGroup equipmentGroup=linkToGroup.getGroupId()!=null?groupService.getByIdOrNull(linkToGroup.getGroupId(),EquipmentGroup.class,null,securityContext):null;
-        if(equipmentGroup==null){
-            throw new BadRequestException("no Equipment group with id "+linkToGroup.getGroupId());
+        EquipmentGroup equipmentGroup = linkToGroup.getGroupId() != null ? groupService.getByIdOrNull(linkToGroup.getGroupId(), EquipmentGroup.class, null, securityContext) : null;
+        if (equipmentGroup == null) {
+            throw new BadRequestException("no Equipment group with id " + linkToGroup.getGroupId());
         }
         linkToGroup.setEquipmentGroup(equipmentGroup);
         return service.createEquipmentToGroup(linkToGroup, securityContext);
@@ -180,20 +222,17 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentUpdate equipmentUpdate,
             @Context SecurityContext securityContext) {
-        Equipment equipment=equipmentUpdate.getId()!=null?service.getByIdOrNull(equipmentUpdate.getId(),Equipment.class,null,securityContext):null;
-        if(equipment==null){
-            throw new BadRequestException("no Equipment with id "+equipmentUpdate.getId());
+        Equipment equipment = equipmentUpdate.getId() != null ? service.getByIdOrNull(equipmentUpdate.getId(), Equipment.class, null, securityContext) : null;
+        if (equipment == null) {
+            throw new BadRequestException("no Equipment with id " + equipmentUpdate.getId());
         }
         equipmentUpdate.setEquipment(equipment);
-        validateEquipmentCreate(equipmentUpdate,securityContext);
+        validateEquipmentCreate(equipmentUpdate, securityContext);
 
 
-        return service.updateEquipment(equipmentUpdate,securityContext);
+        return service.updateEquipment(equipmentUpdate, securityContext);
 
     }
-
-
-
 
 
 }

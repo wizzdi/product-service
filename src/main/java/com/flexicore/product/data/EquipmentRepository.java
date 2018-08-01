@@ -9,6 +9,7 @@ import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.product.containers.request.EquipmentFiltering;
 import com.flexicore.product.containers.request.EquipmentGroupFiltering;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
+import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
 import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
@@ -64,5 +65,28 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         for (Object o : toMerge) {
             em.merge(o);
         }
+    }
+
+    public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<EquipmentStatusGroup> q = cb.createQuery(EquipmentStatusGroup.class);
+        Root<T> r = q.from(c);
+        Join<T,ProductToStatus> join=r.join(Equipment_.productToStatusList);
+        Join<ProductToStatus,ProductStatus> statusJoin=cb.treat(join.join(Baselink_.rightside),ProductStatus.class);
+
+        List<Predicate> preds = new ArrayList<>();
+        Predicate enabledOnly = cb.equal(join.get(ProductToStatus_.enabled),true);
+        preds.add(enabledOnly);
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+        QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
+        prepareQuery(queryInformationHolder, preds, cb, q, r);
+        Predicate[] predsArray = new Predicate[preds.size()];
+        predsArray =preds.toArray(predsArray);
+        CompoundSelection<EquipmentStatusGroup> construct = cb.construct(EquipmentStatusGroup.class, statusJoin.get(ProductStatus_.id),statusJoin.get(ProductStatus_.name),statusJoin.get(ProductStatus_.description), cb.countDistinct(r.get(Equipment_.id)));
+        q.select(construct).where(predsArray).groupBy(statusJoin.get(ProductStatus_.id),statusJoin.get(ProductStatus_.name),statusJoin.get(ProductStatus_.description)).distinct(true);
+
+        q.orderBy(cb.asc( statusJoin.get(ProductStatus_.id)));
+        TypedQuery<EquipmentStatusGroup> query = em.createQuery(q);
+        return query.getResultList();
     }
 }
