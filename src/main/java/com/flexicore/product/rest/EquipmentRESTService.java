@@ -134,11 +134,16 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Produces("application/json")
     @Write
     @ApiOperation(value = "getAllProductStatus", notes = "lists all ProductStatus")
-    @Path("getAllProductTypes")
+    @Path("getAllProductStatus")
     public List<ProductStatus> getAllProductStatus(
             @HeaderParam("authenticationKey") String authenticationKey,
             ProductStatusFiltering productTypeFiltering,
             @Context SecurityContext securityContext) {
+        ProductType productType=productTypeFiltering.getProductTypeId()!=null?service.getByIdOrNull(productTypeFiltering.getProductTypeId(),ProductType.class,null,securityContext):null;
+        if(productType==null&&productTypeFiltering.getProductTypeId()!=null){
+            throw new BadRequestException("No Product Type with id "+productTypeFiltering.getProductTypeId());
+        }
+        productTypeFiltering.setProductType(productType);
 
         return service.getAllProductStatus(productTypeFiltering, securityContext);
     }

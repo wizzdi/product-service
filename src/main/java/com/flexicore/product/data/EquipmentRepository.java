@@ -8,6 +8,7 @@ import com.flexicore.model.Baselink_;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.product.containers.request.EquipmentFiltering;
 import com.flexicore.product.containers.request.EquipmentGroupFiltering;
+import com.flexicore.product.containers.request.ProductStatusFiltering;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
@@ -88,5 +89,20 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         q.orderBy(cb.asc( statusJoin.get(ProductStatus_.id)));
         TypedQuery<EquipmentStatusGroup> query = em.createQuery(q);
         return query.getResultList();
+    }
+
+    public List<ProductStatus> getAllProductStatus(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ProductStatus> q = cb.createQuery(ProductStatus.class);
+        Root<ProductStatus> r = q.from(ProductStatus.class);
+
+        List<Predicate> preds = new ArrayList<>();
+        if(productStatusFiltering.getProductType()!=null){
+            Join<ProductStatus,ProductTypeToProductStatus> join=r.join(ProductStatus_.productTypeToProductStatusList);
+            preds.add(cb.equal(join.get(Baselink_.leftside),productStatusFiltering.getProductType()));
+
+        }
+        QueryInformationHolder<ProductStatus> queryInformationHolder = new QueryInformationHolder<>(productStatusFiltering, ProductStatus.class, securityContext);
+        return getAllFiltered(queryInformationHolder);
     }
 }

@@ -170,8 +170,8 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public List<ProductStatus> getAllProductStatus(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
-        QueryInformationHolder<ProductStatus> queryInformationHolder = new QueryInformationHolder<>(productStatusFiltering, ProductStatus.class, securityContext);
-        return equipmentRepository.getAllFiltered(queryInformationHolder);
+        return equipmentRepository.getAllProductStatus(productStatusFiltering,securityContext);
+
     }
 
     @Override
