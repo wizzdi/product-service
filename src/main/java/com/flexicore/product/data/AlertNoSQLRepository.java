@@ -75,11 +75,36 @@ public class AlertNoSQLRepository extends AbstractNoSqlRepositoryPlugin {
 
     }
 
+    public long countAllAlerts(AlertFiltering alertFiltering) {
+        MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
+        MongoCollection<Alert> collection = db.getCollection(COLLECTION_NAME, Alert.class).withCodecRegistry(pojoCodecRegistry);
+
+        Bson pred = getAlertsPredicate(alertFiltering);
+
+        return pred==null?collection.count():collection.count(pred);
+
+    }
+
 
     public List<Alert> getAllAlerts(AlertFiltering alertFiltering) {
         MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Alert> collection = db.getCollection(COLLECTION_NAME, Alert.class).withCodecRegistry(pojoCodecRegistry);
 
+        Bson pred = getAlertsPredicate(alertFiltering);
+
+        FindIterable<Alert> base = pred==null?collection.find(Alert.class):collection.find(pred, Alert.class);
+        FindIterable<Alert> iter= base.sort(orderBy(descending(ALERT_DATE)));
+        if(alertFiltering.getCurrentPage()!=null && alertFiltering.getPageSize()!=null&& alertFiltering.getCurrentPage() > -1 && alertFiltering.getPageSize()> 0){
+            iter.limit(alertFiltering.getPageSize()).skip(alertFiltering.getPageSize()*alertFiltering.getCurrentPage());
+        }
+        List<Alert> alerts=new ArrayList<>();
+        for (Alert alert : iter) {
+            alerts.add(alert);
+        }
+        return alerts;
+    }
+
+    public Bson getAlertsPredicate(AlertFiltering alertFiltering) {
         Bson pred=null;
         if(alertFiltering.getAlertDateStart()!=null){
 
@@ -118,16 +143,6 @@ public class AlertNoSQLRepository extends AbstractNoSqlRepositoryPlugin {
             Bson lte = lte(SEVERITY, alertFiltering.getSeverityEnd());
             pred=pred==null?lte:and(pred, lte);
         }
-
-        FindIterable<Alert> base = pred==null?collection.find(Alert.class):collection.find(pred, Alert.class);
-        FindIterable<Alert> iter= base.sort(orderBy(descending(ALERT_DATE)));
-        if(alertFiltering.getCurrentPage()!=null && alertFiltering.getPageSize()!=null&& alertFiltering.getCurrentPage() > -1 && alertFiltering.getPageSize()> 0){
-            iter.limit(alertFiltering.getPageSize()).skip(alertFiltering.getPageSize()*alertFiltering.getCurrentPage());
-        }
-        List<Alert> alerts=new ArrayList<>();
-        for (Alert alert : iter) {
-            alerts.add(alert);
-        }
-        return alerts;
+        return pred;
     }
 }

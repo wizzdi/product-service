@@ -10,6 +10,7 @@ import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.product.containers.request.GroupCreate;
 import com.flexicore.product.containers.request.GroupFiltering;
 import com.flexicore.product.containers.request.GroupUpdate;
+import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.service.GroupService;
 import com.flexicore.security.SecurityContext;
@@ -52,7 +53,7 @@ public class GroupRESTService implements RestServicePlugin {
     @Read
     @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
     @Path("getAllEquipmentGroups")
-    public List<EquipmentGroup> getAllEquipmentGroups(
+    public PaginationResponse<EquipmentGroup> getAllEquipmentGroups(
             @HeaderParam("authenticationKey") String authenticationKey,
             GroupFiltering filtering,
             @Context SecurityContext securityContext) {

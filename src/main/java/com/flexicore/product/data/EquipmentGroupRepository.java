@@ -3,9 +3,7 @@ package com.flexicore.product.data;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.QueryInformationHolder;
-import com.flexicore.product.containers.request.EquipmentFiltering;
 import com.flexicore.product.containers.request.GroupFiltering;
-import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.EquipmentGroup_;
 import com.flexicore.security.SecurityContext;
@@ -27,13 +25,28 @@ public class EquipmentGroupRepository extends AbstractRepositoryPlugin {
         CriteriaBuilder cb=em.getCriteriaBuilder();
         CriteriaQuery<EquipmentGroup> q=cb.createQuery(EquipmentGroup.class);
         Root<EquipmentGroup> r=q.from(EquipmentGroup.class);
+        List<Predicate> preds = getAllEquipmentGroupsPredicates(ids, r);
+        QueryInformationHolder<EquipmentGroup> queryInformationHolder=new QueryInformationHolder<>(filtering,EquipmentGroup.class,securityContext);
+        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
+    }
+
+    private List<Predicate> getAllEquipmentGroupsPredicates(Set<String> ids, Root<EquipmentGroup> r) {
         List<Predicate> preds=new ArrayList<>();
         if(!ids.isEmpty()){
             Predicate predicate=r.get(EquipmentGroup_.id).in(ids);
             preds.add(predicate);
         }
+        return preds;
+    }
+
+    public long countAllEquipmentGroups(GroupFiltering filtering, SecurityContext securityContext) {
+        Set<String> ids=filtering.getEquipmentGroups().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+        CriteriaBuilder cb=em.getCriteriaBuilder();
+        CriteriaQuery<Long> q=cb.createQuery(Long.class);
+        Root<EquipmentGroup> r=q.from(EquipmentGroup.class);
+        List<Predicate> preds = getAllEquipmentGroupsPredicates(ids, r);
         QueryInformationHolder<EquipmentGroup> queryInformationHolder=new QueryInformationHolder<>(filtering,EquipmentGroup.class,securityContext);
-        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
+        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 
     public EquipmentGroup getRootEquipmentGroup(SecurityContext securityContext) {

@@ -37,6 +37,20 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         return getAllFiltered(queryInformationHolder, preds, cb, q, r);
     }
 
+    @Override
+    public <T extends Equipment> long countAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> q = cb.createQuery(Long.class);
+        Root<T> r = q.from(c);
+
+        List<Predicate> preds = new ArrayList<>();
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+
+
+        QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
+        return countAllFiltered(queryInformationHolder, preds, cb, q, r);
+    }
+
 
     @Override
     public <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext) {
@@ -104,5 +118,20 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         }
         QueryInformationHolder<ProductStatus> queryInformationHolder = new QueryInformationHolder<>(productStatusFiltering, ProductStatus.class, securityContext);
         return getAllFiltered(queryInformationHolder);
+    }
+
+    public long countAllProductStatus(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> q = cb.createQuery(Long.class);
+        Root<ProductStatus> r = q.from(ProductStatus.class);
+
+        List<Predicate> preds = new ArrayList<>();
+        if(productStatusFiltering.getProductType()!=null){
+            Join<ProductStatus,ProductTypeToProductStatus> join=r.join(ProductStatus_.productTypeToProductStatusList);
+            preds.add(cb.equal(join.get(Baselink_.leftside),productStatusFiltering.getProductType()));
+
+        }
+        QueryInformationHolder<ProductStatus> queryInformationHolder = new QueryInformationHolder<>(productStatusFiltering, ProductStatus.class, securityContext);
+        return countAllFiltered(queryInformationHolder);
     }
 }

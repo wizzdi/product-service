@@ -7,6 +7,7 @@ import com.flexicore.product.containers.request.EquipmentFiltering;
 import com.flexicore.product.containers.request.GroupCreate;
 import com.flexicore.product.containers.request.GroupFiltering;
 import com.flexicore.product.containers.request.GroupUpdate;
+import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.data.EquipmentGroupRepository;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.model.Equipment;
@@ -35,8 +36,10 @@ public class GroupService implements ServicePlugin {
     }
 
 
-    public List<EquipmentGroup> getAllEquipmentGroups(GroupFiltering filtering, SecurityContext securityContext) {
-        return equipmentRepository.getAllEquipmentGroups(filtering,securityContext);
+    public PaginationResponse<EquipmentGroup> getAllEquipmentGroups(GroupFiltering filtering, SecurityContext securityContext) {
+        List<EquipmentGroup> list= equipmentRepository.getAllEquipmentGroups(filtering,securityContext);
+        long count=equipmentRepository.countAllEquipmentGroups(filtering,securityContext);
+        return new PaginationResponse<>(list,filtering,count);
     }
 
     public EquipmentGroup getRootEquipmentGroup(SecurityContext securityContext) {

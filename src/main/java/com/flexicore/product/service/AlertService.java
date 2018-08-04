@@ -2,6 +2,7 @@ package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.product.containers.request.AlertFiltering;
+import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.data.AlertNoSQLRepository;
 import com.flexicore.product.interfaces.IAlertService;
 import com.flexicore.product.model.Alert;
@@ -18,7 +19,7 @@ public class AlertService implements IAlertService {
 
 
     @Override
-    public void merge(Alert alert){
+    public void merge(Alert alert) {
         repository.merge(alert);
     }
 
@@ -28,8 +29,10 @@ public class AlertService implements IAlertService {
     }
 
     @Override
-    public List<Alert> getAllAlerts(AlertFiltering alertFiltering) {
+    public PaginationResponse<Alert> getAllAlerts(AlertFiltering alertFiltering) {
 
-        return repository.getAllAlerts(alertFiltering);
+        List<Alert> list = repository.getAllAlerts(alertFiltering);
+        long count = repository.countAllAlerts(alertFiltering);
+        return new PaginationResponse<>(list, alertFiltering, count);
     }
 }

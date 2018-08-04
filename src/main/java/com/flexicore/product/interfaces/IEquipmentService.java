@@ -3,6 +3,7 @@ package com.flexicore.product.interfaces;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
+import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
 
@@ -10,7 +11,7 @@ import javax.ws.rs.core.Context;
 import java.util.List;
 
 public interface IEquipmentService extends ServicePlugin {
-    <T extends Equipment> List<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext);
+    <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext);
 
     <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext);
 
@@ -22,9 +23,9 @@ public interface IEquipmentService extends ServicePlugin {
 
     Equipment updateEquipment(EquipmentUpdate equipmentUpdate, SecurityContext securityContext);
 
-    List<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext);
+    PaginationResponse<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext);
 
-    List<ProductStatus> getAllProductStatus(ProductStatusFiltering productTypeFiltering, SecurityContext securityContext);
+    PaginationResponse<ProductStatus> getAllProductStatus(ProductStatusFiltering productTypeFiltering, SecurityContext securityContext);
 
     ProductType getOrCreateProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext);
 

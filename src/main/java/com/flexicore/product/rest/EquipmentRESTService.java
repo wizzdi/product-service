@@ -11,6 +11,7 @@ import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
+import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.model.*;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.GroupService;
@@ -63,7 +64,7 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Read
     @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
     @Path("getAllEquipments")
-    public <T extends Equipment> List<T> getAllEquipments(
+    public <T extends Equipment> PaginationResponse<T> getAllEquipments(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentFiltering filtering,
             @Context SecurityContext securityContext) {
@@ -108,7 +109,7 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Write
     @ApiOperation(value = "getAllProductTypes", notes = "lists all ProductTypes")
     @Path("getAllProductTypes")
-    public List<ProductType> getAllProductTypes(
+    public PaginationResponse<ProductType> getAllProductTypes(
             @HeaderParam("authenticationKey") String authenticationKey,
             ProductTypeFiltering productTypeFiltering,
             @Context SecurityContext securityContext) {
@@ -135,7 +136,7 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Write
     @ApiOperation(value = "getAllProductStatus", notes = "lists all ProductStatus")
     @Path("getAllProductStatus")
-    public List<ProductStatus> getAllProductStatus(
+    public PaginationResponse<ProductStatus> getAllProductStatus(
             @HeaderParam("authenticationKey") String authenticationKey,
             ProductStatusFiltering productTypeFiltering,
             @Context SecurityContext securityContext) {

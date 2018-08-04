@@ -8,6 +8,7 @@ import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.product.containers.request.*;
+import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.model.*;
 import com.flexicore.product.service.AlertService;
 import com.flexicore.product.service.EquipmentService;
@@ -56,7 +57,7 @@ public class AlertRESTService implements RestServicePlugin {
     @Update
     @ApiOperation(value = "getAllAlerts", notes = "return Alerts Filtered")
     @Path("getAllAlerts")
-    public List<Alert> getAllAlerts(
+    public PaginationResponse<Alert> getAllAlerts(
             @HeaderParam("authenticationKey") String authenticationKey,
             AlertFiltering alertFiltering,
             @Context SecurityContext securityContext) {

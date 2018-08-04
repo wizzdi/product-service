@@ -7,6 +7,7 @@ import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
+import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
@@ -56,8 +57,10 @@ public class EquipmentService implements IEquipmentService {
     }
 
     @Override
-    public <T extends Equipment> List<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
-        return equipmentRepository.getAllEquipments(c, filtering, securityContext);
+    public <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
+        List<T> list= equipmentRepository.getAllEquipments(c, filtering, securityContext);
+        long total=equipmentRepository.countAllEquipments(c,filtering,securityContext);
+        return new PaginationResponse<>(list,filtering,total);
     }
 
     @Override
@@ -163,14 +166,18 @@ public class EquipmentService implements IEquipmentService {
     }
 
     @Override
-    public List<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
+    public PaginationResponse<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
         QueryInformationHolder<ProductType> queryInformationHolder = new QueryInformationHolder<>(productTypeFiltering, ProductType.class, securityContext);
-        return equipmentRepository.getAllFiltered(queryInformationHolder);
+        List<ProductType> list= equipmentRepository.getAllFiltered(queryInformationHolder);
+        long count=equipmentRepository.countAllFiltered(queryInformationHolder);
+        return new PaginationResponse<>(list,productTypeFiltering,count);
     }
 
     @Override
-    public List<ProductStatus> getAllProductStatus(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
-        return equipmentRepository.getAllProductStatus(productStatusFiltering,securityContext);
+    public PaginationResponse<ProductStatus> getAllProductStatus(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
+        List<ProductStatus> list= equipmentRepository.getAllProductStatus(productStatusFiltering,securityContext);
+        long count=equipmentRepository.countAllProductStatus(productStatusFiltering, securityContext);
+        return new PaginationResponse<>(list,productStatusFiltering,count);
 
     }
 
