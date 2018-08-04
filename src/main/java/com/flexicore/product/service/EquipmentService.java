@@ -2,12 +2,12 @@ package com.flexicore.product.service;
 
 import ch.hsr.geohash.GeoHash;
 import com.flexicore.annotations.plugins.PluginInfo;
+import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
-import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;

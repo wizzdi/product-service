@@ -1,9 +1,9 @@
 package com.flexicore.product.interfaces;
 
+import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
-import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
 

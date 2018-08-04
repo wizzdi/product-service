@@ -1,8 +1,8 @@
 package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
+import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.product.containers.request.AlertFiltering;
-import com.flexicore.product.containers.response.PaginationResponse;
 import com.flexicore.product.data.AlertNoSQLRepository;
 import com.flexicore.product.interfaces.IAlertService;
 import com.flexicore.product.model.Alert;
