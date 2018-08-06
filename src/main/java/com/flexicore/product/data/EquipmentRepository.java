@@ -66,10 +66,13 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         List<SortParameter> sort = new ArrayList<>();
         sort.add(new SortParameter(geoHashField, SortingOrder.ASCENDING));
         filtering.setSort(sort);
-        CompoundSelection<EquipmentGroupHolder> construct = cb.construct(EquipmentGroupHolder.class, r.get(geoHashField), cb.count(r.get(Equipment_.id)));
-        q.select(construct).groupBy(r.get(geoHashField));
         QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
         prepareQuery(queryInformationHolder, preds, cb, q, r);
+        CompoundSelection<EquipmentGroupHolder> construct = cb.construct(EquipmentGroupHolder.class, r.get(geoHashField), cb.count(r.get(Equipment_.id)));
+        Predicate[] predsArray = new Predicate[preds.size()];
+        predsArray =preds.toArray(predsArray);
+        q.select(construct).where(predsArray).groupBy(r.get(geoHashField));
+
         TypedQuery<EquipmentGroupHolder> query = em.createQuery(q);
         return query.getResultList();
     }
