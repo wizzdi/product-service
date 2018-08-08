@@ -106,7 +106,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Write
     @ApiOperation(value = "getAllProductTypes", notes = "lists all ProductTypes")
     @Path("getAllProductTypes")
     public PaginationResponse<ProductType> getAllProductTypes(

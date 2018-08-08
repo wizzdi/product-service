@@ -5,10 +5,7 @@ import com.flexicore.model.Baselink_;
 import com.flexicore.product.containers.request.EquipmentFiltering;
 import com.flexicore.product.containers.request.EquipmentGroupFiltering;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
-import com.flexicore.product.model.Equipment;
-import com.flexicore.product.model.EquipmentToGroup;
-import com.flexicore.product.model.Equipment_;
-import com.flexicore.product.model.ProductToStatus;
+import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -37,7 +34,7 @@ public interface IEquipmentRepository extends PluginRepository {
         }
         if (!filtering.getProductStatusList().isEmpty()) {
             Join<T, ProductToStatus> join = r.join(Equipment_.productToStatusList);
-            Predicate pred = join.get(Baselink_.rightside).in(filtering.getProductStatusList());
+            Predicate pred = cb.and(join.get(Baselink_.rightside).in(filtering.getProductStatusList()),cb.isTrue(join.get(ProductToStatus_.enabled)));
             preds.add(pred);
         }
     }
