@@ -59,8 +59,12 @@ public class EquipmentService implements IEquipmentService {
     @Override
     public <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         List<T> list= equipmentRepository.getAllEquipments(c, filtering, securityContext);
-        long total=equipmentRepository.countAllEquipments(c,filtering,securityContext);
+        long total= countAllEquipments(c, filtering, securityContext);
         return new PaginationResponse<>(list,filtering,total);
+    }
+
+    public <T extends Equipment> long countAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
+        return equipmentRepository.countAllEquipments(c,filtering,securityContext);
     }
 
     @Override

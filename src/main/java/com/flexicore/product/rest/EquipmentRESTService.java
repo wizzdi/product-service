@@ -77,6 +77,21 @@ public class EquipmentRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Read
+    @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
+    @Path("countAllEquipments")
+    public <T extends Equipment> long countAllEquipments(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EquipmentFiltering filtering,
+            @Context SecurityContext securityContext) {
+        Class<T> c = service.validateFiltering(filtering, securityContext);
+
+        return service.countAllEquipments(c, filtering, securityContext);
+    }
+
+
+    @POST
+    @Produces("application/json")
+    @Read
     @ApiOperation(value = "getAllEquipmentsGrouped", notes = "Gets All Equipments Filtered and Grouped")
     @Path("getAllEquipmentsGrouped")
     public <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(
