@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.data.jsoncontainers.FilteringInformationHolder;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.Clazz;
+import com.flexicore.model.Tenant;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -27,6 +28,12 @@ public class AlertFiltering extends FilteringInformationHolder {
     private String clazzName;
     @JsonIgnore
     private Clazz clazz;
+    private Set<String> tenantIds=new HashSet<>();
+
+    private String baseclassNameLike;
+
+    @JsonIgnore
+    private List<Tenant> tenants;
 
 
     public LocalDateTime getAlertDateStart() {
@@ -118,6 +125,34 @@ public class AlertFiltering extends FilteringInformationHolder {
 
     public AlertFiltering setClazz(Clazz clazz) {
         this.clazz = clazz;
+        return this;
+    }
+
+    public Set<String> getTenantIds() {
+        return tenantIds;
+    }
+
+    public AlertFiltering setTenantIds(Set<String> tenantIds) {
+        this.tenantIds = tenantIds;
+        return this;
+    }
+
+    @JsonIgnore
+    public List<Tenant> getTenants() {
+        return tenants;
+    }
+
+    public AlertFiltering setTenants(List<Tenant> tenants) {
+        this.tenants = tenants;
+        return this;
+    }
+
+    public String getBaseclassNameLike() {
+        return baseclassNameLike;
+    }
+
+    public AlertFiltering setBaseclassNameLike(String baseclassNameLike) {
+        this.baseclassNameLike = baseclassNameLike;
         return this;
     }
 }

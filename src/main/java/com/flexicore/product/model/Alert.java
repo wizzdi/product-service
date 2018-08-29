@@ -14,7 +14,9 @@ public class Alert {
     private int severity;
     private String alertType;
     private String baseclassId;
+    private String baseclassName;
     private String clazzName;
+    private String baseclassTenantId;
 
 
     public Alert() {
@@ -81,6 +83,24 @@ public class Alert {
 
     public Alert setClazzName(String clazzName) {
         this.clazzName = clazzName;
+        return this;
+    }
+
+    public String getBaseclassName() {
+        return baseclassName;
+    }
+
+    public Alert setBaseclassName(String baseclassName) {
+        this.baseclassName = baseclassName;
+        return this;
+    }
+
+    public String getBaseclassTenantId() {
+        return baseclassTenantId;
+    }
+
+    public Alert setBaseclassTenantId(String baseclassTenantId) {
+        this.baseclassTenantId = baseclassTenantId;
         return this;
     }
 }
