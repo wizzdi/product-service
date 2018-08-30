@@ -9,7 +9,7 @@ import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.model.*;
-import com.flexicore.product.service.AlertService;
+import com.flexicore.product.service.EventService;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.security.SecurityContext;
 import io.swagger.annotations.Api;
@@ -28,11 +28,11 @@ import java.util.logging.Logger;
 @PluginInfo(version = 1)
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
-@Path("plugins/Alerts")
+@Path("plugins/Events")
 
-@Api(tags = {"Alerts"})
+@Api(tags = {"Events"})
 
-public class AlertRESTService implements RestServicePlugin {
+public class EventRESTService implements RestServicePlugin {
 
     @Inject
     @PluginInfo(version = 1)
@@ -40,7 +40,7 @@ public class AlertRESTService implements RestServicePlugin {
 
     @Inject
     @PluginInfo(version = 1)
-    private AlertService service;
+    private EventService service;
 
     @Inject
     private Logger logger;
@@ -51,14 +51,14 @@ public class AlertRESTService implements RestServicePlugin {
     @POST
     @Produces("application/json")
     @Update
-    @ApiOperation(value = "getAllAlerts", notes = "return Alerts Filtered")
-    @Path("getAllAlerts")
-    public PaginationResponse<Alert> getAllAlerts(
+    @ApiOperation(value = "getAllEvents", notes = "return Events Filtered")
+    @Path("getAllEvents")
+    public PaginationResponse<Event> getAllEvents(
             @HeaderParam("authenticationKey") String authenticationKey,
-            AlertFiltering alertFiltering,
+            EventFiltering eventFiltering,
             @Context SecurityContext securityContext) {
-        service.validateFiltering(alertFiltering, securityContext);
-        return service.getAllAlerts(alertFiltering,Alert.class);
+        service.validateFiltering(eventFiltering, securityContext);
+        return service.getAllEvents(eventFiltering,Event.class);
 
     }
 

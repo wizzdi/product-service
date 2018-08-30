@@ -1,4 +1,4 @@
 uuid=${project.groupId}.${project.artifactId}
 version=${project.version}
-provides=com.flexicore.product.interfaces.IAlertService,com.flexicore.product.interfaces.IEquipmentService,com.flexicore.product.interfaces.IEquipmentRepository,com.flexicore.product.interfaces.IAlertNoSqlRepository
+provides=com.flexicore.product.interfaces.IEventService,com.flexicore.product.interfaces.IEquipmentService,com.flexicore.product.interfaces.IEquipmentRepository,com.flexicore.product.interfaces.IEventNoSqlRepository
 
