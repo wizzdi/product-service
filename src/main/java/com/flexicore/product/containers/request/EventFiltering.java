@@ -5,6 +5,7 @@ import com.flexicore.data.jsoncontainers.FilteringInformationHolder;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.Clazz;
 import com.flexicore.model.Tenant;
+import com.flexicore.product.model.Event;
 
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,7 @@ public class EventFiltering extends FilteringInformationHolder {
     private String humanReadableTextLike;
 
     private String eventType;
+    private String eventSubType;
     private Set<String> baseclassIds=new HashSet<>();
     @JsonIgnore
     private List<Baseclass> baseclass;
@@ -29,7 +31,9 @@ public class EventFiltering extends FilteringInformationHolder {
     @JsonIgnore
     private List<Tenant> tenants;
 
-
+    public EventFiltering() {
+        eventType=Event.class.getCanonicalName();
+    }
 
     public String getHumanReadableTextLike() {
         return humanReadableTextLike;
@@ -112,6 +116,15 @@ public class EventFiltering extends FilteringInformationHolder {
 
     public EventFiltering setBaseclassNameLike(String baseclassNameLike) {
         this.baseclassNameLike = baseclassNameLike;
+        return this;
+    }
+
+    public String getEventSubType() {
+        return eventSubType;
+    }
+
+    public EventFiltering setEventSubType(String eventSubType) {
+        this.eventSubType = eventSubType;
         return this;
     }
 }

@@ -16,10 +16,12 @@ public class Event {
     private String baseclassName;
     private String clazzName;
     private String baseclassTenantId;
+    private String eventSubType;
 
 
     public Event() {
         this.id=Baseclass.getBase64ID();
+        setEventType(Event.class.getCanonicalName());
     }
 
     public String getId() {
@@ -92,6 +94,15 @@ public class Event {
 
     public Event setBaseclassTenantId(String baseclassTenantId) {
         this.baseclassTenantId = baseclassTenantId;
+        return this;
+    }
+
+    public String getEventSubType() {
+        return eventSubType;
+    }
+
+    public Event setEventSubType(String eventSubType) {
+        this.eventSubType = eventSubType;
         return this;
     }
 }

@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/Equipments")
 @SwaggerDefinition(tags = {
-        @Tag(name = "Alerts", description = "Alert Services"),
+        @Tag(name = "Events", description = "Events Services"),
         @Tag(name = "Equipments", description = "Equipments Services"),
         @Tag(name = "EquipmentGroups", description = "EquipmentGroups Services")
 

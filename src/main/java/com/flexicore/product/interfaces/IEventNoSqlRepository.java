@@ -20,77 +20,82 @@ public interface IEventNoSqlRepository extends PluginRepository {
 
     String BASECLASS_ID = "baseclassId";
     String EVENTS_COLLECTION_NAME = "Events";
-    String ALERT_DATE = "eventDate";
+    String EVENT_DATE = "eventDate";
     String CLAZZ_NAME = "clazzName";
-    String ALERT_TYPE = "alertType";
+    String EVENT_TYPE = "eventType";
+    String EVENT_SUB_TYPE = "eventSubType";
+
     String SEVERITY = "severity";
     String TENANT_ID = "baseclassTenantId";
     String BASECLASS_NAME = "baseclassName";
     String HUMAN_READABLE_TEXT = "humanReadableText";
 
     static Bson getAlertsPredicate(AlertFiltering eventFiltering) {
-        Bson pred=getEventsPredicate(eventFiltering);
-        if(eventFiltering.getSeverityStart()!=null){
+        Bson pred = getEventsPredicate(eventFiltering);
+        if (eventFiltering.getSeverityStart() != null) {
             Bson gte = gte(SEVERITY, eventFiltering.getSeverityStart());
-            pred=pred==null?gte:and(pred, gte);
+            pred = pred == null ? gte : and(pred, gte);
         }
 
-        if(eventFiltering.getSeverityEnd()!=null){
+        if (eventFiltering.getSeverityEnd() != null) {
             Bson lte = lte(SEVERITY, eventFiltering.getSeverityEnd());
-            pred=pred==null?lte:and(pred, lte);
+            pred = pred == null ? lte : and(pred, lte);
         }
         return pred;
     }
 
 
-        static Bson getEventsPredicate(EventFiltering eventFiltering) {
-        Bson pred=null;
-        if(eventFiltering.getFromDate()!=null){
+    static Bson getEventsPredicate(EventFiltering eventFiltering) {
+        Bson pred = null;
+        if (eventFiltering.getFromDate() != null) {
 
-            Date start=Date.from(eventFiltering.getFromDate().toInstant(ZoneOffset.UTC));
-            Bson gte = gte(ALERT_DATE, start);
-            pred=pred==null?gte:and(pred, gte);
+            Date start = Date.from(eventFiltering.getFromDate().toInstant(ZoneOffset.UTC));
+            Bson gte = gte(EVENT_DATE, start);
+            pred = pred == null ? gte : and(pred, gte);
         }
 
-        if(eventFiltering.getToDate()!=null){
-            Date end=Date.from(eventFiltering.getToDate().toInstant(ZoneOffset.UTC));
-            Bson lte = lte(ALERT_DATE, end);
-            pred=pred==null?lte:and(pred, lte);
+        if (eventFiltering.getToDate() != null) {
+            Date end = Date.from(eventFiltering.getToDate().toInstant(ZoneOffset.UTC));
+            Bson lte = lte(EVENT_DATE, end);
+            pred = pred == null ? lte : and(pred, lte);
         }
-        if(!eventFiltering.getBaseclass().isEmpty()){
+        if (!eventFiltering.getBaseclass().isEmpty()) {
             Set<String> baseclasIds = eventFiltering.getBaseclass().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
             Bson in = in(BASECLASS_ID, baseclasIds);
-            pred=pred==null?in:and(pred, in);
+            pred = pred == null ? in : and(pred, in);
         }
 
-        if(!eventFiltering.getTenants().isEmpty()){
+        if (!eventFiltering.getTenants().isEmpty()) {
             Set<String> tenantsIds = eventFiltering.getTenants().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
             Bson in = in(TENANT_ID, tenantsIds);
-            pred=pred==null?in:and(pred, in);
+            pred = pred == null ? in : and(pred, in);
         }
 
-        if(eventFiltering.getClazz()!=null){
+        if (eventFiltering.getClazz() != null) {
             Bson eq = eq(CLAZZ_NAME, eventFiltering.getClazz().getName());
-            pred=pred==null?eq:and(pred, eq);
+            pred = pred == null ? eq : and(pred, eq);
         }
 
-        if(eventFiltering.getEventType()!=null){
-            Bson eq = eq(ALERT_TYPE, eventFiltering.getEventType());
-            pred=pred==null?eq:and(pred, eq);
+        if (eventFiltering.getEventType() != null) {
+            Bson eq = eq(EVENT_TYPE, eventFiltering.getEventType());
+            pred = pred == null ? eq : and(pred, eq);
         }
 
+        if (eventFiltering.getEventSubType() != null) {
+            Bson eq = eq(EVENT_SUB_TYPE, eventFiltering.getEventSubType());
+            pred = pred == null ? eq : and(pred, eq);
+        }
 
-
-        if(eventFiltering.getBaseclassNameLike()!=null){
+        if (eventFiltering.getBaseclassNameLike() != null) {
 
             Bson eq = Filters.eq(BASECLASS_NAME, eventFiltering.getBaseclassNameLike());
-            pred=pred==null?eq:and(pred, eq);
+            pred = pred == null ? eq : and(pred, eq);
         }
 
-        if(eventFiltering.getHumanReadableTextLike()!=null){
+        if (eventFiltering.getHumanReadableTextLike() != null) {
 
             Bson eq = Filters.eq(HUMAN_READABLE_TEXT, eventFiltering.getHumanReadableTextLike());
-            pred=pred==null?eq:and(pred, eq);
+            pred = pred == null ? eq : and(pred, eq);
         }
         return pred;
     }

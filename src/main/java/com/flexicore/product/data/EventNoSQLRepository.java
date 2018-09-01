@@ -116,7 +116,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
         Bson pred = IEventNoSqlRepository.getEventsPredicate(eventFiltering);
 
         FindIterable<T> base = pred==null?collection.find(c):collection.find(pred, c);
-        FindIterable<T> iter= base.sort(orderBy(descending(ALERT_DATE)));
+        FindIterable<T> iter= base.sort(orderBy(descending(EVENT_DATE)));
         if(eventFiltering.getCurrentPage()!=null && eventFiltering.getPageSize()!=null&& eventFiltering.getCurrentPage() > -1 && eventFiltering.getPageSize()> 0){
             iter.limit(eventFiltering.getPageSize()).skip(eventFiltering.getPageSize()* eventFiltering.getCurrentPage());
         }
@@ -136,7 +136,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
         Bson pred = IEventNoSqlRepository.getAlertsPredicate(eventFiltering);
 
         FindIterable<T> base = pred==null?collection.find(c):collection.find(pred, c);
-        FindIterable<T> iter= base.sort(orderBy(descending(ALERT_DATE)));
+        FindIterable<T> iter= base.sort(orderBy(descending(EVENT_DATE)));
         if(eventFiltering.getCurrentPage()!=null && eventFiltering.getPageSize()!=null&& eventFiltering.getCurrentPage() > -1 && eventFiltering.getPageSize()> 0){
             iter.limit(eventFiltering.getPageSize()).skip(eventFiltering.getPageSize()* eventFiltering.getCurrentPage());
         }

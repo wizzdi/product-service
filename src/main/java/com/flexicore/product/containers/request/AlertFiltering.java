@@ -5,6 +5,7 @@ import com.flexicore.data.jsoncontainers.FilteringInformationHolder;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.Clazz;
 import com.flexicore.model.Tenant;
+import com.flexicore.product.model.Alert;
 
 import java.util.HashSet;
 import java.util.List;
@@ -15,11 +16,12 @@ public class AlertFiltering extends EventFiltering {
 
     private Integer severityStart;
     private Integer severityEnd;
-    private String alertType;
 
+    public AlertFiltering() {
+        super();
+        setEventType(Alert.class.getCanonicalName());
+    }
 
-
- 
     public Integer getSeverityStart() {
         return severityStart;
     }
@@ -73,12 +75,4 @@ public class AlertFiltering extends EventFiltering {
         return  (AlertFiltering)super.setBaseclassNameLike(baseclassNameLike);
     }
 
-    public String getAlertType() {
-        return alertType;
-    }
-
-    public AlertFiltering setAlertType(String alertType) {
-        this.alertType = alertType;
-        return this;
-    }
 }
