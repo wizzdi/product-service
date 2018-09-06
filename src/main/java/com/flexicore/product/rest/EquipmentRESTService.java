@@ -1,11 +1,13 @@
 package com.flexicore.product.rest;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
 import com.flexicore.annotations.rest.Update;
 import com.flexicore.annotations.rest.Write;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.data.jsoncontainers.Views;
 import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
@@ -64,7 +66,23 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Read
     @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
     @Path("getAllEquipments")
+    @JsonView(Views.Full.class)
     public <T extends Equipment> PaginationResponse<T> getAllEquipments(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EquipmentFiltering filtering,
+            @Context SecurityContext securityContext) {
+        Class<T> c = service.validateFiltering(filtering, securityContext);
+
+        return service.getAllEquipments(c, filtering, securityContext);
+    }
+
+
+    @POST
+    @Produces("application/json")
+    @Read
+    @ApiOperation(value = "getAllEquipmentsShort", notes = "Gets All Equipments (short) Filtered")
+    @Path("getAllEquipmentsShort")
+    public <T extends Equipment> PaginationResponse<T> getAllEquipmentsShort(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentFiltering filtering,
             @Context SecurityContext securityContext) {
@@ -183,6 +201,7 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Read
     @ApiOperation(value = "createEquipment", notes = "Creates Equipment")
     @Path("createEquipment")
+    @JsonView(Views.Full.class)
     public <T extends Equipment> T createEquipment(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentCreate equipmentCreate,
@@ -238,6 +257,7 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Update
     @ApiOperation(value = "updateEquipment", notes = "Updates Equipment")
     @Path("updateEquipment")
+    @JsonView(Views.Full.class)
     public Equipment updateEquipment(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentUpdate equipmentUpdate,
