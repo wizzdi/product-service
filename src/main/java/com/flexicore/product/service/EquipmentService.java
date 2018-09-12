@@ -2,27 +2,33 @@ package com.flexicore.product.service;
 
 import ch.hsr.geohash.GeoHash;
 import com.flexicore.annotations.plugins.PluginInfo;
+import com.flexicore.annotations.rest.Read;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.QueryInformationHolder;
+import com.flexicore.model.User;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.data.EquipmentRepository;
+import com.flexicore.product.interfaces.AlertSeverity;
+import com.flexicore.product.interfaces.AlertType;
 import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
+import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaselinkService;
+import com.flexicore.service.SecurityService;
+import com.flexicore.service.UserService;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Context;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,6 +47,12 @@ public class EquipmentService implements IEquipmentService {
     @Inject
     @PluginInfo(version = 1)
     private GroupService groupService;
+
+    @Inject
+    private UserService userService;
+
+    @Inject
+    private SecurityService securityService;
 
     @Inject
     private Logger logger;
@@ -79,6 +91,10 @@ public class EquipmentService implements IEquipmentService {
         updateEquipmentNoMerge(equipmentCreate, equipment);
         equipmentRepository.merge(equipment);
         return equipment;
+    }
+
+    public List<Equipment> getEquipmentToSync(LocalDateTime now) {
+        return equipmentRepository.getEquipmentToSync(now);
     }
 
     @Override
@@ -259,10 +275,24 @@ public class EquipmentService implements IEquipmentService {
         return productStatus;
     }
 
+    public SecurityContext getAdminSecurityContext() {
+        User user = userService.getAdminUser();
+        RunningUser runningUser = userService.registerUserIntoSystem(user, LocalDateTime.now().plusYears(30));
+        String adminToken = runningUser.getAuthenticationkey().getKey();
+        return verifyLoggedIn(adminToken);
+    }
+    public SecurityContext verifyLoggedIn(String userToken) {
+        String opId = Baseclass.generateUUIDFromString(Read.class.getCanonicalName());
+        return securityService.getSecurityContext(userToken, null, opId);
+    }
+
     @Override
     public List<ProductToStatus> getAvailableProductStatus(Product product, SecurityContext securityContext) {
         return baselinkService.findAllBySide(ProductToStatus.class, product, false, securityContext);
     }
+
+
+
 
 
     @Override
@@ -286,21 +316,21 @@ public class EquipmentService implements IEquipmentService {
 
             }
         }
-        List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty() ? new ArrayList<>() : groupService.listByIds(EquipmentGroup.class, filtering.getGroupIds(), securityContext);
+        List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty() ? new ArrayList<>() : groupService.listByIds(EquipmentGroup.class, filtering.getGroupIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet()), securityContext);
         filtering.getGroupIds().removeAll(groups.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         if (!filtering.getGroupIds().isEmpty()) {
-            throw new BadRequestException("could not find groups with ids " + filtering.getGroupIds().parallelStream().collect(Collectors.joining(",")));
+            throw new BadRequestException("could not find groups with ids " + filtering.getGroupIds().parallelStream().map(f->f.getId()).collect(Collectors.joining(",")));
         }
         filtering.setEquipmentGroups(groups);
-        ProductType productType = filtering.getProductTypeId() != null ? null : getByIdOrNull(filtering.getProductTypeId(), ProductType.class, null, securityContext);
+        ProductType productType = filtering.getProductTypeId() != null &&filtering.getProductTypeId().getId()!=null? null : getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, securityContext);
         if (filtering.getProductTypeId() != null && productType == null) {
             throw new BadRequestException("No Product type with id " + filtering.getProductTypeId());
         }
         filtering.setProductType(productType);
-        List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, filtering.getProductStatusIds(), securityContext);
+        List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, filtering.getProductStatusIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet()), securityContext);
         filtering.getProductStatusIds().removeAll(status.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         if (!filtering.getProductStatusIds().isEmpty()) {
-            throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().collect(Collectors.joining(",")));
+            throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().map(f->f.getId()).collect(Collectors.joining(",")));
         }
         filtering.setProductStatusList(status);
         return c;

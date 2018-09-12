@@ -2,8 +2,6 @@ package com.flexicore.product.interfaces;
 
 import com.flexicore.interfaces.PluginRepository;
 import com.flexicore.model.Baselink_;
-import com.flexicore.product.containers.request.EquipmentFiltering;
-import com.flexicore.product.containers.request.EquipmentGroupFiltering;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
@@ -45,5 +43,4 @@ public interface IEquipmentRepository extends PluginRepository {
 
     <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext);
 
-    void massMerge(List<Object> toMerge);
 }

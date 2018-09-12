@@ -7,14 +7,19 @@ import com.flexicore.model.Tenant;
 import com.flexicore.product.containers.request.AlertFiltering;
 import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.data.EventNoSQLRepository;
+import com.flexicore.product.interfaces.AlertSeverity;
+import com.flexicore.product.interfaces.AlertType;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.Alert;
+import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.Event;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,6 +59,22 @@ public class EventService implements IEventService {
         List<T> list = repository.getAllAlerts(eventFiltering,c);
         long count = repository.countAllAlerts(eventFiltering);
         return new PaginationResponse<>(list, eventFiltering, count);
+    }
+
+    public Alert createAlertInspectFailedNoMerge(Equipment equipment, String reason) {
+        Alert alert = new Alert()
+                .setSeverity(AlertSeverity.FATAL.ordinal() + 1)
+                .setEventDate(Date.from(Instant.now()))
+                .setBaseclassId(equipment.getId())
+                .setBaseclassName(equipment.getName())
+                .setEventSubType(AlertType.INSPECT_FAILED.name())
+                .setHumanReadableText(AlertType.INSPECT_FAILED.name() + " on equipment " +equipment.getId()
+                                + System.lineSeparator() +
+                        reason)
+                .setClazzName(Baseclass.getClazzbyname(equipment.getClass().getCanonicalName()).getName())
+                .setBaseclassTenantId(equipment.getTenant() != null ? equipment.getTenant().getId() : null);
+        return alert;
+
     }
 
     @Override

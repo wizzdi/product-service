@@ -1,10 +1,8 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.data.jsoncontainers.FilteringInformationHolder;
+import com.flexicore.model.FilteringInformationHolder;
 import com.flexicore.product.model.EquipmentGroup;
-import com.flexicore.product.model.ProductStatus;
-import com.flexicore.product.model.ProductType;
 
 import java.util.ArrayList;
 import java.util.HashSet;

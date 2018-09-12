@@ -1,9 +1,9 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.data.jsoncontainers.FilteringInformationHolder;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.Clazz;
+import com.flexicore.model.FilteringInformationHolder;
 import com.flexicore.model.Tenant;
 import com.flexicore.product.model.Event;
 

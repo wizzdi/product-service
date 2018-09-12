@@ -1,13 +1,12 @@
 package com.flexicore.product.data;
 
 import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.SortParameter;
 import com.flexicore.data.jsoncontainers.SortingOrder;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.Baselink_;
 import com.flexicore.model.QueryInformationHolder;
-import com.flexicore.product.containers.request.EquipmentFiltering;
-import com.flexicore.product.containers.request.EquipmentGroupFiltering;
+
+import com.flexicore.model.SortParameter;
 import com.flexicore.product.containers.request.ProductStatusFiltering;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
@@ -17,6 +16,7 @@ import com.flexicore.security.SecurityContext;
 
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,12 +78,22 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
     }
 
 
-    @Override
-    public void massMerge(List<Object> toMerge) {
-        for (Object o : toMerge) {
-            em.merge(o);
-        }
+    public List<Equipment> getEquipmentToSync(LocalDateTime now) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Equipment> q = cb.createQuery(Equipment.class);
+        Root<Equipment> r = q.from(Equipment.class);
+        Predicate pred = cb.or(r.get(Equipment_.nextSyncTime).isNull(),cb.lessThan(r.get(Equipment_.nextSyncTime),now));
+
+
+        q.select(r).where(pred);
+        TypedQuery<Equipment> query = em.createQuery(q);
+        return query.getResultList();
+
     }
+
+
+
+
 
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         CriteriaBuilder cb = em.getCriteriaBuilder();

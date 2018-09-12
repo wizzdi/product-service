@@ -1,7 +1,7 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.data.jsoncontainers.FilteringInformationHolder;
+import com.flexicore.model.FilteringInformationHolder;
 import com.flexicore.product.model.ProductType;
 
 public class ProductStatusFiltering extends FilteringInformationHolder {

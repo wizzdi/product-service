@@ -4,16 +4,12 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
-import com.flexicore.product.containers.request.EquipmentFiltering;
 import com.flexicore.product.containers.request.GroupCreate;
 import com.flexicore.product.containers.request.GroupFiltering;
 import com.flexicore.product.containers.request.GroupUpdate;
 import com.flexicore.product.data.EquipmentGroupRepository;
-import com.flexicore.product.data.EquipmentRepository;
-import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.security.SecurityContext;
-import com.flexicore.service.SecurityService;
 
 import javax.inject.Inject;
 import java.util.List;

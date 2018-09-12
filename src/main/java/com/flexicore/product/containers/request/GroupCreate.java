@@ -1,13 +1,8 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.data.jsoncontainers.FilteringInformationHolder;
 import com.flexicore.product.model.EquipmentGroup;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class GroupCreate {
 
