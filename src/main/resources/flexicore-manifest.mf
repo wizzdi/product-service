@@ -1,5 +1,5 @@
 uuid=${project.groupId}.${project.artifactId}
 version=${project.version}
-provides=com.flexicore.product.interfaces.IEventService,com.flexicore.product.interfaces.IEquipmentService,com.flexicore.product.interfaces.IEquipmentRepository,com.flexicore.product.interfaces.IEventNoSqlRepository,com.flexicore.product.model.Alert,com.flexicore.product.model.Event
+provides=com.flexicore.product.interfaces.IEventService,com.flexicore.product.interfaces.IEquipmentService,com.flexicore.product.interfaces.IEquipmentRepository,com.flexicore.product.interfaces.IEventNoSqlRepository,com.flexicore.product.model.Alert,com.flexicore.product.model.Event,com.flexicore.product.interfaces.EquipmentHandler,com.flexicore.product.interfaces.EquipmentInvoker,com.flexicore.product.containers.request.ExecutionParametersHolder
 requires=com.flexicore.scheduling.interfaces.SchedulingOperator,com.flexicore.scheduling.interfaces.SchedulingMethod
 

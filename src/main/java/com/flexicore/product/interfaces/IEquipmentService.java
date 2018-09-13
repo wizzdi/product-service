@@ -11,6 +11,7 @@ import javax.ws.rs.core.Context;
 import java.util.List;
 
 public interface IEquipmentService extends ServicePlugin {
+
     <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext);
 
     <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext);
@@ -52,4 +53,5 @@ public interface IEquipmentService extends ServicePlugin {
     ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext);
 
     <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext);
+
 }

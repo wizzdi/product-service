@@ -7,17 +7,16 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.model.User;
+import com.flexicore.product.config.Config;
 import com.flexicore.product.containers.request.*;
-import com.flexicore.product.containers.response.EquipmentGroupHolder;
-import com.flexicore.product.containers.response.EquipmentStatusGroup;
+import com.flexicore.product.containers.response.*;
 import com.flexicore.product.data.EquipmentRepository;
-import com.flexicore.product.interfaces.AlertSeverity;
-import com.flexicore.product.interfaces.AlertType;
-import com.flexicore.product.interfaces.IEquipmentService;
+import com.flexicore.product.interfaces.*;
 import com.flexicore.product.model.*;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaselinkService;
+import com.flexicore.service.PluginService;
 import com.flexicore.service.SecurityService;
 import com.flexicore.service.UserService;
 
@@ -26,7 +25,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Context;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,7 +53,14 @@ public class EquipmentService implements IEquipmentService {
     private SecurityService securityService;
 
     @Inject
+    private PluginService pluginService;
+
+    @Inject
     private Logger logger;
+
+    @Inject
+    @PluginInfo(version = 1)
+    private EventService eventService;
 
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
 
@@ -68,15 +73,17 @@ public class EquipmentService implements IEquipmentService {
         return equipmentRepository.getByIdOrNull(id, c, batchString, securityContext);
     }
 
+
+
     @Override
     public <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
-        List<T> list= equipmentRepository.getAllEquipments(c, filtering, securityContext);
-        long total= countAllEquipments(c, filtering, securityContext);
-        return new PaginationResponse<>(list,filtering,total);
+        List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
+        long total = countAllEquipments(c, filtering, securityContext);
+        return new PaginationResponse<>(list, filtering, total);
     }
 
     public <T extends Equipment> long countAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
-        return equipmentRepository.countAllEquipments(c,filtering,securityContext);
+        return equipmentRepository.countAllEquipments(c, filtering, securityContext);
     }
 
     @Override
@@ -188,16 +195,16 @@ public class EquipmentService implements IEquipmentService {
     @Override
     public PaginationResponse<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
         QueryInformationHolder<ProductType> queryInformationHolder = new QueryInformationHolder<>(productTypeFiltering, ProductType.class, securityContext);
-        List<ProductType> list= equipmentRepository.getAllFiltered(queryInformationHolder);
-        long count=equipmentRepository.countAllFiltered(queryInformationHolder);
-        return new PaginationResponse<>(list,productTypeFiltering,count);
+        List<ProductType> list = equipmentRepository.getAllFiltered(queryInformationHolder);
+        long count = equipmentRepository.countAllFiltered(queryInformationHolder);
+        return new PaginationResponse<>(list, productTypeFiltering, count);
     }
 
     @Override
     public PaginationResponse<ProductStatus> getAllProductStatus(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
-        List<ProductStatus> list= equipmentRepository.getAllProductStatus(productStatusFiltering,securityContext);
-        long count=equipmentRepository.countAllProductStatus(productStatusFiltering, securityContext);
-        return new PaginationResponse<>(list,productStatusFiltering,count);
+        List<ProductStatus> list = equipmentRepository.getAllProductStatus(productStatusFiltering, securityContext);
+        long count = equipmentRepository.countAllProductStatus(productStatusFiltering, securityContext);
+        return new PaginationResponse<>(list, productStatusFiltering, count);
 
     }
 
@@ -281,6 +288,7 @@ public class EquipmentService implements IEquipmentService {
         String adminToken = runningUser.getAuthenticationkey().getKey();
         return verifyLoggedIn(adminToken);
     }
+
     public SecurityContext verifyLoggedIn(String userToken) {
         String opId = Baseclass.generateUUIDFromString(Read.class.getCanonicalName());
         return securityService.getSecurityContext(userToken, null, opId);
@@ -290,9 +298,6 @@ public class EquipmentService implements IEquipmentService {
     public List<ProductToStatus> getAvailableProductStatus(Product product, SecurityContext securityContext) {
         return baselinkService.findAllBySide(ProductToStatus.class, product, false, securityContext);
     }
-
-
-
 
 
     @Override
@@ -316,21 +321,21 @@ public class EquipmentService implements IEquipmentService {
 
             }
         }
-        List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty() ? new ArrayList<>() : groupService.listByIds(EquipmentGroup.class, filtering.getGroupIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet()), securityContext);
+        List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty() ? new ArrayList<>() : groupService.listByIds(EquipmentGroup.class, filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet()), securityContext);
         filtering.getGroupIds().removeAll(groups.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         if (!filtering.getGroupIds().isEmpty()) {
-            throw new BadRequestException("could not find groups with ids " + filtering.getGroupIds().parallelStream().map(f->f.getId()).collect(Collectors.joining(",")));
+            throw new BadRequestException("could not find groups with ids " + filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
         }
         filtering.setEquipmentGroups(groups);
-        ProductType productType = filtering.getProductTypeId() != null &&filtering.getProductTypeId().getId()!=null? null : getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, securityContext);
+        ProductType productType = filtering.getProductTypeId() != null && filtering.getProductTypeId().getId() != null ? null : getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, securityContext);
         if (filtering.getProductTypeId() != null && productType == null) {
             throw new BadRequestException("No Product type with id " + filtering.getProductTypeId());
         }
         filtering.setProductType(productType);
-        List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, filtering.getProductStatusIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet()), securityContext);
+        List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet()), securityContext);
         filtering.getProductStatusIds().removeAll(status.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         if (!filtering.getProductStatusIds().isEmpty()) {
-            throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().map(f->f.getId()).collect(Collectors.joining(",")));
+            throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
         }
         filtering.setProductStatusList(status);
         return c;
@@ -338,6 +343,7 @@ public class EquipmentService implements IEquipmentService {
 
 
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
-        return equipmentRepository.getProductGroupedByStatus(c,equipmentFiltering, securityContext);
+        return equipmentRepository.getProductGroupedByStatus(c, equipmentFiltering, securityContext);
     }
+
 }

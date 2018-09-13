@@ -14,6 +14,7 @@ import com.flexicore.product.model.Alert;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.Event;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.BaseclassService;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -31,8 +32,7 @@ public class EventService implements IEventService {
     private EventNoSQLRepository repository;
 
     @Inject
-    @PluginInfo(version = 1)
-    private EquipmentService equipmentService;
+    private BaseclassService baseclassService;
 
 
     @Override
@@ -79,7 +79,7 @@ public class EventService implements IEventService {
 
     @Override
     public void validateFiltering(EventFiltering eventFiltering, SecurityContext securityContext) {
-        List<Baseclass> baseclasses= eventFiltering.getBaseclassIds().isEmpty()?new ArrayList<>(): equipmentService.listByIds(Baseclass.class, eventFiltering.getBaseclassIds(),securityContext);
+        List<Baseclass> baseclasses= eventFiltering.getBaseclassIds().isEmpty()?new ArrayList<>(): baseclassService.listByIds(Baseclass.class, eventFiltering.getBaseclassIds(),securityContext);
         eventFiltering.getBaseclassIds().removeAll(baseclasses.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
         if(!eventFiltering.getBaseclassIds().isEmpty()){
             throw new BadRequestException(" no baseclass with ids "+ eventFiltering.getBaseclassIds().parallelStream().collect(Collectors.joining(",")));
@@ -93,7 +93,7 @@ public class EventService implements IEventService {
             }
 
         }
-        List<Tenant> tenants= eventFiltering.getTenantIds().isEmpty()?new ArrayList<>(): equipmentService.listByIds(Tenant.class, eventFiltering.getTenantIds(),securityContext);
+        List<Tenant> tenants= eventFiltering.getTenantIds().isEmpty()?new ArrayList<>(): baseclassService.listByIds(Tenant.class, eventFiltering.getTenantIds(),securityContext);
         eventFiltering.getTenantIds().removeAll(baseclasses.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
         if(!eventFiltering.getTenantIds().isEmpty()){
             throw new BadRequestException(" no tenants with ids "+ eventFiltering.getTenantIds().parallelStream().collect(Collectors.joining(",")));

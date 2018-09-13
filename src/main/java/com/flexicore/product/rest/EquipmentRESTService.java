@@ -147,6 +147,8 @@ public class EquipmentRESTService implements RestServicePlugin {
     }
 
 
+
+
     @POST
     @Produces("application/json")
     @Write
