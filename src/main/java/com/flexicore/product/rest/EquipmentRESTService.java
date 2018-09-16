@@ -9,6 +9,9 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
+import com.flexicore.model.FileResource;
+import com.flexicore.model.Job;
+import com.flexicore.model.Tenant;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
@@ -72,6 +75,32 @@ public class EquipmentRESTService implements RestServicePlugin {
 
         return service.getAllEquipments(c, filtering, securityContext);
     }
+
+
+    @POST
+    @Produces("application/json")
+    @Update
+    @ApiOperation(value = "importCSV", notes = "import CSV")
+    @Path("importCSV")
+    public Job importCSV(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            ImportCSVRequest importCSVRequest,
+            @Context SecurityContext securityContext) {
+
+        Tenant tenant=service.getByIdOrNull(importCSVRequest.getTenantId(),Tenant.class,null,securityContext);
+        if(tenant==null){
+            throw new BadRequestException("No Tenant with id "+ importCSVRequest.getTenantId());
+        }
+        importCSVRequest.setTenant(tenant);
+
+        FileResource fileResource=service.getByIdOrNull(importCSVRequest.getFileResourceId(),FileResource.class,null,securityContext);
+        if(fileResource==null){
+            throw new BadRequestException("No fileResource with id "+ importCSVRequest.getFileResourceId());
+        }
+        importCSVRequest.setFileResource(fileResource);
+        return service.startImportCSVJob(importCSVRequest, securityContext);
+    }
+
 
 
     @POST

@@ -47,6 +47,13 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.5</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.flexicore</groupId>
             <artifactId>product-model</artifactId>
             <version>1.0.3</version>

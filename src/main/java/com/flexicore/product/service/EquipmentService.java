@@ -5,26 +5,30 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.Job;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.model.User;
-import com.flexicore.product.config.Config;
 import com.flexicore.product.containers.request.*;
-import com.flexicore.product.containers.response.*;
+import com.flexicore.product.containers.response.EquipmentGroupHolder;
+import com.flexicore.product.containers.response.EquipmentStatusGroup;
+import com.flexicore.product.containers.response.ImportCSVResponse;
 import com.flexicore.product.data.EquipmentRepository;
-import com.flexicore.product.interfaces.*;
+import com.flexicore.product.interfaces.EquipmentInvoker;
+import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
+import com.flexicore.product.processors.ImportCSVProcessing;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
-import com.flexicore.service.BaselinkService;
-import com.flexicore.service.PluginService;
-import com.flexicore.service.SecurityService;
-import com.flexicore.service.UserService;
+import com.flexicore.service.*;
+import org.apache.commons.csv.CSVFormat;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Context;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +39,7 @@ import java.util.stream.Collectors;
 @PluginInfo(version = 1)
 public class EquipmentService implements IEquipmentService {
 
+    private static final String DESCRIMINATOR = "";
     @Inject
     @PluginInfo(version = 1)
     private EquipmentRepository equipmentRepository;
@@ -62,6 +67,9 @@ public class EquipmentService implements IEquipmentService {
     @PluginInfo(version = 1)
     private EventService eventService;
 
+    @Inject
+    private DynamicInvokersService dynamicInvokersService;
+
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
 
 
@@ -72,7 +80,6 @@ public class EquipmentService implements IEquipmentService {
     public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, List<String> batchString, SecurityContext securityContext) {
         return equipmentRepository.getByIdOrNull(id, c, batchString, securityContext);
     }
-
 
 
     @Override
@@ -327,7 +334,7 @@ public class EquipmentService implements IEquipmentService {
             throw new BadRequestException("could not find groups with ids " + filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
         }
         filtering.setEquipmentGroups(groups);
-        ProductType productType = filtering.getProductTypeId() != null && filtering.getProductTypeId().getId() != null ? null : getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, securityContext);
+        ProductType productType = filtering.getProductTypeId() != null && filtering.getProductTypeId().getId() != null ? getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, securityContext) : null;
         if (filtering.getProductTypeId() != null && productType == null) {
             throw new BadRequestException("No Product type with id " + filtering.getProductTypeId());
         }
@@ -346,4 +353,58 @@ public class EquipmentService implements IEquipmentService {
         return equipmentRepository.getProductGroupedByStatus(c, equipmentFiltering, securityContext);
     }
 
+    public ImportCSVResponse importCSV(ImportCSVRequest importCSVRequest, Job job) {
+        Collection<EquipmentInvoker> plugins = (Collection<EquipmentInvoker>) pluginService.getPlugins(EquipmentInvoker.class, null, null);
+        Map<String, List<EquipmentInvoker>> invokers = plugins.parallelStream().collect(Collectors.groupingBy(f -> f.getCSVDescriminator()));
+        ImportCSVResponse importCSVResponse = null;
+        try {
+            File file = new File(importCSVRequest.getFileResource().getFullPath());
+            try (Reader in = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
+                Map<String, List<Map<String,String>>> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in).getRecords().stream().map(f->f.toMap()).collect(Collectors.groupingBy(f -> f.get(importCSVRequest.getDescriminatorFieldName())));
+                for (Map.Entry<String, List<Map<String,String>>> entry : records.entrySet()) {
+                    try {
+                        List<EquipmentInvoker> invokerList = invokers.get(entry.getKey());
+                        if (invokerList == null || invokerList.isEmpty()) {
+                            job.logHistoryAndLog("no invokers for discriminator " + entry.getKey()+" "+entry.getValue().size() +" entries", logger);
+                            continue;
+                        }
+                        if (invokerList.size() > 1) {
+                            job.logHistoryAndLog(invokerList.size() + " invokers for discriminator " + entry.getKey() , logger);
+
+                        }
+                        EquipmentInvoker equipmentInvoker = invokerList.get(0);
+                        List<Map<String,String>> recordsForType = records.get(entry.getKey());
+                        ImportCSVResponse current = equipmentInvoker.importCSV(recordsForType, importCSVRequest, job);
+                        if (importCSVResponse == null) {
+                            importCSVResponse = current;
+                        } else {
+                            importCSVResponse.add(current);
+                        }
+                    }
+                    catch (Exception e){
+                        logger.log(Level.SEVERE,"invoker "+entry.getKey() +" failed",e);
+                    }
+
+
+                }
+
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "unable to parse csv", e);
+            }
+        } finally {
+            for (EquipmentInvoker plugin : plugins) {
+
+                pluginService.cleanUpInstance(plugin);
+            }
+        }
+        return importCSVResponse;
+
+
+    }
+
+
+    public Job startImportCSVJob(ImportCSVRequest importCSVRequest, SecurityContext securityContext) {
+        return JobService.startJob(importCSVRequest, ImportCSVProcessing.class, null, null, securityContext);
+
+    }
 }
