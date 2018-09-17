@@ -10,6 +10,7 @@ import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.model.User;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
+import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.containers.response.ImportCSVResponse;
 import com.flexicore.product.data.EquipmentRepository;
@@ -409,5 +410,11 @@ public class EquipmentService implements IEquipmentService {
     public Job startImportCSVJob(ImportCSVRequest importCSVRequest, SecurityContext securityContext) {
         return JobService.startJob(importCSVRequest, ImportCSVProcessing.class, null, null, securityContext);
 
+    }
+
+    public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
+        List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
+        long total = countAllEquipments(c, filtering, securityContext);
+        return new PaginationResponse<>(list.parallelStream().map(f->new EquipmentShort(f)).collect(Collectors.toList()), filtering, total);
     }
 }

@@ -3,7 +3,10 @@ package com.flexicore.product.model;
 import com.flexicore.model.Baseclass;
 import org.bson.codecs.pojo.annotations.BsonId;
 
+import java.time.Instant;
 import java.util.Date;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Event {
 
@@ -17,11 +20,27 @@ public class Event {
     private String clazzName;
     private String baseclassTenantId;
     private String eventSubType;
+    private Set<String> equipmentGroupIds;
+    private String communicationGatewayId;
+    private Set<String> statusIds;
 
 
     public Event() {
-        this.id=Baseclass.getBase64ID();
+        this.id = Baseclass.getBase64ID();
         setEventType(Event.class.getCanonicalName());
+    }
+
+    public Event(Equipment equipment) {
+        this();
+        this.setEventDate(Date.from(Instant.now()))
+                .setBaseclassId(equipment.getId())
+                .setBaseclassName(equipment.getName())
+                .setClazzName(Baseclass.getClazzbyname(equipment.getClass().getCanonicalName()).getName())
+                .setBaseclassTenantId(equipment.getTenant() != null ? equipment.getTenant().getId() : null)
+                .setCommunicationGatewayId(equipment.getCommunicationGateway() != null ? equipment.getCommunicationGateway().getId() : null)
+                .setStatusIds(equipment.getProductToStatusList().parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
+                .setEquipmentGroupIds(equipment.getEquipmentToGroupList().parallelStream().filter(f->!f.isSoftDelete()).map(f -> f.getRightside().getId()).collect(Collectors.toSet()));
+
     }
 
     public String getId() {
@@ -103,6 +122,33 @@ public class Event {
 
     public Event setEventSubType(String eventSubType) {
         this.eventSubType = eventSubType;
+        return this;
+    }
+
+    public Set<String> getEquipmentGroupIds() {
+        return equipmentGroupIds;
+    }
+
+    public Event setEquipmentGroupIds(Set<String> equipmentGroupIds) {
+        this.equipmentGroupIds = equipmentGroupIds;
+        return this;
+    }
+
+    public String getCommunicationGatewayId() {
+        return communicationGatewayId;
+    }
+
+    public Event setCommunicationGatewayId(String communicationGatewayId) {
+        this.communicationGatewayId = communicationGatewayId;
+        return this;
+    }
+
+    public Set<String> getStatusIds() {
+        return statusIds;
+    }
+
+    public Event setStatusIds(Set<String> statusIds) {
+        this.statusIds = statusIds;
         return this;
     }
 }

@@ -1,6 +1,7 @@
 package com.flexicore.product.model;
 
 import java.util.Date;
+import java.util.Set;
 
 public class Alert extends Event{
 
@@ -10,6 +11,11 @@ public class Alert extends Event{
 
     public Alert() {
         super();
+        setEventType(Alert.class.getCanonicalName());
+    }
+
+    public Alert(Equipment equipment) {
+        super(equipment);
         setEventType(Alert.class.getCanonicalName());
     }
 
@@ -60,5 +66,20 @@ public class Alert extends Event{
     @Override
     public Alert setEventSubType(String eventSubType) {
         return (Alert)super.setEventSubType(eventSubType);
+    }
+
+    @Override
+    public Alert setEquipmentGroupIds(Set<String> equipmentGroupIds) {
+        return (Alert) super.setEquipmentGroupIds(equipmentGroupIds);
+    }
+
+    @Override
+    public Alert setCommunicationGatewayId(String communicationGatewayId) {
+        return (Alert) super.setCommunicationGatewayId(communicationGatewayId);
+    }
+
+    @Override
+    public Alert setStatusIds(Set<String> statusIds) {
+        return (Alert) super.setStatusIds(statusIds);
     }
 }

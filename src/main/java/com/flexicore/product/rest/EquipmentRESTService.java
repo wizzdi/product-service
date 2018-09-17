@@ -14,6 +14,7 @@ import com.flexicore.model.Job;
 import com.flexicore.model.Tenant;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
+import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
 import com.flexicore.product.service.EquipmentService;
@@ -108,13 +109,13 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Read
     @ApiOperation(value = "getAllEquipmentsShort", notes = "Gets All Equipments (short) Filtered")
     @Path("getAllEquipmentsShort")
-    public <T extends Equipment> PaginationResponse<T> getAllEquipmentsShort(
+    public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentFiltering filtering,
             @Context SecurityContext securityContext) {
         Class<T> c = service.validateFiltering(filtering, securityContext);
 
-        return service.getAllEquipments(c, filtering, securityContext);
+        return service.getAllEquipmentsShort(c, filtering, securityContext);
     }
 
 
