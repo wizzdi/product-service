@@ -4,6 +4,7 @@ import com.flexicore.annotations.InjectProperties;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
 import com.flexicore.interfaces.InitPlugin;
+import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.model.*;
 import com.flexicore.service.BaseclassService;
@@ -40,7 +41,7 @@ public class Config implements InitPlugin {
             BaseclassService.registerFilterClass(ProductStatusFiltering.class,ProductStatus.class);
             BaseclassService.registerFilterClass(ProductTypeFiltering.class,ProductType.class);
             BaseclassService.registerFilterClass(GroupFiltering.class,EquipmentGroup.class);
-            BaseclassService.registerFilterClass(EquipmentGroupFiltering.class,EquipmentGroup.class);
+            BaseclassService.registerFilterClass(EquipmentGroupFiltering.class,EquipmentGroupHolder.class);
 
 
 
