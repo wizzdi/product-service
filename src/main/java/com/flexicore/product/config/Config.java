@@ -40,6 +40,8 @@ public class Config implements InitPlugin {
             BaseclassService.registerFilterClass(ProductStatusFiltering.class,ProductStatus.class);
             BaseclassService.registerFilterClass(ProductTypeFiltering.class,ProductType.class);
             BaseclassService.registerFilterClass(GroupFiltering.class,EquipmentGroup.class);
+            BaseclassService.registerFilterClass(EquipmentGroupFiltering.class,EquipmentGroup.class);
+
 
 
 

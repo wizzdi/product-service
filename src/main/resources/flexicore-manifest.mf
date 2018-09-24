@@ -1,4 +1,4 @@
 uuid=${project.groupId}.${project.artifactId}
 version=${project.version}
-provides=com.flexicore.product.interfaces.IEventService,com.flexicore.product.interfaces.IEquipmentService,com.flexicore.product.interfaces.IEquipmentRepository,com.flexicore.product.interfaces.IEventNoSqlRepository,com.flexicore.product.model.Alert,com.flexicore.product.model.Event,com.flexicore.product.containers.response.InspectEquipmentResponse,com.flexicore.product.containers.response.MoveToTenantResponse,com.flexicore.product.interfaces.EquipmentInvoker,com.flexicore.product.interfaces.EquipmentShortListerInvoker
+provides=com.flexicore.product.interfaces.IEventService,com.flexicore.product.interfaces.IEquipmentService,com.flexicore.product.interfaces.IEquipmentRepository,com.flexicore.product.interfaces.IEventNoSqlRepository,com.flexicore.product.model.Alert,com.flexicore.product.model.Event,com.flexicore.product.containers.response.InspectEquipmentResponse,com.flexicore.product.containers.response.MoveToTenantResponse,com.flexicore.product.interfaces.EquipmentInvoker,com.flexicore.product.interfaces.EquipmentShortListerInvoker,,com.flexicore.product.response,EquipmentGroupHolder
 
