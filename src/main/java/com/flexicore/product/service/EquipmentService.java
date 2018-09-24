@@ -318,18 +318,8 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext) {
-        Class<T> c = (Class<T>) Equipment.class;
-        if (filtering.getCanonicalClassName() != null && !filtering.getCanonicalClassName().isEmpty()) {
-            try {
-                c = (Class<T>) Class.forName(filtering.getCanonicalClassName());
-
-            } catch (ClassNotFoundException e) {
-                logger.log(Level.SEVERE, "unable to get class: " + filtering.getCanonicalClassName());
-                throw new BadRequestException("No Class with name " + filtering.getCanonicalClassName());
-
-            }
-        }
-        if(filtering.getEquipmentIds()==null || filtering.getEquipmentIds().isEmpty()){
+        Class<T> c = filtering.getResultType()!=null?(Class<T>) filtering.getResultType():(Class<T>) Equipment.class;
+        if (filtering.getEquipmentIds() == null || filtering.getEquipmentIds().isEmpty()) {
             List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty() ? new ArrayList<>() : groupService.listByIds(EquipmentGroup.class, filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet()), securityContext);
             filtering.getGroupIds().removeAll(groups.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
             if (!filtering.getGroupIds().isEmpty()) {
@@ -364,29 +354,28 @@ public class EquipmentService implements IEquipmentService {
         try {
             File file = new File(importCSVRequest.getFileResource().getFullPath());
             try (Reader in = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)) {
-                Map<String, List<Map<String,String>>> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in).getRecords().stream().map(f->f.toMap()).collect(Collectors.groupingBy(f -> f.get(importCSVRequest.getDescriminatorFieldName())));
-                for (Map.Entry<String, List<Map<String,String>>> entry : records.entrySet()) {
+                Map<String, List<Map<String, String>>> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(in).getRecords().stream().map(f -> f.toMap()).collect(Collectors.groupingBy(f -> f.get(importCSVRequest.getDescriminatorFieldName())));
+                for (Map.Entry<String, List<Map<String, String>>> entry : records.entrySet()) {
                     try {
                         List<EquipmentInvoker> invokerList = invokers.get(entry.getKey());
                         if (invokerList == null || invokerList.isEmpty()) {
-                            job.logHistoryAndLog("no invokers for discriminator " + entry.getKey()+" "+entry.getValue().size() +" entries", logger);
+                            job.logHistoryAndLog("no invokers for discriminator " + entry.getKey() + " " + entry.getValue().size() + " entries", logger);
                             continue;
                         }
                         if (invokerList.size() > 1) {
-                            job.logHistoryAndLog(invokerList.size() + " invokers for discriminator " + entry.getKey() , logger);
+                            job.logHistoryAndLog(invokerList.size() + " invokers for discriminator " + entry.getKey(), logger);
 
                         }
                         EquipmentInvoker equipmentInvoker = invokerList.get(0);
-                        List<Map<String,String>> recordsForType = records.get(entry.getKey());
+                        List<Map<String, String>> recordsForType = records.get(entry.getKey());
                         ImportCSVResponse current = equipmentInvoker.importCSV(recordsForType, importCSVRequest, job);
                         if (importCSVResponse == null) {
                             importCSVResponse = current;
                         } else {
                             importCSVResponse.add(current);
                         }
-                    }
-                    catch (Exception e){
-                        logger.log(Level.SEVERE,"invoker "+entry.getKey() +" failed",e);
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "invoker " + entry.getKey() + " failed", e);
                     }
 
 
@@ -415,6 +404,6 @@ public class EquipmentService implements IEquipmentService {
     public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
         long total = countAllEquipments(c, filtering, securityContext);
-        return new PaginationResponse<>(list.parallelStream().map(f->new EquipmentShort(f)).collect(Collectors.toList()), filtering, total);
+        return new PaginationResponse<>(list.parallelStream().map(f -> new EquipmentShort(f)).collect(Collectors.toList()), filtering, total);
     }
 }

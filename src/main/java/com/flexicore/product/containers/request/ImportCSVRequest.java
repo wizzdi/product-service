@@ -1,7 +1,7 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.interfaces.dynamic.InvokerParameterInfo;
+import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.model.FileResource;
 import com.flexicore.model.Tenant;
 import com.flexicore.model.dynamic.ExecutionParametersHolder;
@@ -10,9 +10,9 @@ import java.io.Serializable;
 
 public class ImportCSVRequest extends ExecutionParametersHolder implements Serializable {
 
-    @InvokerParameterInfo(displayName = "tenantId",description = "tenant to move objects to")
+    @FieldInfo(displayName = "tenantId",description = "tenant to move objects to")
     private String tenantId;
-    @InvokerParameterInfo(displayName = "csvFileResourceId",description = "csv fileresource Id")
+    @FieldInfo(displayName = "csvFileResourceId",description = "csv fileresource Id")
 
     private String fileResourceId;
     @JsonIgnore
