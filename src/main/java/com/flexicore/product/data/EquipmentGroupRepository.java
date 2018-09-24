@@ -3,9 +3,9 @@ package com.flexicore.product.data;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.QueryInformationHolder;
-import com.flexicore.product.containers.request.GroupFiltering;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.EquipmentGroup_;
+import com.flexicore.product.model.GroupFiltering;
 import com.flexicore.security.SecurityContext;
 
 import javax.persistence.criteria.CriteriaBuilder;

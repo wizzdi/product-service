@@ -7,7 +7,6 @@ import com.flexicore.model.Baselink_;
 import com.flexicore.model.QueryInformationHolder;
 
 import com.flexicore.model.SortParameter;
-import com.flexicore.product.containers.request.ProductStatusFiltering;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
@@ -19,6 +18,7 @@ import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
 public class EquipmentRepository extends AbstractRepositoryPlugin implements com.flexicore.product.interfaces.IEquipmentRepository {
@@ -145,6 +145,41 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         }
         QueryInformationHolder<ProductStatus> queryInformationHolder = new QueryInformationHolder<>(productStatusFiltering, ProductStatus.class, securityContext);
+        return countAllFiltered(queryInformationHolder);
+    }
+
+
+    public List<Gateway> getAllGateways(GatewayFiltering filtering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Gateway> q = cb.createQuery(Gateway.class);
+        Root<Gateway> r = q.from(Gateway.class);
+
+        List<Predicate> preds = new ArrayList<>();
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+
+        addGatewayFiltering(filtering, r, preds);
+        QueryInformationHolder<Gateway> queryInformationHolder = new QueryInformationHolder<>(filtering, Gateway.class, securityContext);
+        return getAllFiltered(queryInformationHolder);
+
+    }
+
+    public void addGatewayFiltering(GatewayFiltering filtering, Root<Gateway> r, List<Predicate> preds) {
+        if(filtering.getConsoleIds()!=null && !filtering.getConsoleIds().isEmpty()){
+            preds.add(r.get(Gateway_.externalId).in(filtering.getConsoleIds().parallelStream().map(f->f.getSomeNumber()+"").collect(Collectors.toSet())));
+
+        }
+    }
+
+    public long countAllGateways(GatewayFiltering filtering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> q = cb.createQuery(Long.class);
+        Root<Gateway> r = q.from(Gateway.class);
+
+        List<Predicate> preds = new ArrayList<>();
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+
+        addGatewayFiltering(filtering, r, preds);
+        QueryInformationHolder<Gateway> queryInformationHolder = new QueryInformationHolder<>(filtering, Gateway.class, securityContext);
         return countAllFiltered(queryInformationHolder);
     }
 }

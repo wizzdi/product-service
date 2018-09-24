@@ -9,9 +9,9 @@ import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.product.containers.request.GroupCreate;
-import com.flexicore.product.containers.request.GroupFiltering;
 import com.flexicore.product.containers.request.GroupUpdate;
 import com.flexicore.product.model.EquipmentGroup;
+import com.flexicore.product.model.GroupFiltering;
 import com.flexicore.product.service.GroupService;
 import com.flexicore.security.SecurityContext;
 import io.swagger.annotations.Api;
@@ -23,6 +23,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -57,10 +58,11 @@ public class GroupRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             GroupFiltering filtering,
             @Context SecurityContext securityContext) {
-        List<EquipmentGroup> groups=filtering.getGroupIds().isEmpty()?new ArrayList<>():service.listByIds(EquipmentGroup.class,filtering.getGroupIds(),securityContext);
-        filtering.getGroupIds().removeAll(groups.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
-        if(!filtering.getGroupIds().isEmpty()){
-            throw new BadRequestException("could not find groups with ids "+filtering.getGroupIds().parallelStream().collect(Collectors.joining(",")));
+        Set<String> ids = filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+        List<EquipmentGroup> groups=filtering.getGroupIds().isEmpty()?new ArrayList<>():service.listByIds(EquipmentGroup.class, ids, securityContext);
+        ids.removeAll(groups.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+        if(!ids.isEmpty()){
+            throw new BadRequestException("could not find groups with ids "+ids.parallelStream().collect(Collectors.joining(",")));
         }
         filtering.setEquipmentGroups(groups);
         return service.getAllEquipmentGroups(filtering,securityContext);

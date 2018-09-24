@@ -139,7 +139,7 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Read
     @ApiOperation(value = "getAllEquipmentsGrouped", notes = "Gets All Equipments Filtered and Grouped")
     @Path("getAllEquipmentsGrouped")
-    public <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(
+    public <T extends Equipment> PaginationResponse<EquipmentGroupHolder> getAllEquipmentsGrouped(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentGroupFiltering filtering,
             @Context SecurityContext securityContext) {
@@ -201,9 +201,9 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             ProductStatusFiltering productTypeFiltering,
             @Context SecurityContext securityContext) {
-        ProductType productType=productTypeFiltering.getProductTypeId()!=null?service.getByIdOrNull(productTypeFiltering.getProductTypeId(),ProductType.class,null,securityContext):null;
+        ProductType productType=productTypeFiltering.getProductTypeId()!=null?service.getByIdOrNull(productTypeFiltering.getProductTypeId().getId(),ProductType.class,null,securityContext):null;
         if(productType==null&&productTypeFiltering.getProductTypeId()!=null){
-            throw new BadRequestException("No Product Type with id "+productTypeFiltering.getProductTypeId());
+            throw new BadRequestException("No Product Type with id "+productTypeFiltering.getProductTypeId().getId());
         }
         productTypeFiltering.setProductType(productType);
 

@@ -4,7 +4,9 @@ import com.flexicore.annotations.InjectProperties;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
 import com.flexicore.interfaces.InitPlugin;
-import com.flexicore.product.model.InspectEquipmentRequest;
+import com.flexicore.product.containers.response.EquipmentShort;
+import com.flexicore.product.model.*;
+import com.flexicore.service.BaseclassService;
 
 import javax.inject.Inject;
 import java.util.Properties;
@@ -32,6 +34,16 @@ public class Config implements InitPlugin {
             SYNC_MAX_THREADS_FOR_HANDLERS = Integer.parseInt(properties.getProperty("SYNC_MAX_THREADS_FOR_HANDLERS", SYNC_MAX_THREADS_FOR_HANDLERS + ""));
 
             CrossLoaderResolver.registerClass(InspectEquipmentRequest.class);
+            BaseclassService.registerFilterClass(EquipmentFiltering.class,Equipment.class);
+            BaseclassService.registerFilterClass(EquipmentFiltering.class,EquipmentShort.class);
+            BaseclassService.registerFilterClass(GatewayFiltering.class,Gateway.class);
+            BaseclassService.registerFilterClass(ProductStatusFiltering.class,ProductStatus.class);
+            BaseclassService.registerFilterClass(ProductTypeFiltering.class,ProductType.class);
+            BaseclassService.registerFilterClass(GroupFiltering.class,EquipmentGroup.class);
+
+
+
+
 
 
         }

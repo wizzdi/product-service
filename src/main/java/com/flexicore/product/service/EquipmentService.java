@@ -90,13 +90,21 @@ public class EquipmentService implements IEquipmentService {
         return new PaginationResponse<>(list, filtering, total);
     }
 
+    public PaginationResponse<Gateway> getAllGateways( GatewayFiltering filtering, SecurityContext securityContext) {
+        List<Gateway> list = equipmentRepository.getAllGateways( filtering, securityContext);
+        long total = equipmentRepository.countAllGateways( filtering, securityContext);
+        return new PaginationResponse<>(list, filtering, total);
+    }
+
     public <T extends Equipment> long countAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         return equipmentRepository.countAllEquipments(c, filtering, securityContext);
     }
 
     @Override
-    public <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext) {
-        return equipmentRepository.getAllEquipmentsGrouped(c, filtering, securityContext);
+    public <T extends Equipment> PaginationResponse<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext) {
+        filtering.setPageSize(null).setCurrentPage(null);
+        List<EquipmentGroupHolder> l= equipmentRepository.getAllEquipmentsGrouped(c, filtering, securityContext);
+        return new PaginationResponse<>(l,filtering,l.size());
     }
 
     @Override
@@ -406,4 +414,8 @@ public class EquipmentService implements IEquipmentService {
         long total = countAllEquipments(c, filtering, securityContext);
         return new PaginationResponse<>(list.parallelStream().map(f -> new EquipmentShort(f)).collect(Collectors.toList()), filtering, total);
     }
+
+
+
+
 }

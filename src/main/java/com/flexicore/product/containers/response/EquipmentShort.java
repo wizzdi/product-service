@@ -6,7 +6,6 @@ import com.flexicore.product.model.Equipment;
 public class EquipmentShort {
 
     private String id;
-    private int value;
     private double lon;
     private double lat;
     private String type;
@@ -27,14 +26,6 @@ public class EquipmentShort {
         return this;
     }
 
-    public int getValue() {
-        return value;
-    }
-
-    public EquipmentShort setValue(int value) {
-        this.value = value;
-        return this;
-    }
 
     public double getLon() {
         return lon;
