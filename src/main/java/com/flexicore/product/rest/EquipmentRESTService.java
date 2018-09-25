@@ -201,11 +201,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             ProductStatusFiltering productTypeFiltering,
             @Context SecurityContext securityContext) {
-        ProductType productType=productTypeFiltering.getProductTypeId()!=null?service.getByIdOrNull(productTypeFiltering.getProductTypeId().getId(),ProductType.class,null,securityContext):null;
-        if(productType==null&&productTypeFiltering.getProductTypeId()!=null){
-            throw new BadRequestException("No Product Type with id "+productTypeFiltering.getProductTypeId().getId());
-        }
-        productTypeFiltering.setProductType(productType);
+        service.validateProductStatusFiltering(productTypeFiltering, securityContext);
 
         return service.getAllProductStatus(productTypeFiltering, securityContext);
     }
@@ -277,6 +273,63 @@ public class EquipmentRESTService implements RestServicePlugin {
         }
         linkToGroup.setEquipmentGroup(equipmentGroup);
         return service.createEquipmentToGroup(linkToGroup, securityContext);
+    }
+
+
+    @PUT
+    @Produces("application/json")
+    @Update
+    @ApiOperation(value = "updateProductType", notes = "Updates product type")
+    @Path("updateProductType")
+    public ProductType updateProductType(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            UpdateProductType updateProductType,
+            @Context SecurityContext securityContext) {
+        ProductType productStatus = updateProductType.getId() != null ? service.getByIdOrNull(updateProductType.getId(), ProductType.class, null, securityContext) : null;
+        if (productStatus == null) {
+            throw new BadRequestException("no productStatus with id " + updateProductType.getId());
+        }
+        updateProductType.setProductType(productStatus);
+        FileResource newIcon = updateProductType.getIconId() != null ? service.getByIdOrNull(updateProductType.getIconId(), FileResource.class, null, securityContext) : null;
+        if (newIcon == null&& updateProductType.getIconId()!=null) {
+            throw new BadRequestException("no file resource with id " + updateProductType.getIconId());
+        }
+        updateProductType.setIcon(newIcon);
+
+
+        return service.updateProductType(updateProductType, securityContext);
+
+    }
+
+    @PUT
+    @Produces("application/json")
+    @Update
+    @ApiOperation(value = "updateProductStatusToType", notes = "Updates product status to type link ")
+    @Path("updateProductStatusToType")
+    public ProductTypeToProductStatus updateProductStatusToType(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            UpdateProductStatusToType updateProductStatus,
+            @Context SecurityContext securityContext) {
+        ProductStatus productStatus = updateProductStatus.getProductStatusId() != null ? service.getByIdOrNull(updateProductStatus.getProductStatusId(), ProductStatus.class, null, securityContext) : null;
+        if (productStatus == null) {
+            throw new BadRequestException("no productStatus with id " + updateProductStatus.getProductStatusId());
+        }
+        updateProductStatus.setProductStatus(productStatus);
+
+        ProductType productType = updateProductStatus.getProductTypeId() != null ? service.getByIdOrNull(updateProductStatus.getProductTypeId(), ProductType.class, null, securityContext) : null;
+        if (productType == null) {
+            throw new BadRequestException("no productType with id " + updateProductStatus.getProductTypeId());
+        }
+        updateProductStatus.setProductType(productType);
+        FileResource newIcon = updateProductStatus.getIconId() != null ? service.getByIdOrNull(updateProductStatus.getIconId(), FileResource.class, null, securityContext) : null;
+        if (newIcon == null) {
+            throw new BadRequestException("no file resource with id " + updateProductStatus.getIconId());
+        }
+        updateProductStatus.setIcon(newIcon);
+
+
+        return service.updateProductStatusToType(updateProductStatus, securityContext);
+
     }
 
 

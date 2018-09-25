@@ -21,11 +21,7 @@ import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Created by Asaf on 04/06/2017.
@@ -58,13 +54,7 @@ public class GroupRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             GroupFiltering filtering,
             @Context SecurityContext securityContext) {
-        Set<String> ids = filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-        List<EquipmentGroup> groups=filtering.getGroupIds().isEmpty()?new ArrayList<>():service.listByIds(EquipmentGroup.class, ids, securityContext);
-        ids.removeAll(groups.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
-        if(!ids.isEmpty()){
-            throw new BadRequestException("could not find groups with ids "+ids.parallelStream().collect(Collectors.joining(",")));
-        }
-        filtering.setEquipmentGroups(groups);
+        service.validateGroupFiltering(filtering, securityContext);
         return service.getAllEquipmentGroups(filtering,securityContext);
 
     }

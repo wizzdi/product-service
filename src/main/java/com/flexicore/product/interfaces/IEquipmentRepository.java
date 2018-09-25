@@ -1,15 +1,17 @@
 package com.flexicore.product.interfaces;
 
+import com.flexicore.data.jsoncontainers.SortingOrder;
 import com.flexicore.interfaces.PluginRepository;
 import com.flexicore.model.Baselink_;
+import com.flexicore.model.QueryInformationHolder;
+import com.flexicore.model.SortParameter;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,9 +46,25 @@ public interface IEquipmentRepository extends PluginRepository {
                 Predicate pred = cb.and(join.get(Baselink_.rightside).in(filtering.getProductStatusList()),cb.isTrue(join.get(ProductToStatus_.enabled)));
                 preds.add(pred);
             }
+            if(!filtering.getTypesToReturn().isEmpty()){
+                Predicate pred = r.get("dtype").in(filtering.getTypesToReturn().parallelStream().map(f -> f.getSimpleName()).collect(Collectors.toSet()));
+                preds.add(pred);
+            }
         }
 
     }
+
+    static <T extends Equipment> String addEquipmentGeoHashFiltering(EquipmentGroupFiltering filtering, CriteriaBuilder cb, Root<T> r, List<Predicate> preds) {
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+
+        String geoHashField = "geoHash" + filtering.getPrecision();
+        List<SortParameter> sort = new ArrayList<>();
+        sort.add(new SortParameter(geoHashField, SortingOrder.ASCENDING));
+        filtering.setSort(sort);
+        return geoHashField;
+    }
+
+
 
     <T extends Equipment> List<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext);
 

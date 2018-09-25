@@ -5,10 +5,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
-import com.flexicore.product.containers.response.EquipmentShort;
-import com.flexicore.product.interfaces.EquipmentShortListerInvoker;
 import com.flexicore.product.model.Equipment;
-import com.flexicore.product.model.EquipmentFiltering;
 import com.flexicore.product.model.EquipmentGroupFiltering;
 import com.flexicore.security.SecurityContext;
 
@@ -25,6 +22,7 @@ public class EquipmentGroupedInvoker implements ListingInvoker<EquipmentGroupHol
 
     @Override
     public PaginationResponse<EquipmentGroupHolder> listAll(EquipmentGroupFiltering equipmentGroupFiltering, SecurityContext securityContext) {
+        equipmentService.validateFiltering(equipmentGroupFiltering,securityContext);
         return equipmentService.getAllEquipmentsGrouped(Equipment.class,equipmentGroupFiltering,securityContext);
     }
 

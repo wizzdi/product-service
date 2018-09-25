@@ -4,7 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
-import com.flexicore.product.interfaces.IEquipmentService;
+import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentFiltering;
 import com.flexicore.security.SecurityContext;
@@ -12,18 +12,18 @@ import com.flexicore.security.SecurityContext;
 import javax.inject.Inject;
 
 @PluginInfo(version = 1)
-@InvokerInfo(displayName = "Equipment Invoker", description = "Invoker for Equipments")
+@InvokerInfo(displayName = "Equipment short Invoker", description = "Invoker for Equipments short")
 
-public class EquipmentInvoker implements ListingInvoker<Equipment,EquipmentFiltering>{
+public class EquipmentShortInvoker implements ListingInvoker<EquipmentShort,EquipmentFiltering>{
 
     @Inject
     @PluginInfo(version = 1)
     private EquipmentService equipmentService;
 
     @Override
-    public PaginationResponse<Equipment> listAll(EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
+    public PaginationResponse<EquipmentShort> listAll(EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
         equipmentService.validateFiltering(equipmentFiltering,securityContext);
-        return equipmentService.getAllEquipments(Equipment.class,equipmentFiltering,securityContext);
+        return equipmentService.getAllEquipmentsShort(Equipment.class,equipmentFiltering,securityContext);
     }
 
     @Override
@@ -33,7 +33,8 @@ public class EquipmentInvoker implements ListingInvoker<Equipment,EquipmentFilte
 
     @Override
     public Class<?> getHandlingClass() {
-        return Equipment.class;
+        return EquipmentShort.class;
     }
+
 
 }

@@ -21,6 +21,7 @@ public class EquipmentGroupInvoker implements ListingInvoker<EquipmentGroup,Grou
 
     @Override
     public PaginationResponse<EquipmentGroup> listAll(GroupFiltering equipmentGroupFiltering, SecurityContext securityContext) {
+        groupService.validateGroupFiltering(equipmentGroupFiltering,securityContext);
         return groupService.getAllEquipmentGroups(equipmentGroupFiltering,securityContext);
     }
 

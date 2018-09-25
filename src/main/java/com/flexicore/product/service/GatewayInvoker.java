@@ -23,6 +23,7 @@ public class GatewayInvoker implements ListingInvoker<Gateway,GatewayFiltering> 
 
     @Override
     public PaginationResponse<Gateway> listAll(GatewayFiltering gatewayFiltering, SecurityContext securityContext) {
+        equipmentService.validateFiltering(gatewayFiltering,securityContext);
         return equipmentService.getAllGateways(gatewayFiltering, securityContext);
     }
 

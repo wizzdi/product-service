@@ -7,16 +7,20 @@ import com.flexicore.model.Baseclass;
 import com.flexicore.product.containers.request.GroupCreate;
 import com.flexicore.product.containers.request.GroupUpdate;
 import com.flexicore.product.data.EquipmentGroupRepository;
+import com.flexicore.product.interfaces.IGroupService;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.GroupFiltering;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
-public class GroupService implements ServicePlugin {
+public class GroupService implements IGroupService {
 
     @Inject
     @PluginInfo(version = 1)
@@ -73,5 +77,17 @@ public class GroupService implements ServicePlugin {
             equipmentRepository.merge(equipmentGroup);
         }
         return equipmentGroup;
+    }
+
+
+    @Override
+    public void validateGroupFiltering(GroupFiltering filtering, SecurityContext securityContext) {
+        Set<String> ids = filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+        List<EquipmentGroup> groups=filtering.getGroupIds().isEmpty()?new ArrayList<>():listByIds(EquipmentGroup.class, ids, securityContext);
+        ids.removeAll(groups.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+        if(!ids.isEmpty()){
+            throw new BadRequestException("could not find groups with ids "+ids.parallelStream().collect(Collectors.joining(",")));
+        }
+        filtering.setEquipmentGroups(groups);
     }
 }

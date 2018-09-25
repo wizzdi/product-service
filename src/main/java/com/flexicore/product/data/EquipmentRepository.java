@@ -1,12 +1,10 @@
 package com.flexicore.product.data;
 
 import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.SortingOrder;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.Baselink_;
 import com.flexicore.model.QueryInformationHolder;
 
-import com.flexicore.model.SortParameter;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
@@ -60,21 +58,20 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         Root<T> r = q.from(c);
 
         List<Predicate> preds = new ArrayList<>();
-        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+        String geoHashField = IEquipmentRepository.addEquipmentGeoHashFiltering(filtering, cb, r, preds);
+        TypedQuery<EquipmentGroupHolder> query = prepareGeoHashQuery(c,EquipmentGroupHolder.class, filtering, securityContext, cb, q, r, preds, geoHashField);
+        return query.getResultList();
+    }
 
-        String geoHashField = "geoHash" + filtering.getPrecision();
-        List<SortParameter> sort = new ArrayList<>();
-        sort.add(new SortParameter(geoHashField, SortingOrder.ASCENDING));
-        filtering.setSort(sort);
+    public <T extends Equipment,E extends EquipmentGroupHolder> TypedQuery<E> prepareGeoHashQuery(Class<T> c, Class<E> holderClass, EquipmentGroupFiltering filtering, SecurityContext securityContext, CriteriaBuilder cb, CriteriaQuery<E> q, Root<T> r, List<Predicate> preds, String geoHashField) {
         QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
         prepareQuery(queryInformationHolder, preds, cb, q, r);
-        CompoundSelection<EquipmentGroupHolder> construct = cb.construct(EquipmentGroupHolder.class, r.get(geoHashField), cb.count(r.get(Equipment_.id)));
+        CompoundSelection<E> construct = cb.construct(holderClass, r.get(geoHashField), cb.count(r.get(Equipment_.id)));
         Predicate[] predsArray = new Predicate[preds.size()];
         predsArray =preds.toArray(predsArray);
         q.select(construct).where(predsArray).groupBy(r.get(geoHashField));
 
-        TypedQuery<EquipmentGroupHolder> query = em.createQuery(q);
-        return query.getResultList();
+        return em.createQuery(q);
     }
 
 

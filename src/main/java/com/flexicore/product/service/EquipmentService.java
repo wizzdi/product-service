@@ -18,6 +18,7 @@ import com.flexicore.product.interfaces.EquipmentInvoker;
 import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
 import com.flexicore.product.processors.ImportCSVProcessing;
+import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.*;
@@ -64,12 +65,6 @@ public class EquipmentService implements IEquipmentService {
     @Inject
     private Logger logger;
 
-    @Inject
-    @PluginInfo(version = 1)
-    private EventService eventService;
-
-    @Inject
-    private DynamicInvokersService dynamicInvokersService;
 
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
 
@@ -90,9 +85,9 @@ public class EquipmentService implements IEquipmentService {
         return new PaginationResponse<>(list, filtering, total);
     }
 
-    public PaginationResponse<Gateway> getAllGateways( GatewayFiltering filtering, SecurityContext securityContext) {
-        List<Gateway> list = equipmentRepository.getAllGateways( filtering, securityContext);
-        long total = equipmentRepository.countAllGateways( filtering, securityContext);
+    public PaginationResponse<Gateway> getAllGateways(GatewayFiltering filtering, SecurityContext securityContext) {
+        List<Gateway> list = equipmentRepository.getAllGateways(filtering, securityContext);
+        long total = equipmentRepository.countAllGateways(filtering, securityContext);
         return new PaginationResponse<>(list, filtering, total);
     }
 
@@ -103,8 +98,8 @@ public class EquipmentService implements IEquipmentService {
     @Override
     public <T extends Equipment> PaginationResponse<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext) {
         filtering.setPageSize(null).setCurrentPage(null);
-        List<EquipmentGroupHolder> l= equipmentRepository.getAllEquipmentsGrouped(c, filtering, securityContext);
-        return new PaginationResponse<>(l,filtering,l.size());
+        List<EquipmentGroupHolder> l = equipmentRepository.getAllEquipmentsGrouped(c, filtering, securityContext);
+        return new PaginationResponse<>(l, filtering, l.size());
     }
 
     @Override
@@ -326,11 +321,28 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext) {
-        Class<T> c = filtering.getResultType()!=null?(Class<T>) filtering.getResultType():(Class<T>) Equipment.class;
+        Class<T> c = (Class<T>) Equipment.class;
+        if (filtering.getResultType() != null && !filtering.getResultType().isEmpty()) {
+            try {
+                c = (Class<T>) Class.forName(filtering.getResultType());
+
+            } catch (ClassNotFoundException e) {
+                logger.log(Level.SEVERE, "unable to get class: " + filtering.getResultType());
+                throw new BadRequestException("No Class with name " + filtering.getResultType());
+
+            }
+        }
+        if (!filtering.getTypesToReturn().isEmpty()) {
+            Set<String> canonicalNames = filtering.getTypesToReturnIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            List<Class<?>> classes = BaseclassService.listInheritingClassesWithFilter(new GetClassInfo().setClassName(c.getCanonicalName())).getList().parallelStream().filter(f -> canonicalNames.contains(f.getClazz().getCanonicalName())).map(f -> f.getClazz()).collect(Collectors.toList());
+            filtering.setTypesToReturn(classes);
+
+        }
         if (filtering.getEquipmentIds() == null || filtering.getEquipmentIds().isEmpty()) {
-            List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty() ? new ArrayList<>() : groupService.listByIds(EquipmentGroup.class, filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet()), securityContext);
-            filtering.getGroupIds().removeAll(groups.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
-            if (!filtering.getGroupIds().isEmpty()) {
+            Set<String> groupIds = filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty() ? new ArrayList<>() : groupService.listByIds(EquipmentGroup.class, groupIds, securityContext);
+            groupIds.removeAll(groups.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+            if (!groupIds.isEmpty()) {
                 throw new BadRequestException("could not find groups with ids " + filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
             }
             filtering.setEquipmentGroups(groups);
@@ -339,9 +351,10 @@ public class EquipmentService implements IEquipmentService {
                 throw new BadRequestException("No Product type with id " + filtering.getProductTypeId());
             }
             filtering.setProductType(productType);
-            List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet()), securityContext);
-            filtering.getProductStatusIds().removeAll(status.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
-            if (!filtering.getProductStatusIds().isEmpty()) {
+            Set<String> statusIds = filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, statusIds, securityContext);
+            statusIds.removeAll(status.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+            if (!statusIds.isEmpty()) {
                 throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
             }
             filtering.setProductStatusList(status);
@@ -416,6 +429,66 @@ public class EquipmentService implements IEquipmentService {
     }
 
 
+    public ProductType updateProductType(UpdateProductType updateProductType, SecurityContext securityContext) {
+        if (updateProductTypeNoMerge(updateProductType, securityContext)){
+            equipmentRepository.merge(updateProductType.getProductType());
+        }
+        return updateProductType.getProductType();
+    }
+
+    public boolean updateProductTypeNoMerge(UpdateProductType updateProductType, SecurityContext securityContext) {
+        boolean update = false;
+        ProductType productType = updateProductType.getProductType();
+        if (updateProductType.getName() != null && !updateProductType.getName().equals(productType.getName())) {
+            productType.setName(updateProductType.getName());
+            update = true;
+        }
+
+        if (updateProductType.getDescription() != null && !updateProductType.getDescription().equals(productType.getDescription())) {
+            productType.setDescription(updateProductType.getDescription());
+            update = true;
+        }
+
+        if (updateProductType.getIcon() != null && (productType.getImage() == null || !productType.getImage().getId().equals(updateProductType.getIcon().getId()))) {
+            productType.setImage(updateProductType.getIcon());
+            update = true;
+        }
+
+        return update;
+    }
 
 
+    public ProductTypeToProductStatus updateProductStatusToType(UpdateProductStatusToType updateProductStatus, SecurityContext securityContext) {
+        List<ProductTypeToProductStatus> list = baselinkService.findAllBySides(ProductTypeToProductStatus.class, updateProductStatus.getProductType(), updateProductStatus.getProductStatus(), securityContext);
+        if(list.isEmpty()){
+            throw new BadRequestException("status "+updateProductStatus.getProductStatusId() +" and "+updateProductStatus.getProductTypeId() +" are not linked");
+        }
+        List<Object> toMerge=new ArrayList<>();
+        for (ProductTypeToProductStatus productTypeToProductStatus : list) {
+            boolean update = updateProductStatusToType(updateProductStatus, productTypeToProductStatus);
+            if(update){
+                toMerge.add(productTypeToProductStatus);
+            }
+        }
+        equipmentRepository.massMerge(toMerge);
+        return list.get(0);
+    }
+
+    public boolean updateProductStatusToType(UpdateProductStatusToType updateProductStatus, ProductTypeToProductStatus productTypeToProductStatus) {
+        boolean update =false;
+        if(productTypeToProductStatus.getImage()==null||!productTypeToProductStatus.getImage().getId().equals(updateProductStatus.getIcon().getId())){
+            productTypeToProductStatus.setImage(updateProductStatus.getIcon());
+            update=true;
+
+        }
+        return update;
+    }
+
+    public void validateProductStatusFiltering(ProductStatusFiltering productTypeFiltering, SecurityContext securityContext) {
+        ProductType productType=productTypeFiltering.getProductTypeId()!=null?getByIdOrNull(productTypeFiltering.getProductTypeId().getId(),ProductType.class,null,securityContext):null;
+        if(productType==null&&productTypeFiltering.getProductTypeId()!=null){
+            throw new BadRequestException("No Product Type with id "+productTypeFiltering.getProductTypeId().getId());
+        }
+        productTypeFiltering.setProductType(productType);
+    }
 }
