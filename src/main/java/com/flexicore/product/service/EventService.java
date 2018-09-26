@@ -5,7 +5,10 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.Tenant;
 import com.flexicore.product.containers.request.AlertFiltering;
+import com.flexicore.product.containers.request.CreateAggregatedReport;
 import com.flexicore.product.containers.request.EventFiltering;
+import com.flexicore.product.containers.response.AggregationReport;
+import com.flexicore.product.containers.response.AggregationReportEntry;
 import com.flexicore.product.data.EventNoSQLRepository;
 import com.flexicore.product.interfaces.AlertSeverity;
 import com.flexicore.product.interfaces.AlertType;
@@ -19,9 +22,8 @@ import com.flexicore.service.BaseclassService;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
@@ -51,6 +53,15 @@ public class EventService implements IEventService {
         List<T> list = repository.getAllEvents(eventFiltering, c);
         long count = repository.countAllEvents(eventFiltering);
         return new PaginationResponse<>(list, eventFiltering, count);
+    }
+
+    public AggregationReport generateReport(SecurityContext securityContext, CreateAggregatedReport filtering) {
+        Map<LocalDateTime,List<AggregationReportEntry>> map=new HashMap<>();
+        for (LocalDateTime localDateTime : filtering.getEndTimes()) {
+            map.put(localDateTime, repository.generateReport(filtering,localDateTime));
+
+        }
+        return new AggregationReport(map);
     }
 
     @Override
