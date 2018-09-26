@@ -47,7 +47,7 @@ public class GroupService implements IGroupService {
     }
 
     public EquipmentGroup createGroup(GroupCreate groupCreate, SecurityContext securityContext) {
-        EquipmentGroup equipmentGroup=EquipmentGroup.s().CreateUnchecked(groupCreate.getName(),securityContext.getUser());
+        EquipmentGroup equipmentGroup=EquipmentGroup.s().CreateUnchecked(groupCreate.getName(),securityContext);
         equipmentGroup.Init();
         equipmentGroup.setDescription(groupCreate.getDescription());
         equipmentGroup.setParent(groupCreate.getParent());

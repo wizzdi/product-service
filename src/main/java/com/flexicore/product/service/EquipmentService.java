@@ -104,7 +104,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public <T extends Equipment> T createEquipment(Class<T> c, EquipmentCreate equipmentCreate, SecurityContext securityContext) {
-        T equipment = Baseclass.createUnckehcked(c, equipmentCreate.getName(), securityContext.getUser());
+        T equipment = Baseclass.createUnckehcked(c, equipmentCreate.getName(), securityContext);
         equipment.Init();
         updateEquipmentNoMerge(equipmentCreate, equipment);
         equipmentRepository.merge(equipment);
@@ -245,7 +245,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public ProductTypeToProductStatus createProductTypeToProductStatusLink(ProductStatusToTypeCreate productStatusCreate, SecurityContext securityContext) {
-        ProductTypeToProductStatus productTypeToProductStatus = ProductTypeToProductStatus.s().CreateUnchecked("link", securityContext.getUser());
+        ProductTypeToProductStatus productTypeToProductStatus = ProductTypeToProductStatus.s().CreateUnchecked("link", securityContext);
         productTypeToProductStatus.Init(productStatusCreate.getProductType(), productStatusCreate.getProductStatus());
         baselinkService.merge(productTypeToProductStatus);
         return productTypeToProductStatus;
@@ -272,7 +272,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public ProductToStatus createProductToProductStatusLinkNoMerge(ProductStatusToProductCreate productStatusCreate, SecurityContext securityContext) {
-        ProductToStatus productToStatus = ProductToStatus.s().CreateUnchecked("link", securityContext.getUser());
+        ProductToStatus productToStatus = ProductToStatus.s().CreateUnchecked("link", securityContext);
         productToStatus.Init(productStatusCreate.getProduct(), productStatusCreate.getProductStatus());
         productToStatus.setEnabled(true);
         return productToStatus;
@@ -287,7 +287,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public ProductStatus createProductStatus(ProductStatusCreate productStatusCreate, SecurityContext securityContext) {
-        ProductStatus productStatus = ProductStatus.s().CreateUnchecked(productStatusCreate.getName(), securityContext.getUser());
+        ProductStatus productStatus = ProductStatus.s().CreateUnchecked(productStatusCreate.getName(), securityContext);
         productStatus.Init();
         productStatus.setDescription(productStatusCreate.getDescription());
         return productStatus;
@@ -313,7 +313,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
-        ProductType productType = ProductType.s().CreateUnchecked(productTypeCreate.getName(), securityContext.getUser());
+        ProductType productType = ProductType.s().CreateUnchecked(productTypeCreate.getName(), securityContext);
         productType.Init();
         productType.setDescription(productTypeCreate.getDescription());
         return productType;
