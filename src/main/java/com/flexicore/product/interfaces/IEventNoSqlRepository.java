@@ -29,6 +29,8 @@ public interface IEventNoSqlRepository extends PluginRepository {
     String TENANT_ID = "baseclassTenantId";
     String BASECLASS_NAME = "baseclassName";
     String HUMAN_READABLE_TEXT = "humanReadableText";
+    String BASECLASS_LAT = "baseclassLat";
+    String BASECLASS_LON = "baseclassLon";
 
     static Bson getAlertsPredicate(AlertFiltering eventFiltering) {
         Bson pred = getEventsPredicate(eventFiltering);
@@ -65,8 +67,8 @@ public interface IEventNoSqlRepository extends PluginRepository {
             pred = pred == null ? in : and(pred, in);
         }
 
-        if (!eventFiltering.getTenants().isEmpty()) {
-            Set<String> tenantsIds = eventFiltering.getTenants().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+        if (!eventFiltering.getTenantIds().isEmpty()) {
+            Set<String> tenantsIds = eventFiltering.getTenantIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
             Bson in = in(TENANT_ID, tenantsIds);
             pred = pred == null ? in : and(pred, in);
         }
@@ -78,6 +80,16 @@ public interface IEventNoSqlRepository extends PluginRepository {
 
         if (eventFiltering.getEventType() != null) {
             Bson eq = eq(EVENT_TYPE, eventFiltering.getEventType());
+            pred = pred == null ? eq : and(pred, eq);
+        }
+
+        if (eventFiltering.getLocationArea() != null) {
+            Bson eq = and(
+                    gte(BASECLASS_LAT, eventFiltering.getLocationArea().getLatStart()),
+                    gte(BASECLASS_LON, eventFiltering.getLocationArea().getLonStart()),
+                    lte(BASECLASS_LAT, eventFiltering.getLocationArea().getLatEnd()),
+                    lte(BASECLASS_LON, eventFiltering.getLocationArea().getLonEnd())
+            );
             pred = pred == null ? eq : and(pred, eq);
         }
 

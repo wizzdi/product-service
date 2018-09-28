@@ -1,11 +1,9 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.model.Baseclass;
-import com.flexicore.model.Clazz;
-import com.flexicore.model.FilteringInformationHolder;
-import com.flexicore.model.Tenant;
+import com.flexicore.model.*;
 import com.flexicore.product.model.Event;
+import com.flexicore.product.model.LocationArea;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,12 +22,11 @@ public class EventFiltering extends FilteringInformationHolder {
     private String clazzName;
     @JsonIgnore
     private Clazz clazz;
-    private Set<String> tenantIds=new HashSet<>();
 
+    private LocationArea locationArea;
     private String baseclassNameLike;
 
-    @JsonIgnore
-    private List<Tenant> tenants;
+
 
     public EventFiltering() {
         eventType=Event.class.getCanonicalName();
@@ -91,24 +88,6 @@ public class EventFiltering extends FilteringInformationHolder {
         return this;
     }
 
-    public Set<String> getTenantIds() {
-        return tenantIds;
-    }
-
-    public EventFiltering setTenantIds(Set<String> tenantIds) {
-        this.tenantIds = tenantIds;
-        return this;
-    }
-
-    @JsonIgnore
-    public List<Tenant> getTenants() {
-        return tenants;
-    }
-
-    public EventFiltering setTenants(List<Tenant> tenants) {
-        this.tenants = tenants;
-        return this;
-    }
 
     public String getBaseclassNameLike() {
         return baseclassNameLike;
@@ -126,5 +105,19 @@ public class EventFiltering extends FilteringInformationHolder {
     public EventFiltering setEventSubType(String eventSubType) {
         this.eventSubType = eventSubType;
         return this;
+    }
+
+    public LocationArea getLocationArea() {
+        return locationArea;
+    }
+
+    public EventFiltering setLocationArea(LocationArea locationArea) {
+        this.locationArea = locationArea;
+        return this;
+    }
+
+    @Override
+    public FilteringInformationHolder setTenantIds(List<BaseclassIdFiltering> tenantIds) {
+        return super.setTenantIds(tenantIds);
     }
 }

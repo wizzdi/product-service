@@ -1,9 +1,7 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.model.Baseclass;
-import com.flexicore.model.Clazz;
-import com.flexicore.model.Tenant;
+import com.flexicore.model.*;
 import com.flexicore.product.model.Alert;
 
 import java.util.HashSet;
@@ -60,13 +58,8 @@ public class AlertFiltering extends EventFiltering {
     }
 
     @Override
-    public AlertFiltering setTenantIds(Set<String> tenantIds) {
-        return  (AlertFiltering)super.setTenantIds(tenantIds);
-    }
-
-    @Override
-    public AlertFiltering setTenants(List<Tenant> tenants) {
-        return (AlertFiltering) super.setTenants(tenants);
+    public FilteringInformationHolder setTenantIds(List<BaseclassIdFiltering> tenantIds) {
+        return super.setTenantIds(tenantIds);
     }
 
     @Override

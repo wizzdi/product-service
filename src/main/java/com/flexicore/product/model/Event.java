@@ -23,6 +23,8 @@ public class Event {
     private Set<String> equipmentGroupIds;
     private String communicationGatewayId;
     private Set<String> statusIds;
+    private Double baseclassLat;
+    private Double baseclassLon;
 
 
     public Event() {
@@ -39,7 +41,10 @@ public class Event {
                 .setBaseclassTenantId(equipment.getTenant() != null ? equipment.getTenant().getId() : null)
                 .setCommunicationGatewayId(equipment.getCommunicationGateway() != null ? equipment.getCommunicationGateway().getId() : null)
                 .setStatusIds(equipment.getProductToStatusList().parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
-                .setEquipmentGroupIds(equipment.getEquipmentToGroupList().parallelStream().filter(f->!f.isSoftDelete()).map(f -> f.getRightside().getId()).collect(Collectors.toSet()));
+                .setEquipmentGroupIds(equipment.getEquipmentToGroupList().parallelStream().filter(f->!f.isSoftDelete()).map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
+                .setBaseclassLat(equipment.getLat())
+                .setBaseclassLon(equipment.getLon());
+
 
     }
 
@@ -149,6 +154,24 @@ public class Event {
 
     public Event setStatusIds(Set<String> statusIds) {
         this.statusIds = statusIds;
+        return this;
+    }
+
+    public Double getBaseclassLat() {
+        return baseclassLat;
+    }
+
+    public Event setBaseclassLat(Double baseclassLat) {
+        this.baseclassLat = baseclassLat;
+        return this;
+    }
+
+    public Double getBaseclassLon() {
+        return baseclassLon;
+    }
+
+    public Event setBaseclassLon(Double baseclassLon) {
+        this.baseclassLon = baseclassLon;
         return this;
     }
 }

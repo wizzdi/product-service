@@ -4,7 +4,6 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
-import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentFiltering;
 import com.flexicore.security.SecurityContext;

@@ -99,11 +99,5 @@ public class EventService implements IEventService {
             }
 
         }
-        List<Tenant> tenants = eventFiltering.getTenantIds().isEmpty() ? new ArrayList<>() : baseclassService.listByIds(Tenant.class, eventFiltering.getTenantIds(), securityContext);
-        eventFiltering.getTenantIds().removeAll(baseclasses.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
-        if (!eventFiltering.getTenantIds().isEmpty()) {
-            throw new BadRequestException(" no tenants with ids " + eventFiltering.getTenantIds().parallelStream().collect(Collectors.joining(",")));
-        }
-        eventFiltering.setTenants(tenants);
     }
 }
