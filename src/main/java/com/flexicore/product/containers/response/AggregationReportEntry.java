@@ -3,6 +3,7 @@ package com.flexicore.product.containers.response;
 public class AggregationReportEntry {
 
   private String productStatusId;
+  private String productStatusName;
   private int count;
 
     public AggregationReportEntry(String productStatusId, int count) {
@@ -25,6 +26,15 @@ public class AggregationReportEntry {
 
     public AggregationReportEntry setCount(int count) {
         this.count = count;
+        return this;
+    }
+
+    public String getProductStatusName() {
+        return productStatusName;
+    }
+
+    public AggregationReportEntry setProductStatusName(String productStatusName) {
+        this.productStatusName = productStatusName;
         return this;
     }
 }

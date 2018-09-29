@@ -16,6 +16,7 @@ import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.Alert;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.Event;
+import com.flexicore.product.model.ProductStatusFiltering;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassService;
 
@@ -24,6 +25,7 @@ import javax.ws.rs.BadRequestException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
@@ -35,6 +37,10 @@ public class EventService implements IEventService {
 
     @Inject
     private BaseclassService baseclassService;
+
+    @Inject
+    @PluginInfo(version = 1)
+    private EquipmentService equipmentService;
 
 
     @Override
@@ -55,12 +61,18 @@ public class EventService implements IEventService {
         return new PaginationResponse<>(list, eventFiltering, count);
     }
 
-    public AggregationReport generateReport(SecurityContext securityContext, CreateAggregatedReport filtering) {
-        Map<LocalDateTime,List<AggregationReportEntry>> map=new HashMap<>();
-        for (LocalDateTime localDateTime : filtering.getEndTimes()) {
-            map.put(localDateTime, repository.generateReport(filtering,localDateTime));
-
+    private List<AggregationReportEntry> cauculateReportForDate(CreateAggregatedReport filtering,LocalDateTime localDateTime,Map<String,String> statusToName){
+        List<AggregationReportEntry> dataForDate = repository.generateReport(filtering, localDateTime);
+        for (AggregationReportEntry aggregationReportEntry : dataForDate) {
+            aggregationReportEntry.setProductStatusName(statusToName.get(aggregationReportEntry.getProductStatusId()));
         }
+        return dataForDate;
+    }
+
+    public AggregationReport generateReport(SecurityContext securityContext, CreateAggregatedReport filtering) {
+        Map<String,String> statusToName=equipmentService.getAllProductStatus(new ProductStatusFiltering(),securityContext).getList().parallelStream().collect(Collectors.toMap(f->f.getId(), f->f.getName(),(a,b)->a,ConcurrentHashMap::new));
+
+        Map<LocalDateTime,List<AggregationReportEntry>> map =filtering.getEndTimes().parallelStream().collect(Collectors.toMap(f->f,f->cauculateReportForDate(filtering,f,statusToName)));
         return new AggregationReport(map);
     }
 

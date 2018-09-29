@@ -76,6 +76,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
     }
 
     public List<AggregationReportEntry> generateReport(CreateAggregatedReport createAggregatedReport, LocalDateTime endTime) {
+        createAggregatedReport=new CreateAggregatedReport(createAggregatedReport);
         createAggregatedReport.setToDate(endTime);
         MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Document> collection = db.getCollection(EVENTS_COLLECTION_NAME);

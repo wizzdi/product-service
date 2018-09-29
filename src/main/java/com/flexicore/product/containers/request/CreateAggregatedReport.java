@@ -12,6 +12,12 @@ public class CreateAggregatedReport extends EventFiltering{
         setEventType(null);
     }
 
+    public CreateAggregatedReport(CreateAggregatedReport other) {
+        super(other);
+        this.endTimes = other.endTimes;
+        this.productStatus = other.productStatus;
+    }
+
     public Set<LocalDateTime> getEndTimes() {
         return endTimes;
     }

@@ -26,7 +26,17 @@ public class EventFiltering extends FilteringInformationHolder {
     private LocationArea locationArea;
     private String baseclassNameLike;
 
-
+    public EventFiltering(EventFiltering other) {
+        this.humanReadableTextLike = other.humanReadableTextLike;
+        this.eventType = other.eventType;
+        this.eventSubType = other.eventSubType;
+        this.baseclassIds = other.baseclassIds;
+        this.baseclass = other.baseclass;
+        this.clazzName = other.clazzName;
+        this.clazz = other.clazz;
+        this.locationArea = other.locationArea;
+        this.baseclassNameLike = other.baseclassNameLike;
+    }
 
     public EventFiltering() {
         eventType=Event.class.getCanonicalName();
