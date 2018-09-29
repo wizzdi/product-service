@@ -20,6 +20,7 @@ public class EquipmentShort {
     private String type;
     private List<ProductStatus> currentStatus;
     private Map<String, String> iconMap;
+    private String defaultIcon;
 
     public EquipmentShort(Equipment other,List<ProductStatus> statuses,Map<String,String> iconMap) {
         this.id = other.getId();
@@ -29,6 +30,7 @@ public class EquipmentShort {
         this.type=other.getJsonType();
         currentStatus=statuses!=null?statuses:new ArrayList<>();
         this.iconMap=iconMap!=null?iconMap:new HashMap<>();
+        this.defaultIcon=other.getProductType()!=null&&other.getProductType().getImage()!=null?other.getProductType().getImage().getId():null;
     }
 
     public String getId() {
@@ -92,6 +94,15 @@ public class EquipmentShort {
 
     public EquipmentShort setIconMap(Map<String, String> iconMap) {
         this.iconMap = iconMap;
+        return this;
+    }
+
+    public String getDefaultIcon() {
+        return defaultIcon;
+    }
+
+    public EquipmentShort setDefaultIcon(String defaultIcon) {
+        this.defaultIcon = defaultIcon;
         return this;
     }
 

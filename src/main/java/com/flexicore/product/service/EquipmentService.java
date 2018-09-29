@@ -362,14 +362,14 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public List<ProductToStatus> getStatusLinks(Set<String> collect) {
-        return equipmentRepository.getStatusLinks(collect);
+        return collect.isEmpty()?new ArrayList<>():equipmentRepository.getStatusLinks(collect);
     }
 
     public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
-        List<ProductToStatus> statusLinks = equipmentRepository.getStatusLinks(list.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+        List<ProductToStatus> statusLinks = getStatusLinks(list.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         Map<String,List<ProductStatus>> statusLinksMap= statusLinks.parallelStream().collect(Collectors.groupingBy(f->f.getLeftside().getId(),ConcurrentHashMap::new,Collectors.mapping(f->f.getRightside(),Collectors.toList())));
-        Map<String,Map<String,String>> typeToStatusToIconMap = equipmentRepository.getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
+        Map<String,Map<String,String>> typeToStatusToIconMap = getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
                 .parallelStream().filter(f->f.getImage()!=null).collect(Collectors.groupingBy(f->f.getLeftside().getId(),Collectors.toMap(f->f.getRightside().getId(),f->f.getImage().getId())));
 
         long total = countAllEquipments(c, filtering, securityContext);
@@ -386,7 +386,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public List<ProductTypeToProductStatus> getAllProductTypeToStatusLinks(Set<String> statusIds) {
-        return equipmentRepository.getAllProductTypeToStatusLinks(statusIds);
+        return statusIds.isEmpty()?new ArrayList<>():equipmentRepository.getAllProductTypeToStatusLinks(statusIds);
     }
 
     public ProductType updateProductType(UpdateProductType updateProductType, SecurityContext securityContext) {
