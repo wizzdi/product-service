@@ -3,6 +3,7 @@ package com.flexicore.product.interfaces;
 import com.flexicore.data.jsoncontainers.SortingOrder;
 import com.flexicore.interfaces.PluginRepository;
 import com.flexicore.model.Baselink_;
+import com.flexicore.model.FileResource;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.model.SortParameter;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
@@ -13,6 +14,7 @@ import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -72,4 +74,7 @@ public interface IEquipmentRepository extends PluginRepository {
 
     <T extends Equipment> List<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext);
 
+     List<ProductToStatus> getStatusLinks(Set<String> equipmentIds);
+
+    List<ProductTypeToProductStatus> getAllProductTypeToStatusLinks(Set<String> statusIds);
 }

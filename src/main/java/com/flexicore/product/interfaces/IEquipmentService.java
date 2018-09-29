@@ -2,6 +2,7 @@ package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
+import com.flexicore.model.FileResource;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.*;
@@ -9,6 +10,8 @@ import com.flexicore.security.SecurityContext;
 
 import javax.ws.rs.core.Context;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface IEquipmentService extends ServicePlugin {
 
@@ -54,4 +57,9 @@ public interface IEquipmentService extends ServicePlugin {
 
     <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext);
 
+    List<ProductToStatus> getStatusLinks(Set<String> collect);
+
+    Map<String,String> buildSpecificStatusIconMap(Map<String, String> typeSpecificStatusToIcon, List<ProductStatus> status);
+
+    List<ProductTypeToProductStatus> getAllProductTypeToStatusLinks(Set<String> statusIds);
 }

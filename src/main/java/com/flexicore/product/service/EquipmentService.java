@@ -4,10 +4,7 @@ import ch.hsr.geohash.GeoHash;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.model.Baseclass;
-import com.flexicore.model.Job;
-import com.flexicore.model.QueryInformationHolder;
-import com.flexicore.model.User;
+import com.flexicore.model.*;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
@@ -26,10 +23,7 @@ import javax.ws.rs.core.Context;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -366,14 +360,34 @@ public class EquipmentService implements IEquipmentService {
     }
 
 
-
+    @Override
+    public List<ProductToStatus> getStatusLinks(Set<String> collect) {
+        return equipmentRepository.getStatusLinks(collect);
+    }
 
     public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
+        List<ProductToStatus> statusLinks = equipmentRepository.getStatusLinks(list.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+        Map<String,List<ProductStatus>> statusLinksMap= statusLinks.parallelStream().collect(Collectors.groupingBy(f->f.getLeftside().getId(),ConcurrentHashMap::new,Collectors.mapping(f->f.getRightside(),Collectors.toList())));
+        Map<String,Map<String,String>> typeToStatusToIconMap = equipmentRepository.getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
+                .parallelStream().filter(f->f.getImage()!=null).collect(Collectors.groupingBy(f->f.getLeftside().getId(),Collectors.toMap(f->f.getRightside().getId(),f->f.getImage().getId())));
+
         long total = countAllEquipments(c, filtering, securityContext);
-        return new PaginationResponse<>(list.parallelStream().map(f -> new EquipmentShort(f)).collect(Collectors.toList()), filtering, total);
+        return new PaginationResponse<>(list.parallelStream()
+                .map(f -> new EquipmentShort(f,statusLinksMap.get(f.getId()),buildSpecificStatusIconMap(f.getProductType()!=null?typeToStatusToIconMap.get(f.getProductType().getId()):null,statusLinksMap.get(f.getId()))))
+                .collect(Collectors.toList()), filtering, total);
     }
 
+    @Override
+    public Map<String,String> buildSpecificStatusIconMap(Map<String, String> typeSpecificStatusToIcon, List<ProductStatus> status){
+
+        return (typeSpecificStatusToIcon==null||status==null)?new HashMap<>():status.parallelStream().filter(f->typeSpecificStatusToIcon.get(f.getId())!=null).collect(Collectors.toMap(f->f.getId(), f->typeSpecificStatusToIcon.get(f.getId())));
+    }
+
+    @Override
+    public List<ProductTypeToProductStatus> getAllProductTypeToStatusLinks(Set<String> statusIds) {
+        return equipmentRepository.getAllProductTypeToStatusLinks(statusIds);
+    }
 
     public ProductType updateProductType(UpdateProductType updateProductType, SecurityContext securityContext) {
         if (updateProductTypeNoMerge(updateProductType, securityContext)){

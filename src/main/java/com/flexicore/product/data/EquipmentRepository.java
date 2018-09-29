@@ -16,6 +16,7 @@ import javax.persistence.criteria.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
@@ -178,5 +179,31 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         addGatewayFiltering(filtering, r, preds);
         QueryInformationHolder<Gateway> queryInformationHolder = new QueryInformationHolder<>(filtering, Gateway.class, securityContext);
         return countAllFiltered(queryInformationHolder);
+    }
+
+    @Override
+    public List<ProductToStatus> getStatusLinks(Set<String> equipmentIds) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ProductToStatus> q = cb.createQuery(ProductToStatus.class);
+        Root<ProductToStatus> r = q.from(ProductToStatus.class);
+        Predicate pred = r.get(Baselink_.leftside).in(equipmentIds);
+
+
+        q.select(r).where(pred);
+        TypedQuery<ProductToStatus> query = em.createQuery(q);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<ProductTypeToProductStatus> getAllProductTypeToStatusLinks(Set<String> statusIds) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ProductTypeToProductStatus> q = cb.createQuery(ProductTypeToProductStatus.class);
+        Root<ProductTypeToProductStatus> r = q.from(ProductTypeToProductStatus.class);
+        Predicate pred = r.get(Baselink_.rightside).in(statusIds);
+
+
+        q.select(r).where(pred);
+        TypedQuery<ProductTypeToProductStatus> query = em.createQuery(q);
+        return query.getResultList();
     }
 }

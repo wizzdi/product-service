@@ -1,26 +1,34 @@
 package com.flexicore.product.containers.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.flexicore.model.FileResource;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.ProductStatus;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class EquipmentShort {
 
     private String id;
+    private String name;
     private double lon;
     private double lat;
     private String type;
     private List<ProductStatus> currentStatus;
+    private Map<String, String> iconMap;
 
-    public EquipmentShort(Equipment other) {
+    public EquipmentShort(Equipment other,List<ProductStatus> statuses,Map<String,String> iconMap) {
         this.id = other.getId();
+        this.name=other.getName();
         this.lon = other.getLon();
         this.lat = other.getLat();
         this.type=other.getJsonType();
-        currentStatus=other.getProductToStatusList().stream().filter(f->f.isEnabled()).map(f->f.getRightside()).collect(Collectors.toList());
+        currentStatus=statuses!=null?statuses:new ArrayList<>();
+        this.iconMap=iconMap!=null?iconMap:new HashMap<>();
     }
 
     public String getId() {
@@ -66,6 +74,24 @@ public class EquipmentShort {
 
     public EquipmentShort setCurrentStatus(List<ProductStatus> currentStatus) {
         this.currentStatus = currentStatus;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public EquipmentShort setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public Map<String, String> getIconMap() {
+        return iconMap;
+    }
+
+    public EquipmentShort setIconMap(Map<String, String> iconMap) {
+        this.iconMap = iconMap;
         return this;
     }
 
