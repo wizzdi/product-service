@@ -25,6 +25,7 @@ public class Event {
     private Set<String> statusIds;
     private Double baseclassLat;
     private Double baseclassLon;
+    private String productTypeId;
 
 
     public Event() {
@@ -43,7 +44,8 @@ public class Event {
                 .setStatusIds(equipment.getProductToStatusList().parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
                 .setEquipmentGroupIds(equipment.getEquipmentToGroupList().parallelStream().filter(f->!f.isSoftDelete()).map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
                 .setBaseclassLat(equipment.getLat())
-                .setBaseclassLon(equipment.getLon());
+                .setBaseclassLon(equipment.getLon())
+                .setProductTypeId(equipment.getProductType()!=null?equipment.getProductType().getId():null);
 
 
     }
@@ -172,6 +174,16 @@ public class Event {
 
     public Event setBaseclassLon(Double baseclassLon) {
         this.baseclassLon = baseclassLon;
+        return this;
+    }
+
+
+    public String getProductTypeId() {
+        return productTypeId;
+    }
+
+    public Event setProductTypeId(String productTypeId) {
+        this.productTypeId = productTypeId;
         return this;
     }
 }

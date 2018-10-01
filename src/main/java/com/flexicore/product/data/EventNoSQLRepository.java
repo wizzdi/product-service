@@ -11,15 +11,13 @@ import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.Alert;
 import com.flexicore.product.model.Event;
 import com.flexicore.service.MongoConnectionService;
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.Sorts;
+import com.mongodb.client.model.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -76,7 +74,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
     }
 
     public List<AggregationReportEntry> generateReport(CreateAggregatedReport createAggregatedReport, LocalDateTime endTime) {
-        createAggregatedReport=new CreateAggregatedReport(createAggregatedReport);
+        createAggregatedReport = new CreateAggregatedReport(createAggregatedReport);
         createAggregatedReport.setToDate(endTime);
         MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Document> collection = db.getCollection(EVENTS_COLLECTION_NAME);
@@ -86,7 +84,10 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
                         pred
                 ),
                 Aggregates.sort(Sorts.descending("baseclassId", "eventDate")), // order by baseclassId and than event date desc so $first has a meaning
-                Aggregates.group("$baseclassId", Accumulators.first("statusIds", "$statusIds")), //group by baseclassId(related equipment) , keep the value of the first status Ids array per group
+                Aggregates.group("$baseclassId",
+                        Accumulators.first("statusIds", "$statusIds"),
+                        Accumulators.first("productTypeId", "$productTypeId"),
+                        Accumulators.first("baseclassTenantId","$baseclassTenantId")), //group by baseclassId(related equipment) , keep the value of the first status Ids array per group
                 Aggregates.unwind("$statusIds") // unwind status ids array so we have multiple entries one per status
 
         ));
@@ -98,12 +99,18 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
             );
 
         }
-        aggregatePipeline.add(Aggregates.group("$statusIds", Accumulators.sum("count", 1))); // finally group by status Id - count the group size
+        aggregatePipeline.add(Aggregates.group(
+                new BasicDBObject()
+                        .append("statusId", "$statusIds")
+                        .append("productTypeId", "$productTypeId")
+                        .append("baseclassTenantId","$baseclassTenantId")
+                , Accumulators.sum("count", 1))); // finally group by status Id - count the group size
 
         AggregateIterable<Document> documents = collection.aggregate(aggregatePipeline);
         List<AggregationReportEntry> toRet = new ArrayList<>();
         for (Document document : documents) {
-            toRet.add(new AggregationReportEntry(document.getString("_id"), document.getInteger("count")));
+            Document id = document.get("_id",Document.class);
+            toRet.add(new AggregationReportEntry(id.getString("statusId"), id.getString("productTypeId"),id.getString("baseclassTenantId"),document.getInteger("count")));
             System.out.println(document);
         }
         return toRet;

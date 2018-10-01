@@ -13,12 +13,11 @@ import com.flexicore.product.data.EventNoSQLRepository;
 import com.flexicore.product.interfaces.AlertSeverity;
 import com.flexicore.product.interfaces.AlertType;
 import com.flexicore.product.interfaces.IEventService;
-import com.flexicore.product.model.Alert;
-import com.flexicore.product.model.Equipment;
-import com.flexicore.product.model.Event;
-import com.flexicore.product.model.ProductStatusFiltering;
+import com.flexicore.product.model.*;
+import com.flexicore.request.TenantFilter;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassService;
+import com.flexicore.service.TenantService;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -41,6 +40,8 @@ public class EventService implements IEventService {
     @Inject
     @PluginInfo(version = 1)
     private EquipmentService equipmentService;
+    @Inject
+    private TenantService tenantService;
 
 
     @Override
@@ -61,19 +62,23 @@ public class EventService implements IEventService {
         return new PaginationResponse<>(list, eventFiltering, count);
     }
 
-    private List<AggregationReportEntry> cauculateReportForDate(CreateAggregatedReport filtering,LocalDateTime localDateTime,Map<String,String> statusToName){
+    private List<AggregationReportEntry> cauculateReportForDate(CreateAggregatedReport filtering, LocalDateTime localDateTime, Map<String, String> statusToName, Map<String, String> typeToName,Map<String,String> tenantToName){
         List<AggregationReportEntry> dataForDate = repository.generateReport(filtering, localDateTime);
         for (AggregationReportEntry aggregationReportEntry : dataForDate) {
-            aggregationReportEntry.setProductStatusName(statusToName.get(aggregationReportEntry.getProductStatusId()));
+            aggregationReportEntry
+                    .setProductStatusName(statusToName.get(aggregationReportEntry.getProductStatusId()))
+                    .setProductTypeName(aggregationReportEntry.getProductTypeId()!=null?typeToName.get(aggregationReportEntry.getProductTypeId()):null)
+                    .setTenantName(aggregationReportEntry.getTenantId()!=null?tenantToName.get(aggregationReportEntry.getTenantId()):null);
         }
         return dataForDate;
     }
 
     public AggregationReport generateReport(SecurityContext securityContext, CreateAggregatedReport filtering) {
         Map<String,String> statusToName=equipmentService.getAllProductStatus(new ProductStatusFiltering(),securityContext).getList().parallelStream().collect(Collectors.toMap(f->f.getId(), f->f.getName(),(a,b)->a,ConcurrentHashMap::new));
-
-        Map<LocalDateTime,List<AggregationReportEntry>> map =filtering.getEndTimes().parallelStream().collect(Collectors.toMap(f->f,f->cauculateReportForDate(filtering,f,statusToName)));
-        return new AggregationReport(map);
+        Map<String,String> typeToName=equipmentService.getAllProductTypes(new ProductTypeFiltering(),securityContext).getList().parallelStream().collect(Collectors.toMap(f->f.getId(), f->f.getName(),(a,b)->a,ConcurrentHashMap::new));
+        Map<String,String> tenants=tenantService.getTenants(new TenantFilter(),securityContext).getList().parallelStream().collect(Collectors.toMap(f->f.getId(),f->f.getName()));
+        Map<LocalDateTime,List<AggregationReportEntry>> map =filtering.getEndTimes().parallelStream().collect(Collectors.toMap(f->f,f->cauculateReportForDate(filtering,f,statusToName,typeToName,tenants)));
+            return new AggregationReport(map);
     }
 
     @Override
