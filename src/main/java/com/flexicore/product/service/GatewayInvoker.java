@@ -3,6 +3,7 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
+import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.Gateway;
@@ -22,6 +23,7 @@ public class GatewayInvoker implements ListingInvoker<Gateway,GatewayFiltering> 
     private EquipmentService equipmentService;
 
     @Override
+    @InvokerMethodInfo(displayName = "listAllGateways",description = "lists all Gateways")
     public PaginationResponse<Gateway> listAll(GatewayFiltering gatewayFiltering, SecurityContext securityContext) {
         equipmentService.validateFiltering(gatewayFiltering,securityContext);
         return equipmentService.getAllGateways(gatewayFiltering, securityContext);

@@ -3,6 +3,7 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
+import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.Equipment;
@@ -21,6 +22,8 @@ public class EquipmentGroupedInvoker implements ListingInvoker<EquipmentGroupHol
     private EquipmentService equipmentService;
 
     @Override
+    @InvokerMethodInfo(displayName = "listAllEquipmentGeoHashes",description = "lists all Equipment Geo Hashed")
+
     public PaginationResponse<EquipmentGroupHolder> listAll(EquipmentGroupFiltering equipmentGroupFiltering, SecurityContext securityContext) {
         equipmentService.validateFiltering(equipmentGroupFiltering,securityContext);
         return equipmentService.getAllEquipmentsGrouped(Equipment.class,equipmentGroupFiltering,securityContext);

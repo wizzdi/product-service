@@ -3,6 +3,7 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
+import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.model.ProductType;
 import com.flexicore.product.model.ProductTypeFiltering;
@@ -20,6 +21,8 @@ public class ProductTypeInvoker implements ListingInvoker<ProductType,ProductTyp
     private EquipmentService equipmentService;
 
     @Override
+    @InvokerMethodInfo(displayName = "listAllProductTypes",description = "lists all Product types")
+
     public PaginationResponse<ProductType> listAll(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
         return equipmentService.getAllProductTypes(productTypeFiltering, securityContext);
     }

@@ -3,6 +3,7 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
+import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.GroupFiltering;
@@ -20,6 +21,8 @@ public class EquipmentGroupInvoker implements ListingInvoker<EquipmentGroup,Grou
     private GroupService groupService;
 
     @Override
+    @InvokerMethodInfo(displayName = "listAllEquipmentGroups",description = "lists all Equipment Groups")
+
     public PaginationResponse<EquipmentGroup> listAll(GroupFiltering equipmentGroupFiltering, SecurityContext securityContext) {
         groupService.validateGroupFiltering(equipmentGroupFiltering,securityContext);
         return groupService.getAllEquipmentGroups(equipmentGroupFiltering,securityContext);
