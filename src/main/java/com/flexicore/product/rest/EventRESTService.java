@@ -54,7 +54,6 @@ public class EventRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Update
     @ApiOperation(value = "getAllEvents", notes = "return Events Filtered")
     @Path("getAllEvents")
     public PaginationResponse<Event> getAllEvents(
@@ -68,7 +67,6 @@ public class EventRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "generateReport", notes = "Generates report")
     @Path("generateReport")
     public AggregationReport generateReport(

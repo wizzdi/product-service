@@ -5,6 +5,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
 import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
+import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.ProductStatus;
 import com.flexicore.product.model.ProductStatusFiltering;
 import com.flexicore.security.SecurityContext;
@@ -21,7 +22,7 @@ public class ProductStatusInvoker implements ListingInvoker<ProductStatus,Produc
     private EquipmentService equipmentService;
 
     @Override
-    @InvokerMethodInfo(displayName = "listAllProductStatus",description = "lists all Product status")
+    @InvokerMethodInfo(displayName = "listAllProductStatus",description = "lists all Product status",relatedClasses = {ProductStatus.class})
 
     public PaginationResponse<ProductStatus> listAll(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
         equipmentService.validateProductStatusFiltering(productStatusFiltering,securityContext);

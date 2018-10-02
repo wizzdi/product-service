@@ -63,7 +63,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
     @Path("getAllEquipments")
     public <T extends Equipment> PaginationResponse<T> getAllEquipments(
@@ -82,7 +81,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "getAllEquipmentsShort", notes = "Gets All Equipments (short) Filtered")
     @Path("getAllEquipmentsShort")
     public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(
@@ -97,7 +95,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
     @Path("countAllEquipments")
     public <T extends Equipment> long countAllEquipments(
@@ -112,7 +109,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "getAllEquipmentsGrouped", notes = "Gets All Equipments Filtered and Grouped")
     @Path("getAllEquipmentsGrouped")
     public <T extends Equipment> PaginationResponse<EquipmentGroupHolder> getAllEquipmentsGrouped(
@@ -129,7 +125,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Write
     @ApiOperation(value = "createProductType", notes = "Creates ProductType")
     @Path("createProductType")
     public ProductType createProductType(
@@ -157,7 +152,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Write
     @ApiOperation(value = "createProductStatus", notes = "Creates ProductStatus")
     @Path("createProductStatus")
     public ProductStatus createProductStatus(
@@ -170,7 +164,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Write
     @ApiOperation(value = "getAllProductStatus", notes = "lists all ProductStatus")
     @Path("getAllProductStatus")
     public PaginationResponse<ProductStatus> getAllProductStatus(
@@ -185,7 +178,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Write
     @ApiOperation(value = "getProductGroupedByStatus", notes = "returns product stats grouped by status")
     @Path("getProductGroupedByStatus")
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(
@@ -199,7 +191,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "createEquipment", notes = "Creates Equipment")
     @Path("createEquipment")
     public <T extends Equipment> T createEquipment(
@@ -231,7 +222,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "linkToGroup", notes = "Links Equipment to Group")
     @Path("linkToGroup")
     public EquipmentToGroup linkToGroup(
@@ -254,7 +244,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @PUT
     @Produces("application/json")
-    @Update
     @ApiOperation(value = "updateProductType", notes = "Updates product type")
     @Path("updateProductType")
     public ProductType updateProductType(
@@ -279,7 +268,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @PUT
     @Produces("application/json")
-    @Update
     @ApiOperation(value = "updateProductStatusToType", notes = "Updates product status to type link ")
     @Path("updateProductStatusToType")
     public ProductTypeToProductStatus updateProductStatusToType(
@@ -311,7 +299,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Update
     @ApiOperation(value = "updateEquipment", notes = "Updates Equipment")
     @Path("updateEquipment")
     public Equipment updateEquipment(

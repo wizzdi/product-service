@@ -22,7 +22,7 @@ public class EquipmentGroupedInvoker implements ListingInvoker<EquipmentGroupHol
     private EquipmentService equipmentService;
 
     @Override
-    @InvokerMethodInfo(displayName = "listAllEquipmentGeoHashes",description = "lists all Equipment Geo Hashed")
+    @InvokerMethodInfo(displayName = "listAllEquipmentGeoHashes",description = "lists all Equipment Geo Hashed",relatedClasses = {Equipment.class})
 
     public PaginationResponse<EquipmentGroupHolder> listAll(EquipmentGroupFiltering equipmentGroupFiltering, SecurityContext securityContext) {
         equipmentService.validateFiltering(equipmentGroupFiltering,securityContext);

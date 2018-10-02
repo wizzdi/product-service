@@ -7,6 +7,7 @@ import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentFiltering;
+import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
@@ -21,7 +22,7 @@ public class EquipmentInvoker implements ListingInvoker<Equipment,EquipmentFilte
     private EquipmentService equipmentService;
 
     @Override
-    @InvokerMethodInfo(displayName = "listAllEquipment",description = "lists all Equipment")
+    @InvokerMethodInfo(displayName = "listAllEquipment",description = "lists all Equipment",relatedClasses = {Equipment.class})
 
     public PaginationResponse<Equipment> listAll(EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
         equipmentService.validateFiltering(equipmentFiltering,securityContext);

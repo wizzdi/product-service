@@ -47,7 +47,6 @@ public class GroupRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
     @Path("getAllEquipmentGroups")
     public PaginationResponse<EquipmentGroup> getAllEquipmentGroups(
@@ -62,7 +61,6 @@ public class GroupRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "getRootEquipmentGroup", notes = "return Root EquipmentGroupHolder")
     @Path("getRootEquipmentGroup")
     public EquipmentGroup getRootEquipmentGroup(
@@ -75,7 +73,6 @@ public class GroupRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Read
     @ApiOperation(value = "createGroup", notes = "Creates Equipment Group")
     @Path("createGroup")
     public EquipmentGroup createGroup(
@@ -94,7 +91,6 @@ public class GroupRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @Write
     @ApiOperation(value = "updateGroup", notes = "Updates Equipment Group")
     @Path("updateGroup")
     public EquipmentGroup updateGroup(

@@ -22,7 +22,7 @@ public class EquipmentShortInvoker implements ListingInvoker<EquipmentShort,Equi
     private EquipmentService equipmentService;
 
     @Override
-    @InvokerMethodInfo(displayName = "listAllEquipmentShort",description = "lists all Equipment Short")
+    @InvokerMethodInfo(displayName = "listAllEquipmentShort",description = "lists all Equipment Short",relatedClasses = {Equipment.class})
 
     public PaginationResponse<EquipmentShort> listAll(EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
         equipmentService.validateFiltering(equipmentFiltering,securityContext);
