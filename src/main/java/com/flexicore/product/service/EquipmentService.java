@@ -5,6 +5,8 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.*;
+import com.flexicore.model.territories.Neighbourhood;
+import com.flexicore.model.territories.Street;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
@@ -215,6 +217,7 @@ public class EquipmentService implements IEquipmentService {
         ProductType productType = equipmentRepository.getFirstByName(productTypeCreate.getName(), ProductType.class, null, securityContext);
         if (productType == null) {
             productType = createProductType(productTypeCreate, securityContext);
+            equipmentRepository.merge(productType);
         }
         return productType;
     }
@@ -224,6 +227,7 @@ public class EquipmentService implements IEquipmentService {
         ProductStatus productType = equipmentRepository.getFirstByName(productStatusCreate.getName(), ProductStatus.class, null, securityContext);
         if (productType == null) {
             productType = createProductStatus(productStatusCreate, securityContext);
+            equipmentRepository.merge(productType);
         }
         return productType;
     }
@@ -315,7 +319,11 @@ public class EquipmentService implements IEquipmentService {
         Class<T> c = (Class<T>) Equipment.class;
         if (filtering.getResultType() != null && !filtering.getResultType().isEmpty()) {
             try {
-                c = (Class<T>) Class.forName(filtering.getResultType());
+                Class<?> aClass = Class.forName(filtering.getResultType());
+                if(Equipment.class.isAssignableFrom(aClass)){
+                    c = (Class<T>) aClass;
+
+                }
 
             } catch (ClassNotFoundException e) {
                 logger.log(Level.SEVERE, "unable to get class: " + filtering.getResultType());
@@ -351,7 +359,35 @@ public class EquipmentService implements IEquipmentService {
             filtering.setProductStatusList(status);
         }
 
+        if(filtering.getNeighbourhoodIds()!=null && !filtering.getNeighbourhoodIds().isEmpty()){
+            Set<String> ids=filtering.getNeighbourhoodIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            List<Neighbourhood> neighbourhoods=getNeighbourhoods(ids,securityContext);
+            ids.removeAll(neighbourhoods.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+            if(!ids.isEmpty()){
+                throw new BadRequestException("No Neighbourhood with ids "+ids);
+            }
+            filtering.setNeighbourhoods(neighbourhoods);
+        }
+
+        if(filtering.getStreetIds()!=null && !filtering.getStreetIds().isEmpty()){
+            Set<String> ids=filtering.getStreetIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            List<Street> streets=getStreets(ids,securityContext);
+            ids.removeAll(streets.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+            if(!ids.isEmpty()){
+                throw new BadRequestException("No Streets with ids "+ids);
+            }
+            filtering.setStreets(streets);
+        }
+
         return c;
+    }
+
+    private List<Street> getStreets(Set<String> ids, SecurityContext securityContext) {
+        return equipmentRepository.listByIds(Street.class,ids,securityContext);
+    }
+
+    private List<Neighbourhood> getNeighbourhoods(Set<String> ids, SecurityContext securityContext) {
+        return equipmentRepository.listByIds(Neighbourhood.class,ids,securityContext);
     }
 
 
@@ -450,5 +486,19 @@ public class EquipmentService implements IEquipmentService {
             throw new BadRequestException("No Product Type with id "+productTypeFiltering.getProductTypeId().getId());
         }
         productTypeFiltering.setProductType(productType);
+    }
+
+    public PaginationResponse<Neighbourhood> getAllNeighbourhoods(NeighbourhoodFiltering neighbourhoodFiltering, SecurityContext securityContext) {
+        QueryInformationHolder<Neighbourhood> queryInformationHolder=new QueryInformationHolder<>(neighbourhoodFiltering,Neighbourhood.class,securityContext);
+        List<Neighbourhood> list=equipmentRepository.getAllFiltered(queryInformationHolder);
+        long count=equipmentRepository.countAllFiltered(queryInformationHolder);
+        return new PaginationResponse<>(list,neighbourhoodFiltering,count);
+    }
+
+    public PaginationResponse<Street> getAllStreets(StreetFiltering streetFiltering, SecurityContext securityContext) {
+        QueryInformationHolder<Street> queryInformationHolder=new QueryInformationHolder<>(streetFiltering,Street.class,securityContext);
+        List<Street> list=equipmentRepository.getAllFiltered(queryInformationHolder);
+        long count=equipmentRepository.countAllFiltered(queryInformationHolder);
+        return new PaginationResponse<>(list,streetFiltering,count);
     }
 }

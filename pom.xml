@@ -55,6 +55,13 @@
 
         <dependency>
             <groupId>com.flexicore</groupId>
+            <artifactId>flexicore-territories-model</artifactId>
+            <version>1.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.flexicore</groupId>
             <artifactId>product-model</artifactId>
             <version>1.0.4</version>
             <scope>provided</scope>
