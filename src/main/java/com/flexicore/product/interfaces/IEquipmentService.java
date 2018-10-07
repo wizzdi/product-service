@@ -59,7 +59,11 @@ public interface IEquipmentService extends ServicePlugin {
 
     List<ProductToStatus> getStatusLinks(Set<String> collect);
 
+    List<ProductToStatus> getCurrentStatusLinks(Set<String> collect);
+
     Map<String,String> buildSpecificStatusIconMap(Map<String, String> typeSpecificStatusToIcon, List<ProductStatus> status);
 
     List<ProductTypeToProductStatus> getAllProductTypeToStatusLinks(Set<String> statusIds);
+
+    void massMerge(List<?> toMerge);
 }

@@ -252,6 +252,8 @@ public class EquipmentService implements IEquipmentService {
         return list.isEmpty() ? createProductToProductStatusLinkNoMerge(productStatusCreate, securityContext) : list.get(0);
     }
 
+
+
     @Override
     public List<ProductToStatus> getProductToStatusLinks(ProductStatusToProductCreate productStatusCreate, SecurityContext securityContext) {
         return baselinkService.findAllBySides(ProductToStatus.class, productStatusCreate.getProduct(), productStatusCreate.getProductStatus(), securityContext);
@@ -396,14 +398,21 @@ public class EquipmentService implements IEquipmentService {
     }
 
 
+
+
     @Override
     public List<ProductToStatus> getStatusLinks(Set<String> collect) {
         return collect.isEmpty()?new ArrayList<>():equipmentRepository.getStatusLinks(collect);
     }
 
+    @Override
+    public List<ProductToStatus> getCurrentStatusLinks(Set<String> collect) {
+        return collect.isEmpty()?new ArrayList<>():equipmentRepository.getCurrentStatusLinks(collect);
+    }
+
     public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
-        List<ProductToStatus> statusLinks = getStatusLinks(list.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+        List<ProductToStatus> statusLinks = getCurrentStatusLinks(list.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         Map<String,List<ProductStatus>> statusLinksMap= statusLinks.parallelStream().collect(Collectors.groupingBy(f->f.getLeftside().getId(),ConcurrentHashMap::new,Collectors.mapping(f->f.getRightside(),Collectors.toList())));
         Map<String,Map<String,String>> typeToStatusToIconMap = getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
                 .parallelStream().filter(f->f.getImage()!=null).collect(Collectors.groupingBy(f->f.getLeftside().getId(),Collectors.toMap(f->f.getRightside().getId(),f->f.getImage().getId())));
@@ -468,6 +477,11 @@ public class EquipmentService implements IEquipmentService {
         }
         equipmentRepository.massMerge(toMerge);
         return list.get(0);
+    }
+
+    @Override
+    public void massMerge(List<?> toMerge) {
+        equipmentRepository.massMerge(toMerge);
     }
 
     public boolean updateProductStatusToType(UpdateProductStatusToType updateProductStatus, ProductTypeToProductStatus productTypeToProductStatus) {

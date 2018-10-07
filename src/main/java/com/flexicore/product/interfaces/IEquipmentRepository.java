@@ -76,5 +76,7 @@ public interface IEquipmentRepository extends PluginRepository {
 
      List<ProductToStatus> getStatusLinks(Set<String> equipmentIds);
 
+    List<ProductToStatus> getCurrentStatusLinks(Set<String> equipmentIds);
+
     List<ProductTypeToProductStatus> getAllProductTypeToStatusLinks(Set<String> statusIds);
 }

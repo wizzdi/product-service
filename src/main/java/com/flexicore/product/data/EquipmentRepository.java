@@ -101,7 +101,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         Join<ProductToStatus,ProductStatus> statusJoin=cb.treat(join.join(Baselink_.rightside),ProductStatus.class);
 
         List<Predicate> preds = new ArrayList<>();
-        Predicate enabledOnly = cb.equal(join.get(ProductToStatus_.enabled),true);
+        Predicate enabledOnly = cb.isTrue(join.get(ProductToStatus_.enabled));
         preds.add(enabledOnly);
         IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
         QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
@@ -186,7 +186,22 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<ProductToStatus> q = cb.createQuery(ProductToStatus.class);
         Root<ProductToStatus> r = q.from(ProductToStatus.class);
-        Predicate pred = r.get(Baselink_.leftside).in(equipmentIds);
+        Join<ProductToStatus,Product> join=cb.treat(r.join(Baselink_.leftside),Product.class);
+        Predicate pred = join.get(Product_.id).in(equipmentIds);
+
+
+        q.select(r).where(pred);
+        TypedQuery<ProductToStatus> query = em.createQuery(q);
+        return query.getResultList();
+    }
+
+    @Override
+    public List<ProductToStatus> getCurrentStatusLinks(Set<String> equipmentIds) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ProductToStatus> q = cb.createQuery(ProductToStatus.class);
+        Root<ProductToStatus> r = q.from(ProductToStatus.class);
+        Join<ProductToStatus,Product> join=cb.treat(r.join(Baselink_.leftside),Product.class);
+        Predicate pred = cb.and(join.get(Product_.id).in(equipmentIds),cb.isTrue(r.get(ProductToStatus_.enabled)));
 
 
         q.select(r).where(pred);
