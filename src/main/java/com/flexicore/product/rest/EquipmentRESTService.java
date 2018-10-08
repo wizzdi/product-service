@@ -28,8 +28,10 @@ import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Created by Asaf on 04/06/2017.
@@ -77,6 +79,24 @@ public class EquipmentRESTService implements RestServicePlugin {
 
 
 
+    @PUT
+    @Produces("application/json")
+    @ApiOperation(value = "enableEquipment", notes = "enable Equipment")
+    @Path("enableEquipment")
+    public List<Equipment> enableEquipment(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EnableEquipments enableLights, @Context SecurityContext securityContext) {
+
+        Set<String> ids = enableLights.getEquipmentIds();
+        List<Equipment> lights=service.getEquipmentByIds(ids,securityContext);
+        ids.removeAll(lights.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+        if(!ids.isEmpty()){
+            throw new BadRequestException("No equipment with ids "+ids.parallelStream().collect(Collectors.joining(",")));
+        }
+        enableLights.setEquipmentList(lights);
+        return service.enableEquipment(enableLights,securityContext);
+
+    }
 
 
     @POST
@@ -183,6 +203,19 @@ public class EquipmentRESTService implements RestServicePlugin {
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentFiltering equipmentFiltering,
+            @Context SecurityContext securityContext) {
+        Class<T> c = service.validateFiltering(equipmentFiltering, securityContext);
+
+        return service.getProductGroupedByStatus(c,equipmentFiltering, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
+    @ApiOperation(value = "disableGateway", notes = "disables Gateway")
+    @Path("disableGateway")
+    public <T extends Equipment> List<EquipmentStatusGroup> disableGateway(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            GatewayFiltering equipmentFiltering,
             @Context SecurityContext securityContext) {
         Class<T> c = service.validateFiltering(equipmentFiltering, securityContext);
 

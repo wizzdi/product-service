@@ -515,4 +515,21 @@ public class EquipmentService implements IEquipmentService {
         long count=equipmentRepository.countAllFiltered(queryInformationHolder);
         return new PaginationResponse<>(list,streetFiltering,count);
     }
+
+    public List<Equipment> getEquipmentByIds(Set<String> ids, SecurityContext securityContext) {
+        return equipmentRepository.listByIds(Equipment.class,ids,securityContext);
+    }
+
+    public List<Equipment> enableEquipment(EnableEquipments enableLights, SecurityContext securityContext) {
+        List<Object> toMerge=new ArrayList<>();
+        for (Equipment equipment : enableLights.getEquipmentList()) {
+            if(equipment.isEnable()!=enableLights.isEnable()){
+                equipment.setEnable(enableLights.isEnable());
+                toMerge.add(equipment);
+
+            }
+        }
+        equipmentRepository.massMerge(toMerge);
+        return enableLights.getEquipmentList();
+    }
 }
