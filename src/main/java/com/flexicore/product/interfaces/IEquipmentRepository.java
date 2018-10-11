@@ -17,12 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public interface IEquipmentRepository extends PluginRepository {
 
 
-    static <T extends Equipment> void addEquipmentFiltering(EquipmentFiltering filtering, CriteriaBuilder cb, Root<T> r, List<Predicate> preds) {
+    static <T extends Equipment> void addEquipmentFiltering(EquipmentFiltering filtering, CriteriaBuilder cb, Root<T> r, List<Predicate> preds, Logger logger) {
         Set<String> ids;
         if(filtering.getEquipmentIds()!=null&&!(ids=filtering.getEquipmentIds().parallelStream().filter(f->f.getId()!=null).map(f->f.getId()).collect(Collectors.toSet())).isEmpty()){
 
@@ -81,8 +82,8 @@ public interface IEquipmentRepository extends PluginRepository {
 
     }
 
-    static <T extends Equipment> String addEquipmentGeoHashFiltering(EquipmentGroupFiltering filtering, CriteriaBuilder cb, Root<T> r, List<Predicate> preds) {
-        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+    static <T extends Equipment> String addEquipmentGeoHashFiltering(EquipmentGroupFiltering filtering, CriteriaBuilder cb, Root<T> r, List<Predicate> preds,Logger logger) {
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds,logger);
 
         String geoHashField = "geoHash" + filtering.getPrecision();
         List<SortParameter> sort = new ArrayList<>();
