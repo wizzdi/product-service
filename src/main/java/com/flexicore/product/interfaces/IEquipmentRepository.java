@@ -6,6 +6,7 @@ import com.flexicore.model.Baselink_;
 import com.flexicore.model.FileResource;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.model.SortParameter;
+import com.flexicore.model.territories.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
@@ -29,27 +30,51 @@ public interface IEquipmentRepository extends PluginRepository {
             preds.add(pred);
         }
         else{
-            if (!filtering.getEquipmentGroups().isEmpty()) {
+            if (filtering.getEquipmentIds()!=null && !filtering.getEquipmentGroups().isEmpty()) {
                 Join<T, EquipmentToGroup> join = r.join(Equipment_.equipmentToGroupList);
                 Predicate pred = join.get(Baselink_.rightside).in(filtering.getEquipmentGroups());
                 preds.add(pred);
             }
-            if (filtering.getLocationArea() != null) {
+            if (filtering.getLocationArea()!=null && filtering.getLocationArea() != null) {
                 Predicate predicate = cb.between(r.get(Equipment_.lat), filtering.getLocationArea().getLatStart(), filtering.getLocationArea().getLatEnd());
                 predicate = cb.and(predicate, cb.between(r.get(Equipment_.lon), filtering.getLocationArea().getLonStart(), filtering.getLocationArea().getLonEnd()));
                 preds.add(predicate);
             }
-            if (filtering.getProductType() != null) {
+            if (filtering.getProductType()!=null && filtering.getProductType() != null) {
                 Predicate predicate = cb.equal(r.get(Equipment_.productType), filtering.getProductType());
                 preds.add(predicate);
             }
-            if (!filtering.getProductStatusList().isEmpty()) {
+            if (filtering.getProductStatusList()!=null && !filtering.getProductStatusList().isEmpty()) {
                 Join<T, ProductToStatus> join = r.join(Equipment_.productToStatusList);
                 Predicate pred = cb.and(join.get(Baselink_.rightside).in(filtering.getProductStatusList()),cb.isTrue(join.get(ProductToStatus_.enabled)));
                 preds.add(pred);
             }
-            if(!filtering.getTypesToReturn().isEmpty()){
+
+            if(filtering.getTypesToReturn()!=null && !filtering.getTypesToReturn().isEmpty()){
                 Predicate pred = r.get("dtype").in(filtering.getTypesToReturn().parallelStream().map(f -> f.getSimpleName()).collect(Collectors.toSet()));
+                preds.add(pred);
+            }
+
+            if(filtering.getGateways()!=null && !filtering.getGateways().isEmpty()) {
+                Join<T,Gateway> join=r.join(Equipment_.communicationGateway);
+                Set<String> gids=filtering.getGateways().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+                Predicate pred=join.get(Gateway_.id).in(gids);
+                preds.add(pred);
+            }
+            if(filtering.getNeighbourhoods()!=null && !filtering.getNeighbourhoods().isEmpty()) {
+                Join<T, Address> join=r.join(Equipment_.address);
+                Join<Address,Neighbourhood> join1=join.join(Address_.neighbourhood);
+
+                Set<String> gids=filtering.getNeighbourhoods().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+                Predicate pred=join1.get(Neighbourhood_.id).in(gids);
+                preds.add(pred);
+            }
+            if(filtering.getStreets()!=null && !filtering.getStreets().isEmpty()) {
+                Join<T, Address> join=r.join(Equipment_.address);
+                Join<Address, Street> join1=join.join(Address_.street);
+
+                Set<String> gids=filtering.getStreets().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+                Predicate pred=join1.get(Street_.id).in(gids);
                 preds.add(pred);
             }
         }

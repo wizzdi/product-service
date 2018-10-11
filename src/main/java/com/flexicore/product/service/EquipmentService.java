@@ -380,12 +380,24 @@ public class EquipmentService implements IEquipmentService {
             }
             filtering.setStreets(streets);
         }
+        if(filtering.getGatewayIds()!=null && !filtering.getGatewayIds().isEmpty()){
+            Set<String> ids=filtering.getGatewayIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            List<Gateway> gateways=getGateways(ids,securityContext);
+            ids.removeAll(gateways.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+            if(!ids.isEmpty()){
+                throw new BadRequestException("No Gateways with ids "+ids);
+            }
+            filtering.setGateways(gateways);
+        }
 
         return c;
     }
 
     private List<Street> getStreets(Set<String> ids, SecurityContext securityContext) {
         return equipmentRepository.listByIds(Street.class,ids,securityContext);
+    }
+    private List<Gateway> getGateways(Set<String> ids, SecurityContext securityContext) {
+        return equipmentRepository.listByIds(Gateway.class,ids,securityContext);
     }
 
     private List<Neighbourhood> getNeighbourhoods(Set<String> ids, SecurityContext securityContext) {
