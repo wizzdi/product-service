@@ -33,7 +33,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         Root<T> r = q.from(c);
 
         List<Predicate> preds = new ArrayList<>();
-        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds,logger);
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
 
 
         QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
@@ -47,7 +47,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         Root<T> r = q.from(c);
 
         List<Predicate> preds = new ArrayList<>();
-        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds,logger);
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
 
 
         QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
@@ -63,7 +63,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         Root<T> r = q.from(c);
 
         List<Predicate> preds = new ArrayList<>();
-        String geoHashField = IEquipmentRepository.addEquipmentGeoHashFiltering(filtering, cb, r, preds,logger);
+        String geoHashField = IEquipmentRepository.addEquipmentGeoHashFiltering(filtering, cb, r, preds);
         TypedQuery<EquipmentGroupHolder> query = prepareGeoHashQuery(c,EquipmentGroupHolder.class, filtering, securityContext, cb, q, r, preds, geoHashField);
         return query.getResultList();
     }
@@ -107,7 +107,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         List<Predicate> preds = new ArrayList<>();
         Predicate enabledOnly = cb.isTrue(join.get(ProductToStatus_.enabled));
         preds.add(enabledOnly);
-        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds,logger);
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
         QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
         prepareQuery(queryInformationHolder, preds, cb, q, r);
         Predicate[] predsArray = new Predicate[preds.size()];
@@ -157,7 +157,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         Root<Gateway> r = q.from(Gateway.class);
 
         List<Predicate> preds = new ArrayList<>();
-        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds,logger);
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
 
         addGatewayFiltering(filtering, r, preds);
         QueryInformationHolder<Gateway> queryInformationHolder = new QueryInformationHolder<>(filtering, Gateway.class, securityContext);
@@ -178,7 +178,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         Root<Gateway> r = q.from(Gateway.class);
 
         List<Predicate> preds = new ArrayList<>();
-        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds,logger);
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
 
         addGatewayFiltering(filtering, r, preds);
         QueryInformationHolder<Gateway> queryInformationHolder = new QueryInformationHolder<>(filtering, Gateway.class, securityContext);

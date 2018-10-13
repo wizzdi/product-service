@@ -321,7 +321,7 @@ public class EquipmentService implements IEquipmentService {
         Class<T> c = (Class<T>) Equipment.class;
         if (filtering.getResultType() != null && !filtering.getResultType().isEmpty()) {
             try {
-                Class<?> aClass = Class.forName(filtering.getResultType());
+                                Class<?> aClass = Class.forName(filtering.getResultType());
                 if(Equipment.class.isAssignableFrom(aClass)){
                     c = (Class<T>) aClass;
 
