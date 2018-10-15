@@ -426,10 +426,19 @@ public class EquipmentService implements IEquipmentService {
         List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
         List<ProductToStatus> statusLinks = getCurrentStatusLinks(list.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         Map<String,List<ProductStatus>> statusLinksMap= statusLinks.parallelStream().collect(Collectors.groupingBy(f->f.getLeftside().getId(),ConcurrentHashMap::new,Collectors.mapping(f->f.getRightside(),Collectors.toList())));
+
+
         Map<String,Map<String,String>> typeToStatusToIconMap = getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
-                .parallelStream().filter(f->f.getImage()!=null).collect(Collectors.groupingBy(f->f.getLeftside().getId(),Collectors.toMap(f->f.getRightside().getId(),f->f.getImage().getId())));
+                .parallelStream().filter(f->f.getImage()!=null).collect(Collectors.groupingBy(f->f.getLeftside().getId(),Collectors.toMap(f->f.getRightside().getId(),f->f.getImage().getId(), (a, b) ->a)));
+
+//        Map<String,Map<String,String>> typeToStatusToIconMap = getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
+//                .parallelStream().filter(f->f.getImage()!=null).collect(Collectors.groupingBy(f->f.getLeftside().getId(),Collectors.toMap(f->f.getRightside().getId(),f->f.getImage().getId())));
 
         long total = countAllEquipments(c, filtering, securityContext);
+
+
+
+
         return new PaginationResponse<>(list.parallelStream()
                 .map(f -> new EquipmentShort(f,statusLinksMap.get(f.getId()),buildSpecificStatusIconMap(f.getProductType()!=null?typeToStatusToIconMap.get(f.getProductType().getId()):null,statusLinksMap.get(f.getId()))))
                 .collect(Collectors.toList()), filtering, total);
@@ -437,8 +446,9 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public Map<String,String> buildSpecificStatusIconMap(Map<String, String> typeSpecificStatusToIcon, List<ProductStatus> status){
-
-        return (typeSpecificStatusToIcon==null||status==null)?new HashMap<>():status.parallelStream().filter(f->typeSpecificStatusToIcon.get(f.getId())!=null).collect(Collectors.toMap(f->f.getId(), f->typeSpecificStatusToIcon.get(f.getId())));
+        Map<String, String> result = new HashMap<>();
+        result = (typeSpecificStatusToIcon == null || status == null) ? new HashMap<>() : status.parallelStream().filter(f -> typeSpecificStatusToIcon.get(f.getId()) != null).collect(Collectors.toMap(f -> f.getId(), f -> typeSpecificStatusToIcon.get(f.getId()), (a, b)->a));
+        return result;
     }
 
     @Override
