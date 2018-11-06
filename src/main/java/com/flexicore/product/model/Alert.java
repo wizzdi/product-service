@@ -8,6 +8,11 @@ public class Alert extends Event{
 
 
     private int severity;
+    private String externalGatewayId;
+    private String gatewayName;
+    private String streetId;
+    private String streetExternalId;
+    private String streetName;
 
     public Alert() {
         super();
@@ -17,6 +22,11 @@ public class Alert extends Event{
     public Alert(Equipment equipment) {
         super(equipment);
         setEventType(Alert.class.getCanonicalName());
+        this.externalGatewayId=equipment.getCommunicationGateway()!=null?equipment.getCommunicationGateway().getId():null;
+        this.gatewayName=equipment.getCommunicationGateway().getName();
+        this.streetId=equipment.getAddress()!=null&&equipment.getAddress().getStreet()!=null?equipment.getAddress().getStreet().getId():null;
+        this.streetExternalId=equipment.getAddress()!=null&&equipment.getAddress().getStreet()!=null?equipment.getAddress().getStreet().getExternalId():null;
+        this.streetName=equipment.getAddress()!=null&&equipment.getAddress().getStreet()!=null?equipment.getAddress().getStreet().getName():null;
     }
 
     public int getSeverity() {
@@ -81,5 +91,50 @@ public class Alert extends Event{
     @Override
     public Alert setStatusIds(Set<String> statusIds) {
         return (Alert) super.setStatusIds(statusIds);
+    }
+
+    public String getExternalGatewayId() {
+        return externalGatewayId;
+    }
+
+    public Alert setExternalGatewayId(String externalGatewayId) {
+        this.externalGatewayId = externalGatewayId;
+        return this;
+    }
+
+    public String getGatewayName() {
+        return gatewayName;
+    }
+
+    public Alert setGatewayName(String gatewayName) {
+        this.gatewayName = gatewayName;
+        return this;
+    }
+
+    public String getStreetId() {
+        return streetId;
+    }
+
+    public Alert setStreetId(String streetId) {
+        this.streetId = streetId;
+        return this;
+    }
+
+    public String getStreetExternalId() {
+        return streetExternalId;
+    }
+
+    public Alert setStreetExternalId(String streetExternalId) {
+        this.streetExternalId = streetExternalId;
+        return this;
+    }
+
+    public String getStreetName() {
+        return streetName;
+    }
+
+    public Alert setStreetName(String streetName) {
+        this.streetName = streetName;
+        return this;
     }
 }
