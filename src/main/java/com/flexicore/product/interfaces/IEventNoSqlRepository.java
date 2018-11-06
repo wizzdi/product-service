@@ -84,7 +84,7 @@ public interface IEventNoSqlRepository extends PluginRepository {
         if (eventType != null) {
             Set<String> names=BaseclassService.listInheritingClassesWithFilter(new GetClassInfo().setClassName(eventType)).getList().parallelStream().map(f->f.getClazz().getCanonicalName()).collect(Collectors.toSet());
             names.add(eventType);
-            Bson eq = in(EVENT_TYPE, eventType);
+            Bson eq = in(EVENT_TYPE, names);
             pred = pred == null ? eq : and(pred, eq);
         }
 
