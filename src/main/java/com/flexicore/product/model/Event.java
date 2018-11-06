@@ -30,7 +30,7 @@ public class Event {
 
     public Event() {
         this.id = Baseclass.getBase64ID();
-        setEventType(Event.class.getCanonicalName());
+        setEventType(getClass().getCanonicalName());
     }
 
     public Event(Equipment equipment) {
