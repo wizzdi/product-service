@@ -58,7 +58,7 @@ public class AlertFiltering extends EventFiltering {
     }
 
     @Override
-    public FilteringInformationHolder setTenantIds(List<BaseclassIdFiltering> tenantIds) {
+    public FilteringInformationHolder setTenantIds(List<TenantIdFiltering> tenantIds) {
         return super.setTenantIds(tenantIds);
     }
 

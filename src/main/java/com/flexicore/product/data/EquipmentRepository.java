@@ -167,7 +167,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
     public void addGatewayFiltering(GatewayFiltering filtering, Root<Gateway> r, List<Predicate> preds) {
         if(filtering.getConsoleIds()!=null && !filtering.getConsoleIds().isEmpty()){
-            preds.add(r.get(Gateway_.externalId).in(filtering.getConsoleIds().parallelStream().map(f->f.getSomeNumber()+"").collect(Collectors.toSet())));
+            preds.add(r.get(Gateway_.externalId).in(filtering.getConsoleIds().parallelStream().map(f->f.getId()+"").collect(Collectors.toSet())));
 
         }
     }

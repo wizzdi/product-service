@@ -127,7 +127,7 @@ public class EventFiltering extends FilteringInformationHolder {
     }
 
     @Override
-    public FilteringInformationHolder setTenantIds(List<BaseclassIdFiltering> tenantIds) {
+    public FilteringInformationHolder setTenantIds(List<TenantIdFiltering> tenantIds) {
         return super.setTenantIds(tenantIds);
     }
 }
