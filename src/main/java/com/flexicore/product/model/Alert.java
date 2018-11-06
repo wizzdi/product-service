@@ -1,9 +1,15 @@
 package com.flexicore.product.model;
 
+import com.flexicore.service.BaseclassService;
+
 import java.util.Date;
 import java.util.Set;
 
 public class Alert extends Event{
+
+    static{
+        BaseclassService.registerInheretingClass(Alert.class);
+    }
 
 
 
