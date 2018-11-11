@@ -75,7 +75,7 @@ public class EquipmentGroupRepository extends AbstractRepositoryPlugin {
         CriteriaQuery<EquipmentToGroup> q=cb.createQuery(EquipmentToGroup.class);
         Root<EquipmentToGroup> r=q.from(EquipmentToGroup.class);
         Join<EquipmentToGroup,Equipment> join=cb.treat(r.join(Baselink_.leftside),Equipment.class);
-        q.select(r).where(cb.and(join.get(Equipment_.id).in(equipmentIds),cb.not(cb.isFalse(r.get(Baselink_.softDelete)))));
+        q.select(r).where(cb.and(join.get(Equipment_.id).in(equipmentIds),cb.not(cb.isTrue(r.get(Baselink_.softDelete)))));
         TypedQuery<EquipmentToGroup> query=em.createQuery(q);
         return query.getResultList();
     }
