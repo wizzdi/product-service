@@ -8,7 +8,9 @@ import com.flexicore.product.containers.request.GroupCreate;
 import com.flexicore.product.containers.request.GroupUpdate;
 import com.flexicore.product.data.EquipmentGroupRepository;
 import com.flexicore.product.interfaces.IGroupService;
+import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentGroup;
+import com.flexicore.product.model.EquipmentToGroup;
 import com.flexicore.product.model.GroupFiltering;
 import com.flexicore.security.SecurityContext;
 
@@ -41,6 +43,13 @@ public class GroupService implements IGroupService {
         List<EquipmentGroup> list= equipmentRepository.getAllEquipmentGroups(filtering,securityContext);
         long count=equipmentRepository.countAllEquipmentGroups(filtering,securityContext);
         return new PaginationResponse<>(list,filtering,count);
+    }
+
+
+    @Override
+    public List<EquipmentToGroup> getEquipmentToGroup(Set<String> equipmentIds) {
+        return equipmentRepository.getEquipmentToGroup(equipmentIds);
+
     }
 
     public EquipmentGroup getRootEquipmentGroup(SecurityContext securityContext) {
@@ -90,5 +99,12 @@ public class GroupService implements IGroupService {
             throw new BadRequestException("could not find groups with ids "+ids.parallelStream().collect(Collectors.joining(",")));
         }
         filtering.setEquipmentGroups(groups);
+        Set<String> equipmentIds = filtering.getEquipmentIdFilterings().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+        List<Equipment> equipment= !filtering.getEquipmentIdFilterings().isEmpty()?listByIds(Equipment.class, equipmentIds,securityContext):new ArrayList<>();
+        equipmentIds.removeAll(equipment.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+        if(!equipmentIds.isEmpty()){
+            throw new BadRequestException("No Equipments with ids "+equipmentIds);
+        }
+        filtering.setEquipment(equipment);
     }
 }
