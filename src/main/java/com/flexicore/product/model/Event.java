@@ -41,8 +41,6 @@ public class Event {
                 .setClazzName(Baseclass.getClazzbyname(equipment.getClass().getCanonicalName()).getName())
                 .setBaseclassTenantId(equipment.getTenant() != null ? equipment.getTenant().getId() : null)
                 .setCommunicationGatewayId(equipment.getCommunicationGateway() != null ? equipment.getCommunicationGateway().getId() : null)
-                .setStatusIds(equipment.getProductToStatusList().parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
-                .setEquipmentGroupIds(equipment.getEquipmentToGroupList().parallelStream().filter(f->!f.isSoftDelete()).map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
                 .setBaseclassLat(equipment.getLat())
                 .setBaseclassLon(equipment.getLon())
                 .setProductTypeId(equipment.getProductType()!=null?equipment.getProductType().getId():null);

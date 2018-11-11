@@ -36,6 +36,7 @@ public class GroupService implements IGroupService {
     }
 
 
+    @Override
     public PaginationResponse<EquipmentGroup> getAllEquipmentGroups(GroupFiltering filtering, SecurityContext securityContext) {
         List<EquipmentGroup> list= equipmentRepository.getAllEquipmentGroups(filtering,securityContext);
         long count=equipmentRepository.countAllEquipmentGroups(filtering,securityContext);
