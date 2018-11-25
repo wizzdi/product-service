@@ -84,6 +84,10 @@ public class EquipmentService implements IEquipmentService {
         return new PaginationResponse<>(list, filtering, total);
     }
 
+    public List<FlexiCoreGateway> getAllEnabledFCGateways(){
+        return equipmentRepository.getAllEnabledFCGateways();
+    }
+
     public <T extends Equipment> long countAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         return equipmentRepository.countAllEquipments(c, filtering, securityContext);
     }
@@ -347,13 +351,13 @@ public class EquipmentService implements IEquipmentService {
                 throw new BadRequestException("could not find groups with ids " + filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
             }
             filtering.setEquipmentGroups(groups);
-            ProductType productType = filtering.getProductTypeId() != null && filtering.getProductTypeId().getId() != null ? getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, securityContext) : null;
+            ProductType productType = filtering.getProductTypeId() != null && filtering.getProductTypeId().getId() != null ? getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, null) : null;
             if (filtering.getProductTypeId() != null && productType == null) {
                 throw new BadRequestException("No Product type with id " + filtering.getProductTypeId());
             }
             filtering.setProductType(productType);
             Set<String> statusIds = filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-            List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, statusIds, securityContext);
+            List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, statusIds, null);
             statusIds.removeAll(status.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
             if (!statusIds.isEmpty()) {
                 throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));

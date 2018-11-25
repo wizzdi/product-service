@@ -65,5 +65,7 @@ public interface IEquipmentService extends ServicePlugin {
 
     List<ProductTypeToProductStatus> getAllProductTypeToStatusLinks(Set<String> statusIds);
 
+
+
     void massMerge(List<?> toMerge);
 }

@@ -225,4 +225,21 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         TypedQuery<ProductTypeToProductStatus> query = em.createQuery(q);
         return query.getResultList();
     }
+
+    public List<FlexiCoreGateway> getAllEnabledFCGateways() {
+
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<FlexiCoreGateway> q = cb.createQuery(FlexiCoreGateway.class);
+        Root<FlexiCoreGateway> r = q.from(FlexiCoreGateway.class);
+        Predicate pred = cb.and(
+                cb.isTrue(r.get(FlexiCoreGateway_.enable)),
+                r.get(FlexiCoreGateway_.communicationWebSocketUrl).isNotNull()
+                );
+
+
+        q.select(r).where(pred);
+        TypedQuery<FlexiCoreGateway> query = em.createQuery(q);
+        return query.getResultList();
+    }
 }
