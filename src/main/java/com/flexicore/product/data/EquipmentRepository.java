@@ -165,7 +165,28 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
     }
 
-    public void addGatewayFiltering(GatewayFiltering filtering, Root<Gateway> r, List<Predicate> preds) {
+    public List<FlexiCoreGateway> getAllFlexiCoreGateways(FlexiCoreGatewayFiltering filtering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<FlexiCoreGateway> q = cb.createQuery(FlexiCoreGateway.class);
+        Root<FlexiCoreGateway> r = q.from(FlexiCoreGateway.class);
+
+        List<Predicate> preds = new ArrayList<>();
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+
+        addFlexiCoreGatewayFiltering(filtering, cb, r, preds);
+        QueryInformationHolder<FlexiCoreGateway> queryInformationHolder = new QueryInformationHolder<>(filtering, FlexiCoreGateway.class, securityContext);
+        return getAllFiltered(queryInformationHolder);
+
+    }
+
+    public void addFlexiCoreGatewayFiltering(FlexiCoreGatewayFiltering filtering, CriteriaBuilder cb, Root<FlexiCoreGateway> r, List<Predicate> preds) {
+        addGatewayFiltering(filtering, r, preds);
+        if(filtering.getBasePathLike()!=null){
+            preds.add(cb.like(r.get(FlexiCoreGateway_.communicationWebSocketUrl),filtering.getBasePathLike()));
+        }
+    }
+
+    public<T extends Gateway> void addGatewayFiltering(GatewayFiltering filtering, Root<T> r, List<Predicate> preds) {
         if(filtering.getConsoleIds()!=null && !filtering.getConsoleIds().isEmpty()){
             preds.add(r.get(Gateway_.externalId).in(filtering.getConsoleIds().parallelStream().map(f->f.getId()+"").collect(Collectors.toSet())));
 
@@ -182,6 +203,19 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         addGatewayFiltering(filtering, r, preds);
         QueryInformationHolder<Gateway> queryInformationHolder = new QueryInformationHolder<>(filtering, Gateway.class, securityContext);
+        return countAllFiltered(queryInformationHolder);
+    }
+
+    public long countAllFlexiCoreGateways(FlexiCoreGatewayFiltering filtering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> q = cb.createQuery(Long.class);
+        Root<FlexiCoreGateway> r = q.from(FlexiCoreGateway.class);
+
+        List<Predicate> preds = new ArrayList<>();
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+
+        addFlexiCoreGatewayFiltering(filtering,cb, r, preds);
+        QueryInformationHolder<FlexiCoreGateway> queryInformationHolder = new QueryInformationHolder<>(filtering, FlexiCoreGateway.class, securityContext);
         return countAllFiltered(queryInformationHolder);
     }
 

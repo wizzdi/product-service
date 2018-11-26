@@ -21,7 +21,15 @@ public interface IEquipmentService extends ServicePlugin {
 
     <T extends Equipment> T createEquipment(Class<T> c, EquipmentCreate equipmentCreate, SecurityContext securityContext);
 
+    <T extends Equipment> T createEquipmentNoMerge(Class<T> c, EquipmentCreate equipmentCreate, SecurityContext securityContext);
+
+    <T extends Gateway> T createGatewayNoMerge(Class<T> c, GatewayCreate equipmentCreate, SecurityContext securityContext);
+
+    <T extends Gateway> boolean updateGatewayNoMerge(GatewayCreate equipmentCreate, T equipment);
+
     EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext);
+
+    void validateEquipmentCreate(EquipmentCreate equipmentCreate, SecurityContext securityContext);
 
     boolean updateEquipmentNoMerge(EquipmentCreate equipmentCreate, Equipment equipment);
 

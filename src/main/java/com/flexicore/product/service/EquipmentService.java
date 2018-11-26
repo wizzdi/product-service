@@ -84,6 +84,12 @@ public class EquipmentService implements IEquipmentService {
         return new PaginationResponse<>(list, filtering, total);
     }
 
+    public PaginationResponse<FlexiCoreGateway> getAllFlexiCoreGateways(FlexiCoreGatewayFiltering filtering, SecurityContext securityContext) {
+        List<FlexiCoreGateway> list = equipmentRepository.getAllFlexiCoreGateways(filtering, securityContext);
+        long total = equipmentRepository.countAllFlexiCoreGateways(filtering, securityContext);
+        return new PaginationResponse<>(list, filtering, total);
+    }
+
     public List<FlexiCoreGateway> getAllEnabledFCGateways(){
         return equipmentRepository.getAllEnabledFCGateways();
     }
@@ -101,11 +107,42 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public <T extends Equipment> T createEquipment(Class<T> c, EquipmentCreate equipmentCreate, SecurityContext securityContext) {
+        T equipment = createEquipmentNoMerge(c, equipmentCreate, securityContext);
+        equipmentRepository.merge(equipment);
+        return equipment;
+    }
+
+    @Override
+    public <T extends Equipment> T createEquipmentNoMerge(Class<T> c, EquipmentCreate equipmentCreate, SecurityContext securityContext) {
         T equipment = Baseclass.createUnckehcked(c, equipmentCreate.getName(), securityContext);
         equipment.Init();
         updateEquipmentNoMerge(equipmentCreate, equipment);
-        equipmentRepository.merge(equipment);
         return equipment;
+    }
+
+
+    @Override
+    public <T extends Gateway> T createGatewayNoMerge(Class<T> c, GatewayCreate equipmentCreate, SecurityContext securityContext) {
+        T equipment = Baseclass.createUnckehcked(c, equipmentCreate.getName(), securityContext);
+        equipment.Init();
+        updateGatewayNoMerge(equipmentCreate, equipment);
+        return equipment;
+    }
+
+
+    @Override
+    public <T extends Gateway> boolean updateGatewayNoMerge(GatewayCreate equipmentCreate, T equipment) {
+        boolean update=updateEquipmentNoMerge(equipmentCreate,equipment);
+        if(equipmentCreate.getIp()!=null && !equipmentCreate.getIp().equals(equipment.getId())){
+            equipment.setIp(equipmentCreate.getIp());
+            update=true;
+        }
+
+        if(equipmentCreate.getPort()!=equipment.getPort()){
+            equipment.setPort(equipmentCreate.getPort());
+            update=true;
+        }
+        return update;
     }
 
     public List<Equipment> getEquipmentToSync(LocalDateTime now) {
@@ -115,6 +152,22 @@ public class EquipmentService implements IEquipmentService {
     @Override
     public EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext) {
         return baselinkService.linkEntities(linkToGroup.getEquipment(), linkToGroup.getEquipmentGroup(), EquipmentToGroup.class);
+
+    }
+
+    @Override
+    public void validateEquipmentCreate(EquipmentCreate equipmentCreate, SecurityContext securityContext) {
+
+        ProductType productType = equipmentCreate.getProductTypeId() != null ? getByIdOrNull(equipmentCreate.getProductTypeId(), ProductType.class, null, securityContext) : null;
+        if (productType == null && equipmentCreate.getProductTypeId() != null) {
+            throw new BadRequestException("No Product type with Id " + equipmentCreate.getProductTypeId());
+        }
+        equipmentCreate.setProductType(productType);
+        Gateway gateway = equipmentCreate.getCommunicationGatewayId() != null ? getByIdOrNull(equipmentCreate.getCommunicationGatewayId(), Gateway.class, null, securityContext) : null;
+        if (gateway == null && equipmentCreate.getCommunicationGatewayId() != null) {
+            throw new BadRequestException("No Gateway with Id " + equipmentCreate.getCommunicationGatewayId());
+        }
+        equipmentCreate.setGateway(gateway);
 
     }
 
@@ -160,6 +213,10 @@ public class EquipmentService implements IEquipmentService {
         if (equipmentCreate.getProductType() != null && (equipment.getProductType() == null || !equipment.getProductType().getId().equals(equipmentCreate.getProductType().getId()))) {
             equipment.setProductType(equipmentCreate.getProductType());
             update = true;
+        }
+        if(equipmentCreate.getEnable()!=null&&equipmentCreate.getEnable()!=equipment.isEnable()){
+            equipment.setEnable(equipmentCreate.getEnable());
+            update=true;
         }
 
         return update;
@@ -557,5 +614,21 @@ public class EquipmentService implements IEquipmentService {
         }
         equipmentRepository.massMerge(toMerge);
         return enableLights.getEquipmentList();
+    }
+
+    public FlexiCoreGateway createFlexiCoreGateway(FlexiCoreGatewayCreate gatewayCreate, SecurityContext securityContext) {
+        FlexiCoreGateway flexiCoreGateway=createGatewayNoMerge(FlexiCoreGateway.class,gatewayCreate,securityContext);
+        updateFlexiCoreGatewayNoMerge(gatewayCreate,flexiCoreGateway);
+        equipmentRepository.merge(flexiCoreGateway);
+        return flexiCoreGateway;
+    }
+
+    private boolean updateFlexiCoreGatewayNoMerge(FlexiCoreGatewayCreate gatewayCreate, FlexiCoreGateway flexiCoreGateway) {
+        boolean update=false;
+        if(gatewayCreate.getWebSocketUrl()!=null && !gatewayCreate.getWebSocketUrl().equals(flexiCoreGateway.getCommunicationWebSocketUrl())){
+            flexiCoreGateway.setCommunicationWebSocketUrl(gatewayCreate.getWebSocketUrl());
+            update=true;
+        }
+        return update;
     }
 }

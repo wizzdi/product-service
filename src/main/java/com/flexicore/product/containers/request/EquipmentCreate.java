@@ -1,26 +1,51 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.interfaces.dynamic.FieldInfo;
+import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
 import com.flexicore.product.model.EquipmentGroup;
+import com.flexicore.product.model.Gateway;
 import com.flexicore.product.model.ProductType;
 
 import java.time.LocalDateTime;
 
 public class EquipmentCreate {
 
+    @FieldInfo(mandatory = true,description = "gateway name")
+
     private String name;
+    @FieldInfo(description = "gateway description")
+
     private String description;
+    @FieldInfo(displayName = "latitude",description = "gateway latitude")
+
     private Double lat;
+    @FieldInfo(displayName = "longitude",description = "gateway longitude")
+
     private Double lon;
+    @FieldInfo(description = "serial number")
+
     private String serial;
+    @FieldInfo(description = "warranty Expiration")
+
     private LocalDateTime warrantyExpiration;
+    @IdRefFieldInfo(description = "product type",displayName = "Product Type",refType = ProductType.class,list = false)
+
     private String productTypeId;
     @JsonIgnore
     private ProductType ProductType;
 
+
     private String clazzName;
+    private Boolean enable;
     @JsonIgnore
     private Class<?> clazz;
+
+    @IdRefFieldInfo(description = "Communication Gateway used to connect to equipment",displayName = "Communication Gateway",refType = Gateway.class,list = false)
+
+    private String communicationGatewayId;
+    @JsonIgnore
+    private Gateway gateway;
 
 
     public String getName() {
@@ -40,9 +65,6 @@ public class EquipmentCreate {
         this.description = description;
         return this;
     }
-
-
-
 
 
     public Double getLat() {
@@ -117,6 +139,34 @@ public class EquipmentCreate {
 
     public EquipmentCreate setClazz(Class<?> clazz) {
         this.clazz = clazz;
+        return this;
+    }
+
+    public String getCommunicationGatewayId() {
+        return communicationGatewayId;
+    }
+
+    public EquipmentCreate setCommunicationGatewayId(String communicationGatewayId) {
+        this.communicationGatewayId = communicationGatewayId;
+        return this;
+    }
+
+    @JsonIgnore
+    public Gateway getGateway() {
+        return gateway;
+    }
+
+    public EquipmentCreate setGateway(Gateway gateway) {
+        this.gateway = gateway;
+        return this;
+    }
+
+    public Boolean getEnable() {
+        return enable;
+    }
+
+    public EquipmentCreate setEnable(Boolean enable) {
+        this.enable = enable;
         return this;
     }
 }

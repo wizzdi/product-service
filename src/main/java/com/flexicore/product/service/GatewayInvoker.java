@@ -5,6 +5,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
 import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
+import com.flexicore.product.containers.request.GatewayCreate;
 import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
 
@@ -24,6 +25,12 @@ public class GatewayInvoker implements ListingInvoker<Gateway,GatewayFiltering> 
     public PaginationResponse<Gateway> listAll(GatewayFiltering gatewayFiltering, SecurityContext securityContext) {
         equipmentService.validateFiltering(gatewayFiltering,securityContext);
         return equipmentService.getAllGateways(gatewayFiltering, securityContext);
+    }
+
+    @InvokerMethodInfo(displayName = "create Gateway",description = "Creates Gateway",relatedClasses = {Gateway.class})
+    public Gateway create(GatewayCreate gatewayCreate, SecurityContext securityContext) {
+        equipmentService.validateEquipmentCreate(gatewayCreate,securityContext);
+        return equipmentService.createEquipment(Gateway.class,gatewayCreate, securityContext);
     }
 
     @Override

@@ -230,7 +230,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             EquipmentCreate equipmentCreate,
             @Context SecurityContext securityContext) {
-        validateEquipmentCreate(equipmentCreate, securityContext);
+        service.validateEquipmentCreate(equipmentCreate, securityContext);
         Class<T> c = (Class<T>) Equipment.class;
         if (equipmentCreate.getClazzName() != null) {
             try {
@@ -243,14 +243,7 @@ public class EquipmentRESTService implements RestServicePlugin {
         return service.createEquipment(c, equipmentCreate, securityContext);
     }
 
-    private void validateEquipmentCreate(EquipmentCreate equipmentCreate, SecurityContext securityContext) {
 
-        ProductType productType = equipmentCreate.getProductTypeId() != null ? service.getByIdOrNull(equipmentCreate.getProductTypeId(), ProductType.class, null, securityContext) : null;
-        if (productType == null && equipmentCreate.getProductTypeId() != null) {
-            throw new BadRequestException("No Product type with Id " + equipmentCreate.getProductTypeId());
-        }
-        equipmentCreate.setProductType(productType);
-    }
 
 
     @POST
@@ -343,7 +336,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             throw new BadRequestException("no Equipment with id " + equipmentUpdate.getId());
         }
         equipmentUpdate.setEquipment(equipment);
-        validateEquipmentCreate(equipmentUpdate, securityContext);
+        service.validateEquipmentCreate(equipmentUpdate, securityContext);
 
 
         return service.updateEquipment(equipmentUpdate, securityContext);
