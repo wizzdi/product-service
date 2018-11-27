@@ -617,14 +617,15 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public FlexiCoreGateway createFlexiCoreGateway(FlexiCoreGatewayCreate gatewayCreate, SecurityContext securityContext) {
-        FlexiCoreGateway flexiCoreGateway=createGatewayNoMerge(FlexiCoreGateway.class,gatewayCreate,securityContext);
+        FlexiCoreGateway flexiCoreGateway=FlexiCoreGateway.s().CreateUnchecked(gatewayCreate.getName(),securityContext);
+        flexiCoreGateway.Init();
         updateFlexiCoreGatewayNoMerge(gatewayCreate,flexiCoreGateway);
         equipmentRepository.merge(flexiCoreGateway);
         return flexiCoreGateway;
     }
 
     private boolean updateFlexiCoreGatewayNoMerge(FlexiCoreGatewayCreate gatewayCreate, FlexiCoreGateway flexiCoreGateway) {
-        boolean update=false;
+        boolean update=updateGatewayNoMerge(gatewayCreate,flexiCoreGateway);
         if(gatewayCreate.getWebSocketUrl()!=null && !gatewayCreate.getWebSocketUrl().equals(flexiCoreGateway.getCommunicationWebSocketUrl())){
             flexiCoreGateway.setCommunicationWebSocketUrl(gatewayCreate.getWebSocketUrl());
             update=true;

@@ -7,6 +7,7 @@ import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.containers.request.FlexiCoreGatewayCreate;
 import com.flexicore.product.containers.request.GatewayCreate;
+import com.flexicore.product.iot.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.product.model.FlexiCoreGateway;
 import com.flexicore.product.model.FlexiCoreGatewayFiltering;
 import com.flexicore.product.model.Gateway;
@@ -32,7 +33,9 @@ public class FlexiCoreGatewayInvoker implements ListingInvoker<FlexiCoreGateway,
     }
 
     @InvokerMethodInfo(displayName = "create FlexiCore Gateway",description = "Creates FlexiCoreGateway",relatedClasses = {FlexiCoreGateway.class})
-    public FlexiCoreGateway create(FlexiCoreGatewayCreate gatewayCreate, SecurityContext securityContext) {
+    public FlexiCoreGateway create(FlexiCoreGatewayCreateParameters flexiCoreGatewayCreateParameters) {
+        FlexiCoreGatewayCreate gatewayCreate=flexiCoreGatewayCreateParameters.getFlexiCoreGatewayCreate();
+        SecurityContext securityContext=flexiCoreGatewayCreateParameters.getSecurityContext();
         equipmentService.validateEquipmentCreate(gatewayCreate,securityContext);
         return equipmentService.createFlexiCoreGateway(gatewayCreate, securityContext);
     }

@@ -6,8 +6,11 @@ import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
 import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.model.territories.Neighbourhood;
 import com.flexicore.model.territories.Street;
+import com.flexicore.product.containers.request.FlexiCoreGatewayCreate;
+import com.flexicore.product.containers.request.GatewayCreate;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
+import com.flexicore.product.iot.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.product.model.*;
 import com.flexicore.service.BaseclassService;
 
@@ -37,6 +40,7 @@ public class Config implements InitPlugin {
             SYNC_MAX_THREADS_FOR_HANDLERS = Integer.parseInt(properties.getProperty("SYNC_MAX_THREADS_FOR_HANDLERS", SYNC_MAX_THREADS_FOR_HANDLERS + ""));
 
             CrossLoaderResolver.registerClass(InspectEquipmentRequest.class);
+            CrossLoaderResolver.registerClass(FlexiCoreGatewayCreateParameters.class);
             BaseclassService.registerFilterClass(EquipmentFiltering.class,Equipment.class);
             BaseclassService.registerFilterClass(EquipmentFiltering.class,EquipmentShort.class);
             BaseclassService.registerFilterClass(GatewayFiltering.class,Gateway.class);
