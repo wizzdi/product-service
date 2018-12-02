@@ -672,4 +672,11 @@ public class EquipmentService implements IEquipmentService {
         }
         return update;
     }
+
+    public void updateProductStatus(UpdateProductStatus updateProductStatus, SecurityContext securityContext) {
+        List<Object> toMerge=new ArrayList<>();
+       List<ProductToStatus> links=getStatusLinks(new HashSet<>(Collections.singletonList(updateProductStatus.getProduct().getId())));
+       updateProductStatus(updateProductStatus.getProduct(),links,securityContext,toMerge,updateProductStatus.getProductStatus());
+       equipmentRepository.massMerge(toMerge);
+    }
 }

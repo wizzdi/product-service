@@ -292,6 +292,33 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     }
 
+
+    @PUT
+    @Produces("application/json")
+    @ApiOperation(value = "updateProductStatus", notes = "Updates product status")
+    @Path("updateProductStatus")
+    public void updateProductStatus(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            UpdateProductStatus updateProductType,
+            @Context SecurityContext securityContext) {
+        ProductStatus productStatus = updateProductType.getStatusId() != null ? service.getByIdOrNull(updateProductType.getStatusId(), ProductStatus.class, null, securityContext) : null;
+        if (productStatus == null) {
+            throw new BadRequestException("no productStatus with id " + updateProductType.getStatusId());
+        }
+        updateProductType.setProductStatus(productStatus);
+
+        Product product = updateProductType.getProductId() != null ? service.getByIdOrNull(updateProductType.getProductId(), Product.class, null, securityContext) : null;
+        if (product == null) {
+            throw new BadRequestException("no Product with id " + updateProductType.getProductId());
+        }
+        updateProductType.setProduct(product);
+
+
+
+        service.updateProductStatus(updateProductType, securityContext);
+
+    }
+
     @PUT
     @Produces("application/json")
     @ApiOperation(value = "updateProductStatusToType", notes = "Updates product status to type link ")
