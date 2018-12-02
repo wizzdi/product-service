@@ -17,9 +17,9 @@ public class ProductCreate {
 
     private String description;
 
-    @FieldInfo(description = "serial number")
+    @FieldInfo(description = "sku")
 
-    private String serial;
+    private String sku;
 
     @IdRefFieldInfo(description = "product type",displayName = "Product Type",refType = ProductType.class,list = false)
 
@@ -53,18 +53,14 @@ public class ProductCreate {
     }
 
 
-
-
-    public String getSerial() {
-        return serial;
+    public String getSku() {
+        return sku;
     }
 
-    public ProductCreate setSerial(String serial) {
-        this.serial = serial;
+    public ProductCreate setSku(String sku) {
+        this.sku = sku;
         return this;
     }
-
-
 
     public String getProductTypeId() {
         return productTypeId;

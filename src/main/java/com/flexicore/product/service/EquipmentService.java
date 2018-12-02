@@ -190,19 +190,36 @@ public class EquipmentService implements IEquipmentService {
 
     }
 
+    @Override
+    public boolean updateProductNoMerge(ProductCreate productCreate, Product product) {
+        boolean update = false;
+        if (productCreate.getName() != null && !productCreate.getName().equals(product.getName())) {
+            product.setName(productCreate.getName());
+            update = true;
+        }
+
+        if (productCreate.getDescription() != null && !productCreate.getDescription().equals(product.getDescription())) {
+            product.setDescription(productCreate.getDescription());
+            update = true;
+        }
+
+        if (productCreate.getSku() != null && !productCreate.getSku().equals(product.getSku())) {
+            product.setSku(productCreate.getSku());
+            update = true;
+        }
+        if (productCreate.getProductType() != null && (product.getProductType() == null || !product.getProductType().getId().equals(productCreate.getProductType().getId()))) {
+            product.setProductType(productCreate.getProductType());
+            update = true;
+        }
+
+
+        return update;
+    }
 
     @Override
     public boolean updateEquipmentNoMerge(EquipmentCreate equipmentCreate, Equipment equipment) {
-        boolean update = false;
-        if (equipmentCreate.getName() != null && !equipmentCreate.getName().equals(equipment.getName())) {
-            equipment.setName(equipmentCreate.getName());
-            update = true;
-        }
+        boolean update = updateProductNoMerge(equipmentCreate,equipment);
 
-        if (equipmentCreate.getDescription() != null && !equipmentCreate.getDescription().equals(equipment.getDescription())) {
-            equipment.setDescription(equipmentCreate.getDescription());
-            update = true;
-        }
         if (equipmentCreate.getWarrantyExpiration() != null && !equipmentCreate.getWarrantyExpiration().equals(equipment.getWarrantyExpiration())) {
             equipment.setWarrantyExpiration(equipmentCreate.getWarrantyExpiration());
             update = true;
@@ -229,10 +246,7 @@ public class EquipmentService implements IEquipmentService {
             equipment.setSerial(equipmentCreate.getSerial());
             update = true;
         }
-        if (equipmentCreate.getProductType() != null && (equipment.getProductType() == null || !equipment.getProductType().getId().equals(equipmentCreate.getProductType().getId()))) {
-            equipment.setProductType(equipmentCreate.getProductType());
-            update = true;
-        }
+
         if(equipmentCreate.getEnable()!=null&&equipmentCreate.getEnable()!=equipment.isEnable()){
             equipment.setEnable(equipmentCreate.getEnable());
             update=true;

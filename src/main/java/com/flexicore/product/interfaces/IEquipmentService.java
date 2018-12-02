@@ -33,6 +33,8 @@ public interface IEquipmentService extends ServicePlugin {
 
     void validateEquipmentCreate(EquipmentCreate equipmentCreate, SecurityContext securityContext);
 
+    boolean updateProductNoMerge(ProductCreate equipmentCreate, Product equipment);
+
     boolean updateEquipmentNoMerge(EquipmentCreate equipmentCreate, Equipment equipment);
 
     Equipment updateEquipment(EquipmentUpdate equipmentUpdate, SecurityContext securityContext);

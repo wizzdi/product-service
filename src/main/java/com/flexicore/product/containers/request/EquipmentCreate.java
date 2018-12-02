@@ -31,6 +31,10 @@ public class EquipmentCreate extends ProductCreate{
     @JsonIgnore
     private Gateway gateway;
 
+    @FieldInfo(description = "serial")
+
+    private String serial;
+
 
 
 
@@ -103,8 +107,8 @@ public class EquipmentCreate extends ProductCreate{
     }
 
     @Override
-    public EquipmentCreate setSerial(String serial) {
-        return (EquipmentCreate)super.setSerial(serial);
+    public EquipmentCreate setSku(String sku) {
+        return (EquipmentCreate)super.setSku(sku);
     }
 
     @Override
@@ -125,5 +129,14 @@ public class EquipmentCreate extends ProductCreate{
     @Override
     public EquipmentCreate setClazz(Class<?> clazz) {
         return (EquipmentCreate) super.setClazz(clazz);
+    }
+
+    public String getSerial() {
+        return serial;
+    }
+
+    public EquipmentCreate setSerial(String serial) {
+        this.serial = serial;
+        return this;
     }
 }
