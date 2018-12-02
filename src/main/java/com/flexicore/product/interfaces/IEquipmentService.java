@@ -27,6 +27,8 @@ public interface IEquipmentService extends ServicePlugin {
 
     <T extends Gateway> boolean updateGatewayNoMerge(GatewayCreate equipmentCreate, T equipment);
 
+    void updateProductStatus(Product light, List<ProductToStatus> allExistingStatus, SecurityContext securityContext, List<Object> toMerge, ProductStatus newStatus);
+
     EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext);
 
     void validateEquipmentCreate(EquipmentCreate equipmentCreate, SecurityContext securityContext);

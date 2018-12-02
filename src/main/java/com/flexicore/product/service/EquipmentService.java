@@ -150,6 +150,25 @@ public class EquipmentService implements IEquipmentService {
     }
 
     @Override
+    public void updateProductStatus(Product product, List<ProductToStatus> allExistingStatus, SecurityContext securityContext, List<Object> toMerge, ProductStatus newStatus) {
+        Map<String, ProductToStatus> available = allExistingStatus.parallelStream().collect(Collectors.toMap(f -> f.getRightside().getId(), f -> f, (a, b) -> a));
+        ProductToStatus link = available.get(newStatus.getId());
+        if (link == null) {
+            link = createProductToProductStatusLinkNoMerge(new ProductStatusToProductCreate().setProduct(product).setProductStatus(newStatus), securityContext);
+            available.put(newStatus.getId(), link);
+            allExistingStatus.add(link);
+            toMerge.add(link);
+        }
+        for (Map.Entry<String, ProductToStatus> entry : available.entrySet()) {
+            boolean expected = entry.getKey().equals(newStatus.getId());
+            if (entry.getValue().isEnabled() != expected) {
+                entry.getValue().setEnabled(expected);
+                toMerge.add(entry.getValue());
+            }
+        }
+    }
+
+    @Override
     public EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext) {
         return baselinkService.linkEntities(linkToGroup.getEquipment(), linkToGroup.getEquipmentGroup(), EquipmentToGroup.class);
 
@@ -218,6 +237,13 @@ public class EquipmentService implements IEquipmentService {
             equipment.setEnable(equipmentCreate.getEnable());
             update=true;
         }
+
+        if (equipmentCreate.getGateway() != null && (equipment.getCommunicationGateway() == null || !equipment.getCommunicationGateway().getId().equals(equipmentCreate.getGateway().getId()))) {
+            equipment.setCommunicationGateway(equipmentCreate.getGateway());
+            update = true;
+        }
+
+
 
         return update;
 
