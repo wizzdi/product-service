@@ -2,9 +2,6 @@ package com.flexicore.product.rest;
 
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.annotations.rest.Read;
-import com.flexicore.annotations.rest.Update;
-import com.flexicore.annotations.rest.Write;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
@@ -16,6 +13,7 @@ import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
 import com.flexicore.product.service.EquipmentService;
+import com.flexicore.product.service.EventService;
 import com.flexicore.product.service.GroupService;
 import com.flexicore.security.SecurityContext;
 import io.swagger.annotations.Api;
@@ -27,6 +25,8 @@ import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -58,6 +58,10 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Inject
     @PluginInfo(version = 1)
     private GroupService groupService;
+
+    @Inject
+    @PluginInfo(version = 1)
+    private EventService eventService;
 
     @Inject
     private Logger logger;
@@ -299,23 +303,28 @@ public class EquipmentRESTService implements RestServicePlugin {
     @Path("updateProductStatus")
     public void updateProductStatus(
             @HeaderParam("authenticationKey") String authenticationKey,
-            UpdateProductStatus updateProductType,
+            UpdateProductStatus updateProductStatus,
             @Context SecurityContext securityContext) {
-        ProductStatus productStatus = updateProductType.getStatusId() != null ? service.getByIdOrNull(updateProductType.getStatusId(), ProductStatus.class, null, securityContext) : null;
+        ProductStatus productStatus = updateProductStatus.getStatusId() != null ? service.getByIdOrNull(updateProductStatus.getStatusId(), ProductStatus.class, null, securityContext) : null;
         if (productStatus == null) {
-            throw new BadRequestException("no productStatus with id " + updateProductType.getStatusId());
+            throw new BadRequestException("no productStatus with id " + updateProductStatus.getStatusId());
         }
-        updateProductType.setProductStatus(productStatus);
+        updateProductStatus.setProductStatus(productStatus);
 
-        Product product = updateProductType.getProductId() != null ? service.getByIdOrNull(updateProductType.getProductId(), Product.class, null, securityContext) : null;
-        if (product == null) {
-            throw new BadRequestException("no Product with id " + updateProductType.getProductId());
+        Equipment equipment = updateProductStatus.getEquipmentId() != null ? service.getByIdOrNull(updateProductStatus.getEquipmentId(), Equipment.class, null, securityContext) : null;
+        if (equipment == null) {
+            throw new BadRequestException("no Equipment with id " + updateProductStatus.getEquipmentId());
         }
-        updateProductType.setProduct(product);
+        updateProductStatus.setEquipment(equipment);
 
 
 
-        service.updateProductStatus(updateProductType, securityContext);
+        if(service.updateProductStatus(updateProductStatus, securityContext)){
+            Event event=new Event(equipment)
+                    .setStatusIds(new HashSet<>(Arrays.asList(updateProductStatus.getProductStatus().getId())));
+            eventService.merge(event);
+
+        }
 
     }
 

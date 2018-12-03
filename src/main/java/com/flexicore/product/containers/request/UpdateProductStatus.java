@@ -1,34 +1,35 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.Product;
 import com.flexicore.product.model.ProductStatus;
 
 public class UpdateProductStatus {
 
-    private String productId;
+    private String equipmentId;
     @JsonIgnore
-    private Product product;
+    private Equipment equipment;
     private String statusId;
     @JsonIgnore
     private ProductStatus productStatus;
 
-    public String getProductId() {
-        return productId;
+    public String getEquipmentId() {
+        return equipmentId;
     }
 
-    public UpdateProductStatus setProductId(String productId) {
-        this.productId = productId;
+    public UpdateProductStatus setEquipmentId(String equipmentId) {
+        this.equipmentId = equipmentId;
         return this;
     }
     @JsonIgnore
 
-    public Product getProduct() {
-        return product;
+    public Product getEquipment() {
+        return equipment;
     }
 
-    public UpdateProductStatus setProduct(Product product) {
-        this.product = product;
+    public UpdateProductStatus setEquipment(Equipment equipment) {
+        this.equipment = equipment;
         return this;
     }
 
