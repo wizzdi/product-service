@@ -11,10 +11,12 @@ import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
+import com.flexicore.product.iot.request.OpenFlexiCoreGateway;
 import com.flexicore.product.model.*;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
 import com.flexicore.product.service.GroupService;
+import com.flexicore.product.service.IOTService;
 import com.flexicore.security.SecurityContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -64,6 +66,10 @@ public class EquipmentRESTService implements RestServicePlugin {
     private EventService eventService;
 
     @Inject
+    @PluginInfo(version = 1)
+    private IOTService iotService;
+
+    @Inject
     private Logger logger;
 
 
@@ -81,8 +87,6 @@ public class EquipmentRESTService implements RestServicePlugin {
     }
 
 
-
-
     @PUT
     @Produces("application/json")
     @ApiOperation(value = "enableEquipment", notes = "enable Equipment")
@@ -92,13 +96,13 @@ public class EquipmentRESTService implements RestServicePlugin {
             EnableEquipments enableLights, @Context SecurityContext securityContext) {
 
         Set<String> ids = enableLights.getEquipmentIds();
-        List<Equipment> lights=service.getEquipmentByIds(ids,securityContext);
-        ids.removeAll(lights.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
-        if(!ids.isEmpty()){
-            throw new BadRequestException("No equipment with ids "+ids.parallelStream().collect(Collectors.joining(",")));
+        List<Equipment> lights = service.getEquipmentByIds(ids, securityContext);
+        ids.removeAll(lights.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+        if (!ids.isEmpty()) {
+            throw new BadRequestException("No equipment with ids " + ids.parallelStream().collect(Collectors.joining(",")));
         }
         enableLights.setEquipmentList(lights);
-        return service.enableEquipment(enableLights,securityContext);
+        return service.enableEquipment(enableLights, securityContext);
 
     }
 
@@ -172,8 +176,6 @@ public class EquipmentRESTService implements RestServicePlugin {
     }
 
 
-
-
     @POST
     @Produces("application/json")
     @ApiOperation(value = "createProductStatus", notes = "Creates ProductStatus")
@@ -210,7 +212,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             @Context SecurityContext securityContext) {
         Class<T> c = service.validateFiltering(equipmentFiltering, securityContext);
 
-        return service.getProductGroupedByStatus(c,equipmentFiltering, securityContext);
+        return service.getProductGroupedByStatus(c, equipmentFiltering, securityContext);
     }
 
     @POST
@@ -223,7 +225,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             @Context SecurityContext securityContext) {
         Class<T> c = service.validateFiltering(equipmentFiltering, securityContext);
 
-        return service.getProductGroupedByStatus(c,equipmentFiltering, securityContext);
+        return service.getProductGroupedByStatus(c, equipmentFiltering, securityContext);
     }
 
     @POST
@@ -247,7 +249,34 @@ public class EquipmentRESTService implements RestServicePlugin {
         return service.createEquipment(c, equipmentCreate, securityContext);
     }
 
+    @POST
+    @Produces("application/json")
+    @ApiOperation(value = "createFlexiCoreGateway", notes = "Creates FlexiCoreGateway")
+    @Path("createFlexiCoreGateway")
+    public FlexiCoreGateway createFlexiCoreGateway(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            FlexiCoreGatewayCreate equipmentCreate,
+            @Context SecurityContext securityContext) {
+        service.validateEquipmentCreate(equipmentCreate, securityContext);
 
+        return service.createFlexiCoreGateway(equipmentCreate, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
+    @ApiOperation(value = "openConnectionFlexiCoreGateway", notes = "open connction FlexiCoreGateway")
+    @Path("openConnectionFlexiCoreGateway")
+    public void openConnectionFlexiCoreGateway(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            OpenFlexiCoreGateway equipmentCreate,
+            @Context SecurityContext securityContext) {
+        FlexiCoreGateway flexiCoreGateway = service.getByIdOrNull(equipmentCreate.getId(), FlexiCoreGateway.class, null, securityContext);
+        if (flexiCoreGateway == null) {
+            throw new BadRequestException("No FlexicoreGateway with id " + equipmentCreate.getId());
+        }
+        equipmentCreate.setFlexiCoreGateway(flexiCoreGateway);
+        iotService.openConnectionFlexiCoreGateway(equipmentCreate, securityContext);
+    }
 
 
     @POST
@@ -286,7 +315,7 @@ public class EquipmentRESTService implements RestServicePlugin {
         }
         updateProductType.setProductType(productStatus);
         FileResource newIcon = updateProductType.getIconId() != null ? service.getByIdOrNull(updateProductType.getIconId(), FileResource.class, null, securityContext) : null;
-        if (newIcon == null&& updateProductType.getIconId()!=null) {
+        if (newIcon == null && updateProductType.getIconId() != null) {
             throw new BadRequestException("no file resource with id " + updateProductType.getIconId());
         }
         updateProductType.setIcon(newIcon);
@@ -318,9 +347,8 @@ public class EquipmentRESTService implements RestServicePlugin {
         updateProductStatus.setEquipment(equipment);
 
 
-
-        if(service.updateProductStatus(updateProductStatus, securityContext)){
-            Event event=new Event(equipment)
+        if (service.updateProductStatus(updateProductStatus, securityContext)) {
+            Event event = new Event(equipment)
                     .setStatusIds(new HashSet<>(Arrays.asList(updateProductStatus.getProductStatus().getId())));
             eventService.merge(event);
 

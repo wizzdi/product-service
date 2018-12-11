@@ -9,6 +9,7 @@ import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
 public class FlexiCoreIOTRequest {
 
     private String id;
+    private String authKey;
 
     public String getId() {
         return id;
@@ -16,6 +17,15 @@ public class FlexiCoreIOTRequest {
 
     public FlexiCoreIOTRequest setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public String getAuthKey() {
+        return authKey;
+    }
+
+    public FlexiCoreIOTRequest setAuthKey(String authKey) {
+        this.authKey = authKey;
         return this;
     }
 }

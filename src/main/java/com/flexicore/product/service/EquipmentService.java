@@ -1,29 +1,45 @@
 package com.flexicore.product.service;
 
 import ch.hsr.geohash.GeoHash;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.*;
 import com.flexicore.model.territories.Neighbourhood;
 import com.flexicore.model.territories.Street;
+import com.flexicore.product.config.Config;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.interfaces.IEquipmentService;
+import com.flexicore.product.iot.request.OpenFlexiCoreGateway;
 import com.flexicore.product.model.*;
 import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.*;
+import com.google.crypto.tink.*;
+import com.google.crypto.tink.aead.AeadFactory;
+import com.google.crypto.tink.aead.AeadKeyTemplates;
+import com.google.crypto.tink.config.TinkConfig;
+import com.google.crypto.tink.proto.KeyTemplate;
+import com.mashape.unirest.http.ObjectMapper;
+import com.mashape.unirest.http.Unirest;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Context;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -59,7 +75,10 @@ public class EquipmentService implements IEquipmentService {
     private Logger logger;
 
 
+
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
+
+
 
 
     public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContext securityContext) {
@@ -90,7 +109,7 @@ public class EquipmentService implements IEquipmentService {
         return new PaginationResponse<>(list, filtering, total);
     }
 
-    public List<FlexiCoreGateway> getAllEnabledFCGateways(){
+    public List<FlexiCoreGateway> getAllEnabledFCGateways() {
         return equipmentRepository.getAllEnabledFCGateways();
     }
 
@@ -132,15 +151,35 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public <T extends Gateway> boolean updateGatewayNoMerge(GatewayCreate equipmentCreate, T equipment) {
-        boolean update=updateEquipmentNoMerge(equipmentCreate,equipment);
-        if(equipmentCreate.getIp()!=null && !equipmentCreate.getIp().equals(equipment.getId())){
+        boolean update = updateEquipmentNoMerge(equipmentCreate, equipment);
+        if (equipmentCreate.getIp() != null && !equipmentCreate.getIp().equals(equipment.getId())) {
             equipment.setIp(equipmentCreate.getIp());
-            update=true;
+            update = true;
         }
 
-        if(equipmentCreate.getPort()!=equipment.getPort()){
+        if (equipmentCreate.getPort() != equipment.getPort()) {
             equipment.setPort(equipmentCreate.getPort());
-            update=true;
+            update = true;
+        }
+        if (equipmentCreate.getUsername() != null && !equipmentCreate.getUsername().equals(equipment.getUsername())) {
+            equipment.setUsername(equipmentCreate.getUsername());
+            update = true;
+        }
+
+        String password = equipmentCreate.getPassword();
+        if (password != null) {
+            EncryptionService.initEncryption(logger);
+            try {
+                String encryptedPassword = Base64.getEncoder().encodeToString(EncryptionService.getAead().encrypt(password.getBytes(StandardCharsets.UTF_8), "test".getBytes()));
+                if (!encryptedPassword.equals(equipment.getEncryptedPassword())) {
+                    equipment.setEncryptedPassword(encryptedPassword);
+                    update = true;
+                }
+            }
+            catch (Exception e){
+                logger.log(Level.SEVERE,"could not encrypt password",e);
+            }
+
         }
         return update;
     }
@@ -218,7 +257,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public boolean updateEquipmentNoMerge(EquipmentCreate equipmentCreate, Equipment equipment) {
-        boolean update = updateProductNoMerge(equipmentCreate,equipment);
+        boolean update = updateProductNoMerge(equipmentCreate, equipment);
 
         if (equipmentCreate.getWarrantyExpiration() != null && !equipmentCreate.getWarrantyExpiration().equals(equipment.getWarrantyExpiration())) {
             equipment.setWarrantyExpiration(equipmentCreate.getWarrantyExpiration());
@@ -247,16 +286,15 @@ public class EquipmentService implements IEquipmentService {
             update = true;
         }
 
-        if(equipmentCreate.getEnable()!=null&&equipmentCreate.getEnable()!=equipment.isEnable()){
+        if (equipmentCreate.getEnable() != null && equipmentCreate.getEnable() != equipment.isEnable()) {
             equipment.setEnable(equipmentCreate.getEnable());
-            update=true;
+            update = true;
         }
 
         if (equipmentCreate.getGateway() != null && (equipment.getCommunicationGateway() == null || !equipment.getCommunicationGateway().getId().equals(equipmentCreate.getGateway().getId()))) {
             equipment.setCommunicationGateway(equipmentCreate.getGateway());
             update = true;
         }
-
 
 
         return update;
@@ -354,7 +392,6 @@ public class EquipmentService implements IEquipmentService {
     }
 
 
-
     @Override
     public List<ProductToStatus> getProductToStatusLinks(ProductStatusToProductCreate productStatusCreate, SecurityContext securityContext) {
         return baselinkService.findAllBySides(ProductToStatus.class, productStatusCreate.getProduct(), productStatusCreate.getProductStatus(), securityContext);
@@ -422,8 +459,8 @@ public class EquipmentService implements IEquipmentService {
         Class<T> c = (Class<T>) Equipment.class;
         if (filtering.getResultType() != null && !filtering.getResultType().isEmpty()) {
             try {
-                                Class<?> aClass = Class.forName(filtering.getResultType());
-                if(Equipment.class.isAssignableFrom(aClass)){
+                Class<?> aClass = Class.forName(filtering.getResultType());
+                if (Equipment.class.isAssignableFrom(aClass)) {
                     c = (Class<T>) aClass;
 
                 }
@@ -462,31 +499,31 @@ public class EquipmentService implements IEquipmentService {
             filtering.setProductStatusList(status);
         }
 
-        if(filtering.getNeighbourhoodIds()!=null && !filtering.getNeighbourhoodIds().isEmpty()){
-            Set<String> ids=filtering.getNeighbourhoodIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
-            List<Neighbourhood> neighbourhoods=getNeighbourhoods(ids,securityContext);
-            ids.removeAll(neighbourhoods.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
-            if(!ids.isEmpty()){
-                throw new BadRequestException("No Neighbourhood with ids "+ids);
+        if (filtering.getNeighbourhoodIds() != null && !filtering.getNeighbourhoodIds().isEmpty()) {
+            Set<String> ids = filtering.getNeighbourhoodIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            List<Neighbourhood> neighbourhoods = getNeighbourhoods(ids, securityContext);
+            ids.removeAll(neighbourhoods.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+            if (!ids.isEmpty()) {
+                throw new BadRequestException("No Neighbourhood with ids " + ids);
             }
             filtering.setNeighbourhoods(neighbourhoods);
         }
 
-        if(filtering.getStreetIds()!=null && !filtering.getStreetIds().isEmpty()){
-            Set<String> ids=filtering.getStreetIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
-            List<Street> streets=getStreets(ids,securityContext);
-            ids.removeAll(streets.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
-            if(!ids.isEmpty()){
-                throw new BadRequestException("No Streets with ids "+ids);
+        if (filtering.getStreetIds() != null && !filtering.getStreetIds().isEmpty()) {
+            Set<String> ids = filtering.getStreetIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            List<Street> streets = getStreets(ids, securityContext);
+            ids.removeAll(streets.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+            if (!ids.isEmpty()) {
+                throw new BadRequestException("No Streets with ids " + ids);
             }
             filtering.setStreets(streets);
         }
-        if(filtering.getGatewayIds()!=null && !filtering.getGatewayIds().isEmpty()){
-            Set<String> ids=filtering.getGatewayIds().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
-            List<Gateway> gateways=getGateways(ids,securityContext);
-            ids.removeAll(gateways.parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
-            if(!ids.isEmpty()){
-                throw new BadRequestException("No Gateways with ids "+ids);
+        if (filtering.getGatewayIds() != null && !filtering.getGatewayIds().isEmpty()) {
+            Set<String> ids = filtering.getGatewayIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            List<Gateway> gateways = getGateways(ids, securityContext);
+            ids.removeAll(gateways.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+            if (!ids.isEmpty()) {
+                throw new BadRequestException("No Gateways with ids " + ids);
             }
             filtering.setGateways(gateways);
         }
@@ -495,14 +532,15 @@ public class EquipmentService implements IEquipmentService {
     }
 
     private List<Street> getStreets(Set<String> ids, SecurityContext securityContext) {
-        return equipmentRepository.listByIds(Street.class,ids,securityContext);
+        return equipmentRepository.listByIds(Street.class, ids, securityContext);
     }
+
     private List<Gateway> getGateways(Set<String> ids, SecurityContext securityContext) {
-        return equipmentRepository.listByIds(Gateway.class,ids,securityContext);
+        return equipmentRepository.listByIds(Gateway.class, ids, securityContext);
     }
 
     private List<Neighbourhood> getNeighbourhoods(Set<String> ids, SecurityContext securityContext) {
-        return equipmentRepository.listByIds(Neighbourhood.class,ids,securityContext);
+        return equipmentRepository.listByIds(Neighbourhood.class, ids, securityContext);
     }
 
 
@@ -511,26 +549,24 @@ public class EquipmentService implements IEquipmentService {
     }
 
 
-
-
     @Override
     public List<ProductToStatus> getStatusLinks(Set<String> collect) {
-        return collect.isEmpty()?new ArrayList<>():equipmentRepository.getStatusLinks(collect);
+        return collect.isEmpty() ? new ArrayList<>() : equipmentRepository.getStatusLinks(collect);
     }
 
     @Override
     public List<ProductToStatus> getCurrentStatusLinks(Set<String> collect) {
-        return collect.isEmpty()?new ArrayList<>():equipmentRepository.getCurrentStatusLinks(collect);
+        return collect.isEmpty() ? new ArrayList<>() : equipmentRepository.getCurrentStatusLinks(collect);
     }
 
     public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
         List<ProductToStatus> statusLinks = getCurrentStatusLinks(list.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
-        Map<String,List<ProductStatus>> statusLinksMap= statusLinks.parallelStream().collect(Collectors.groupingBy(f->f.getLeftside().getId(),ConcurrentHashMap::new,Collectors.mapping(f->f.getRightside(),Collectors.toList())));
+        Map<String, List<ProductStatus>> statusLinksMap = statusLinks.parallelStream().collect(Collectors.groupingBy(f -> f.getLeftside().getId(), ConcurrentHashMap::new, Collectors.mapping(f -> f.getRightside(), Collectors.toList())));
 
 
-        Map<String,Map<String,String>> typeToStatusToIconMap = getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
-                .parallelStream().filter(f->f.getImage()!=null).collect(Collectors.groupingBy(f->f.getLeftside().getId(),Collectors.toMap(f->f.getRightside().getId(),f->f.getImage().getId(), (a, b) ->a)));
+        Map<String, Map<String, String>> typeToStatusToIconMap = getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
+                .parallelStream().filter(f -> f.getImage() != null).collect(Collectors.groupingBy(f -> f.getLeftside().getId(), Collectors.toMap(f -> f.getRightside().getId(), f -> f.getImage().getId(), (a, b) -> a)));
 
 //        Map<String,Map<String,String>> typeToStatusToIconMap = getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
 //                .parallelStream().filter(f->f.getImage()!=null).collect(Collectors.groupingBy(f->f.getLeftside().getId(),Collectors.toMap(f->f.getRightside().getId(),f->f.getImage().getId())));
@@ -538,27 +574,25 @@ public class EquipmentService implements IEquipmentService {
         long total = countAllEquipments(c, filtering, securityContext);
 
 
-
-
         return new PaginationResponse<>(list.parallelStream()
-                .map(f -> new EquipmentShort(f,statusLinksMap.get(f.getId()),buildSpecificStatusIconMap(f.getProductType()!=null?typeToStatusToIconMap.get(f.getProductType().getId()):null,statusLinksMap.get(f.getId()))))
+                .map(f -> new EquipmentShort(f, statusLinksMap.get(f.getId()), buildSpecificStatusIconMap(f.getProductType() != null ? typeToStatusToIconMap.get(f.getProductType().getId()) : null, statusLinksMap.get(f.getId()))))
                 .collect(Collectors.toList()), filtering, total);
     }
 
     @Override
-    public Map<String,String> buildSpecificStatusIconMap(Map<String, String> typeSpecificStatusToIcon, List<ProductStatus> status){
+    public Map<String, String> buildSpecificStatusIconMap(Map<String, String> typeSpecificStatusToIcon, List<ProductStatus> status) {
         Map<String, String> result = new HashMap<>();
-        result = (typeSpecificStatusToIcon == null || status == null) ? new HashMap<>() : status.parallelStream().filter(f -> typeSpecificStatusToIcon.get(f.getId()) != null).collect(Collectors.toMap(f -> f.getId(), f -> typeSpecificStatusToIcon.get(f.getId()), (a, b)->a));
+        result = (typeSpecificStatusToIcon == null || status == null) ? new HashMap<>() : status.parallelStream().filter(f -> typeSpecificStatusToIcon.get(f.getId()) != null).collect(Collectors.toMap(f -> f.getId(), f -> typeSpecificStatusToIcon.get(f.getId()), (a, b) -> a));
         return result;
     }
 
     @Override
     public List<ProductTypeToProductStatus> getAllProductTypeToStatusLinks(Set<String> statusIds) {
-        return statusIds.isEmpty()?new ArrayList<>():equipmentRepository.getAllProductTypeToStatusLinks(statusIds);
+        return statusIds.isEmpty() ? new ArrayList<>() : equipmentRepository.getAllProductTypeToStatusLinks(statusIds);
     }
 
     public ProductType updateProductType(UpdateProductType updateProductType, SecurityContext securityContext) {
-        if (updateProductTypeNoMerge(updateProductType, securityContext)){
+        if (updateProductTypeNoMerge(updateProductType, securityContext)) {
             equipmentRepository.merge(updateProductType.getProductType());
         }
         return updateProductType.getProductType();
@@ -588,13 +622,13 @@ public class EquipmentService implements IEquipmentService {
 
     public ProductTypeToProductStatus updateProductStatusToType(UpdateProductStatusToType updateProductStatus, SecurityContext securityContext) {
         List<ProductTypeToProductStatus> list = baselinkService.findAllBySides(ProductTypeToProductStatus.class, updateProductStatus.getProductType(), updateProductStatus.getProductStatus(), securityContext);
-        if(list.isEmpty()){
-            throw new BadRequestException("status "+updateProductStatus.getProductStatusId() +" and "+updateProductStatus.getProductTypeId() +" are not linked");
+        if (list.isEmpty()) {
+            throw new BadRequestException("status " + updateProductStatus.getProductStatusId() + " and " + updateProductStatus.getProductTypeId() + " are not linked");
         }
-        List<Object> toMerge=new ArrayList<>();
+        List<Object> toMerge = new ArrayList<>();
         for (ProductTypeToProductStatus productTypeToProductStatus : list) {
             boolean update = updateProductStatusToType(updateProductStatus, productTypeToProductStatus);
-            if(update){
+            if (update) {
                 toMerge.add(productTypeToProductStatus);
             }
         }
@@ -608,45 +642,45 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public boolean updateProductStatusToType(UpdateProductStatusToType updateProductStatus, ProductTypeToProductStatus productTypeToProductStatus) {
-        boolean update =false;
-        if(productTypeToProductStatus.getImage()==null||!productTypeToProductStatus.getImage().getId().equals(updateProductStatus.getIcon().getId())){
+        boolean update = false;
+        if (productTypeToProductStatus.getImage() == null || !productTypeToProductStatus.getImage().getId().equals(updateProductStatus.getIcon().getId())) {
             productTypeToProductStatus.setImage(updateProductStatus.getIcon());
-            update=true;
+            update = true;
 
         }
         return update;
     }
 
     public void validateProductStatusFiltering(ProductStatusFiltering productTypeFiltering, SecurityContext securityContext) {
-        ProductType productType=productTypeFiltering.getProductTypeId()!=null?getByIdOrNull(productTypeFiltering.getProductTypeId().getId(),ProductType.class,null,securityContext):null;
-        if(productType==null&&productTypeFiltering.getProductTypeId()!=null){
-            throw new BadRequestException("No Product Type with id "+productTypeFiltering.getProductTypeId().getId());
+        ProductType productType = productTypeFiltering.getProductTypeId() != null ? getByIdOrNull(productTypeFiltering.getProductTypeId().getId(), ProductType.class, null, securityContext) : null;
+        if (productType == null && productTypeFiltering.getProductTypeId() != null) {
+            throw new BadRequestException("No Product Type with id " + productTypeFiltering.getProductTypeId().getId());
         }
         productTypeFiltering.setProductType(productType);
     }
 
     public PaginationResponse<Neighbourhood> getAllNeighbourhoods(NeighbourhoodFiltering neighbourhoodFiltering, SecurityContext securityContext) {
-        QueryInformationHolder<Neighbourhood> queryInformationHolder=new QueryInformationHolder<>(neighbourhoodFiltering,Neighbourhood.class,securityContext);
-        List<Neighbourhood> list=equipmentRepository.getAllFiltered(queryInformationHolder);
-        long count=equipmentRepository.countAllFiltered(queryInformationHolder);
-        return new PaginationResponse<>(list,neighbourhoodFiltering,count);
+        QueryInformationHolder<Neighbourhood> queryInformationHolder = new QueryInformationHolder<>(neighbourhoodFiltering, Neighbourhood.class, securityContext);
+        List<Neighbourhood> list = equipmentRepository.getAllFiltered(queryInformationHolder);
+        long count = equipmentRepository.countAllFiltered(queryInformationHolder);
+        return new PaginationResponse<>(list, neighbourhoodFiltering, count);
     }
 
     public PaginationResponse<Street> getAllStreets(StreetFiltering streetFiltering, SecurityContext securityContext) {
-        QueryInformationHolder<Street> queryInformationHolder=new QueryInformationHolder<>(streetFiltering,Street.class,securityContext);
-        List<Street> list=equipmentRepository.getAllFiltered(queryInformationHolder);
-        long count=equipmentRepository.countAllFiltered(queryInformationHolder);
-        return new PaginationResponse<>(list,streetFiltering,count);
+        QueryInformationHolder<Street> queryInformationHolder = new QueryInformationHolder<>(streetFiltering, Street.class, securityContext);
+        List<Street> list = equipmentRepository.getAllFiltered(queryInformationHolder);
+        long count = equipmentRepository.countAllFiltered(queryInformationHolder);
+        return new PaginationResponse<>(list, streetFiltering, count);
     }
 
     public List<Equipment> getEquipmentByIds(Set<String> ids, SecurityContext securityContext) {
-        return equipmentRepository.listByIds(Equipment.class,ids,securityContext);
+        return equipmentRepository.listByIds(Equipment.class, ids, securityContext);
     }
 
     public List<Equipment> enableEquipment(EnableEquipments enableLights, SecurityContext securityContext) {
-        List<Object> toMerge=new ArrayList<>();
+        List<Object> toMerge = new ArrayList<>();
         for (Equipment equipment : enableLights.getEquipmentList()) {
-            if(equipment.isEnable()!=enableLights.isEnable()){
+            if (equipment.isEnable() != enableLights.isEnable()) {
                 equipment.setEnable(enableLights.isEnable());
                 toMerge.add(equipment);
 
@@ -657,27 +691,35 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public FlexiCoreGateway createFlexiCoreGateway(FlexiCoreGatewayCreate gatewayCreate, SecurityContext securityContext) {
-        FlexiCoreGateway flexiCoreGateway=FlexiCoreGateway.s().CreateUnchecked(gatewayCreate.getName(),securityContext);
+        FlexiCoreGateway flexiCoreGateway = FlexiCoreGateway.s().CreateUnchecked(gatewayCreate.getName(), securityContext);
         flexiCoreGateway.Init();
-        updateFlexiCoreGatewayNoMerge(gatewayCreate,flexiCoreGateway);
+        updateFlexiCoreGatewayNoMerge(gatewayCreate, flexiCoreGateway);
         equipmentRepository.merge(flexiCoreGateway);
         return flexiCoreGateway;
     }
 
     private boolean updateFlexiCoreGatewayNoMerge(FlexiCoreGatewayCreate gatewayCreate, FlexiCoreGateway flexiCoreGateway) {
-        boolean update=updateGatewayNoMerge(gatewayCreate,flexiCoreGateway);
-        if(gatewayCreate.getWebSocketUrl()!=null && !gatewayCreate.getWebSocketUrl().equals(flexiCoreGateway.getCommunicationWebSocketUrl())){
+        boolean update = updateGatewayNoMerge(gatewayCreate, flexiCoreGateway);
+        if (gatewayCreate.getWebSocketUrl() != null && !gatewayCreate.getWebSocketUrl().equals(flexiCoreGateway.getCommunicationWebSocketUrl())) {
             flexiCoreGateway.setCommunicationWebSocketUrl(gatewayCreate.getWebSocketUrl());
-            update=true;
+            update = true;
         }
+
+        if (gatewayCreate.getBaseApiUrl() != null && !gatewayCreate.getBaseApiUrl().equals(flexiCoreGateway.getBaseApiUrl())) {
+            flexiCoreGateway.setBaseApiUrl(gatewayCreate.getBaseApiUrl());
+            update = true;
+        }
+
         return update;
     }
 
     public boolean updateProductStatus(UpdateProductStatus updateProductStatus, SecurityContext securityContext) {
-        List<Object> toMerge=new ArrayList<>();
-       List<ProductToStatus> links=getStatusLinks(new HashSet<>(Collections.singletonList(updateProductStatus.getEquipment().getId())));
-       updateProductStatus(updateProductStatus.getEquipment(),links,securityContext,toMerge,updateProductStatus.getProductStatus());
-       equipmentRepository.massMerge(toMerge);
-       return !toMerge.isEmpty();
+        List<Object> toMerge = new ArrayList<>();
+        List<ProductToStatus> links = getStatusLinks(new HashSet<>(Collections.singletonList(updateProductStatus.getEquipment().getId())));
+        updateProductStatus(updateProductStatus.getEquipment(), links, securityContext, toMerge, updateProductStatus.getProductStatus());
+        equipmentRepository.massMerge(toMerge);
+        return !toMerge.isEmpty();
     }
+
+
 }

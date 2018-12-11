@@ -25,19 +25,25 @@ public class Config implements InitPlugin {
     private static int SYNC_MAX_THREADS = 1;
     private static int SYNC_MAX_THREADS_FOR_HANDLERS = 5;
     private static long SYNCER_CHECK_INTERVAL = 1000 * 60;//every 1 min
+    private static String keySetFilePath="/home/flexicore/keySet.json";
 
 
     @Inject
     @InjectProperties
     private Properties properties;
 
+    public static String getKeySetFilePath() {
+        return keySetFilePath;
+    }
+
+
     @Override
     public void init() {
         if (init.compareAndSet(false, true)) {
             SYNCER_CHECK_INTERVAL = Long.parseLong(properties.getProperty("SYNCER_CHECK_INTERVAL", SYNCER_CHECK_INTERVAL + ""));
-
             SYNC_MAX_THREADS = Integer.parseInt(properties.getProperty("SYNC_MAX_THREADS", SYNC_MAX_THREADS + ""));
             SYNC_MAX_THREADS_FOR_HANDLERS = Integer.parseInt(properties.getProperty("SYNC_MAX_THREADS_FOR_HANDLERS", SYNC_MAX_THREADS_FOR_HANDLERS + ""));
+            keySetFilePath=properties.getProperty("keySetFilePath",keySetFilePath);
 
             CrossLoaderResolver.registerClass(InspectEquipmentRequest.class);
             CrossLoaderResolver.registerClass(FlexiCoreGatewayCreateParameters.class);

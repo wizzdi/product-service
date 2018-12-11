@@ -11,6 +11,11 @@ public class GatewayCreate extends EquipmentCreate {
 
     private int port;
 
+    @FieldInfo(description = "username")
+    private String username;
+    @FieldInfo(description = "password")
+    private String password;
+
     public String getIp() {
         return ip;
     }
@@ -26,6 +31,24 @@ public class GatewayCreate extends EquipmentCreate {
 
     public GatewayCreate setPort(int port) {
         this.port = port;
+        return this;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public GatewayCreate setUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public GatewayCreate setPassword(String password) {
+        this.password = password;
         return this;
     }
 }
