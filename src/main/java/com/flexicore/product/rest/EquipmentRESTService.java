@@ -11,17 +11,15 @@ import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
-import com.flexicore.product.iot.request.OpenFlexiCoreGateway;
 import com.flexicore.product.model.*;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
 import com.flexicore.product.service.GroupService;
 import com.flexicore.product.service.IOTService;
 import com.flexicore.security.SecurityContext;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.Tag;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -43,13 +41,13 @@ import java.util.stream.Collectors;
 @OperationsInside
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/Equipments")
-@SwaggerDefinition(tags = {
+@OpenAPIDefinition(tags = {
         @Tag(name = "Events", description = "Events Services"),
         @Tag(name = "Equipments", description = "Equipments Services"),
         @Tag(name = "EquipmentGroups", description = "EquipmentGroups Services")
 
 })
-@Api(tags = {"Equipments"})
+@Tag(name = "Equipments")
 
 public class EquipmentRESTService implements RestServicePlugin {
 
@@ -75,7 +73,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
+    @Operation(summary = "getAllEquipments", description = "Gets All Equipments Filtered")
     @Path("getAllEquipments")
     public <T extends Equipment> PaginationResponse<T> getAllEquipments(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -89,7 +87,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @PUT
     @Produces("application/json")
-    @ApiOperation(value = "enableEquipment", notes = "enable Equipment")
+    @Operation(summary = "enableEquipment", description = "enable Equipment")
     @Path("enableEquipment")
     public List<Equipment> enableEquipment(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -109,7 +107,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getAllEquipmentsShort", notes = "Gets All Equipments (short) Filtered")
+    @Operation(summary = "getAllEquipmentsShort", description = "Gets All Equipments (short) Filtered")
     @Path("getAllEquipmentsShort")
     public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -123,7 +121,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
+    @Operation(summary = "getAllEquipments", description = "Gets All Equipments Filtered")
     @Path("countAllEquipments")
     public <T extends Equipment> long countAllEquipments(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -137,7 +135,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getAllEquipmentsGrouped", notes = "Gets All Equipments Filtered and Grouped")
+    @Operation(summary = "getAllEquipmentsGrouped", description = "Gets All Equipments Filtered and Grouped")
     @Path("getAllEquipmentsGrouped")
     public <T extends Equipment> PaginationResponse<EquipmentGroupHolder> getAllEquipmentsGrouped(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -153,7 +151,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "createProductType", notes = "Creates ProductType")
+    @Operation(summary = "createProductType", description = "Creates ProductType")
     @Path("createProductType")
     public ProductType createProductType(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -165,7 +163,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getAllProductTypes", notes = "lists all ProductTypes")
+    @Operation(summary = "getAllProductTypes", description = "lists all ProductTypes")
     @Path("getAllProductTypes")
     public PaginationResponse<ProductType> getAllProductTypes(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -178,7 +176,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "createProductStatus", notes = "Creates ProductStatus")
+    @Operation(summary = "createProductStatus", description = "Creates ProductStatus")
     @Path("createProductStatus")
     public ProductStatus createProductStatus(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -190,7 +188,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getAllProductStatus", notes = "lists all ProductStatus")
+    @Operation(summary = "getAllProductStatus", description = "lists all ProductStatus")
     @Path("getAllProductStatus")
     public PaginationResponse<ProductStatus> getAllProductStatus(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -204,7 +202,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getProductGroupedByStatus", notes = "returns product stats grouped by status")
+    @Operation(summary = "getProductGroupedByStatus", description = "returns product stats grouped by status")
     @Path("getProductGroupedByStatus")
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -217,7 +215,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "disableGateway", notes = "disables Gateway")
+    @Operation(summary = "disableGateway", description = "disables Gateway")
     @Path("disableGateway")
     public <T extends Equipment> List<EquipmentStatusGroup> disableGateway(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -230,7 +228,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "createEquipment", notes = "Creates Equipment")
+    @Operation(summary = "createEquipment", description = "Creates Equipment")
     @Path("createEquipment")
     public <T extends Equipment> T createEquipment(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -249,39 +247,11 @@ public class EquipmentRESTService implements RestServicePlugin {
         return service.createEquipment(c, equipmentCreate, securityContext);
     }
 
-    @POST
-    @Produces("application/json")
-    @ApiOperation(value = "createFlexiCoreGateway", notes = "Creates FlexiCoreGateway")
-    @Path("createFlexiCoreGateway")
-    public FlexiCoreGateway createFlexiCoreGateway(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            FlexiCoreGatewayCreate equipmentCreate,
-            @Context SecurityContext securityContext) {
-        service.validateEquipmentCreate(equipmentCreate, securityContext);
-
-        return service.createFlexiCoreGateway(equipmentCreate, securityContext);
-    }
-
-    @POST
-    @Produces("application/json")
-    @ApiOperation(value = "openConnectionFlexiCoreGateway", notes = "open connction FlexiCoreGateway")
-    @Path("openConnectionFlexiCoreGateway")
-    public void openConnectionFlexiCoreGateway(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            OpenFlexiCoreGateway equipmentCreate,
-            @Context SecurityContext securityContext) {
-        FlexiCoreGateway flexiCoreGateway = service.getByIdOrNull(equipmentCreate.getId(), FlexiCoreGateway.class, null, securityContext);
-        if (flexiCoreGateway == null) {
-            throw new BadRequestException("No FlexicoreGateway with id " + equipmentCreate.getId());
-        }
-        equipmentCreate.setFlexiCoreGateway(flexiCoreGateway);
-        iotService.openConnectionFlexiCoreGateway(equipmentCreate, securityContext);
-    }
 
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "linkToGroup", notes = "Links Equipment to Group")
+    @Operation(summary = "linkToGroup", description = "Links Equipment to Group")
     @Path("linkToGroup")
     public EquipmentToGroup linkToGroup(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -303,7 +273,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @PUT
     @Produces("application/json")
-    @ApiOperation(value = "updateProductType", notes = "Updates product type")
+    @Operation(summary = "updateProductType", description = "Updates product type")
     @Path("updateProductType")
     public ProductType updateProductType(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -328,7 +298,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @PUT
     @Produces("application/json")
-    @ApiOperation(value = "updateProductStatus", notes = "Updates product status")
+    @Operation(summary = "updateProductStatus", description = "Updates product status")
     @Path("updateProductStatus")
     public void updateProductStatus(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -358,7 +328,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @PUT
     @Produces("application/json")
-    @ApiOperation(value = "updateProductStatusToType", notes = "Updates product status to type link ")
+    @Operation(summary = "updateProductStatusToType", description = "Updates product status to type link ")
     @Path("updateProductStatusToType")
     public ProductTypeToProductStatus updateProductStatusToType(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -389,7 +359,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "updateEquipment", notes = "Updates Equipment")
+    @Operation(summary = "updateEquipment", description = "Updates Equipment")
     @Path("updateEquipment")
     public Equipment updateEquipment(
             @HeaderParam("authenticationKey") String authenticationKey,

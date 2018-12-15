@@ -2,27 +2,27 @@ package com.flexicore.product.rest;
 
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.annotations.rest.Read;
-import com.flexicore.annotations.rest.Update;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.RestServicePlugin;
-import com.flexicore.product.containers.request.*;
+import com.flexicore.product.containers.request.CreateAggregatedReport;
+import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.containers.response.AggregationReport;
-import com.flexicore.product.containers.response.AggregationReportEntry;
-import com.flexicore.product.model.*;
-import com.flexicore.product.service.EventService;
+import com.flexicore.product.model.Event;
 import com.flexicore.product.service.EquipmentService;
+import com.flexicore.product.service.EventService;
 import com.flexicore.security.SecurityContext;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
-import javax.ws.rs.*;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -34,7 +34,7 @@ import java.util.logging.Logger;
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/Events")
 
-@Api(tags = {"Events"})
+@Tag(name = "Events")
 
 public class EventRESTService implements RestServicePlugin {
 
@@ -54,7 +54,7 @@ public class EventRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getAllEvents", notes = "return Events Filtered")
+    @Operation(summary = "getAllEvents", description = "return Events Filtered")
     @Path("getAllEvents")
     public PaginationResponse<Event> getAllEvents(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -67,7 +67,7 @@ public class EventRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "generateReport", notes = "Generates report")
+    @Operation(summary = "generateReport", description = "Generates report")
     @Path("generateReport")
     public AggregationReport generateReport(
             @HeaderParam("authenticationKey") String authenticationKey,

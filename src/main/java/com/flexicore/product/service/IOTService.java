@@ -147,11 +147,14 @@ public class IOTService implements IIOTService {
         }
     }
 
-    public static void registerMessageListener(String messageTypeClassName, Consumer<FlexiCoreIOTRequest> callback) {
-        listeners.computeIfAbsent(messageTypeClassName, f -> new LinkedBlockingQueue<>()).add(callback);
+    @Override
+    public <T extends FlexiCoreIOTRequest> void registerMessageListener(Class<T> c, Consumer<T> callback) {
+        Queue<Consumer<FlexiCoreIOTRequest>> consumers = listeners.computeIfAbsent(c.getCanonicalName(), f -> new LinkedBlockingQueue<>());
+        consumers.add((Consumer<FlexiCoreIOTRequest>) callback);
     }
 
-    public static boolean unregisterMessageListener(String messageTypeClassName, Consumer<FlexiCoreIOTRequest> callback) {
+    @Override
+    public <T extends FlexiCoreIOTRequest> boolean unregisterMessageListener(String messageTypeClassName, Consumer<T> callback) {
         Queue<Consumer<FlexiCoreIOTRequest>> queue = listeners.get(messageTypeClassName);
         if (queue != null) {
             return queue.remove(callback);
@@ -217,14 +220,14 @@ public class IOTService implements IIOTService {
     }
 
     @Override
-    public void executeViaFlexiCoreGateway(String communicationId, FlexiCoreIOTRequest flexiCoreExecutionRequest, Consumer<FlexiCoreIOTResponse> callback) throws IOException, EncodeException {
+    public <T extends FlexiCoreIOTResponse> void executeViaFlexiCoreGateway(String communicationId, FlexiCoreIOTRequest flexiCoreExecutionRequest, Consumer<T> callback) throws IOException, EncodeException {
         Session session = openSessions.get(communicationId);
         if (session == null) {
             FlexiCoreIOTResponse flexiCoreIOTResponse = new FlexiCoreIOTResponse().setFlexiCoreIOTStatus(FlexiCoreIOTStatus.FAILED);
-            callback.accept(flexiCoreIOTResponse);
+            callback.accept((T) flexiCoreIOTResponse);
             return;
         }
-        responseCallbackMap.put(flexiCoreExecutionRequest.getId(), callback);
+        responseCallbackMap.put(flexiCoreExecutionRequest.getId(), (Consumer<FlexiCoreIOTResponse>) callback);
         session.getBasicRemote().sendObject(flexiCoreExecutionRequest);
     }
 

@@ -9,6 +9,7 @@ import com.flexicore.product.iot.encoders.FlexiCoreIOTRequestMessageDecoder;
 import com.flexicore.product.iot.encoders.FlexiCoreIOTResponseMessageEncoder;
 import com.flexicore.product.iot.request.FlexiCoreIOTRequest;
 import com.flexicore.product.service.IOTService;
+import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -35,8 +36,10 @@ public class FlexiCoreIOTWSServer implements WebSocketPlugin {
     @OnMessage
     @Update
     public void receiveMessage(@PathParam("authenticationKey") String authenticationKey, FlexiCoreIOTRequest message, Session session) {
+        SecurityContext securityContext= (SecurityContext) session.getUserProperties().get("securityContext");
+
         logger.info("Received : " + message + ", session:" + session.getId());
-        IOTService.onMessage(message);
+        IOTService.onMessage(message.setSessionReceivedFrom(session).setSecurityContext(securityContext));
     }
 
     @OnOpen

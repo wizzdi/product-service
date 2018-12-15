@@ -2,8 +2,6 @@ package com.flexicore.product.rest;
 
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.annotations.rest.Read;
-import com.flexicore.annotations.rest.Write;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
@@ -14,8 +12,8 @@ import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.GroupFiltering;
 import com.flexicore.product.service.GroupService;
 import com.flexicore.security.SecurityContext;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -33,7 +31,7 @@ import java.util.logging.Logger;
 @Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
 @Path("plugins/EquipmentGroups")
 
-@Api(tags = {"EquipmentGroups"})
+@Tag(name = "EquipmentGroups")
 
 public class GroupRESTService implements RestServicePlugin {
 
@@ -47,7 +45,7 @@ public class GroupRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getAllEquipments", notes = "Gets All Equipments Filtered")
+    @Operation(summary = "getAllEquipments", description = "Gets All Equipments Filtered")
     @Path("getAllEquipmentGroups")
     public PaginationResponse<EquipmentGroup> getAllEquipmentGroups(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -61,7 +59,7 @@ public class GroupRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "getRootEquipmentGroup", notes = "return Root EquipmentGroupHolder")
+    @Operation(summary = "getRootEquipmentGroup", description = "return Root EquipmentGroupHolder")
     @Path("getRootEquipmentGroup")
     public EquipmentGroup getRootEquipmentGroup(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -73,7 +71,7 @@ public class GroupRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "createGroup", notes = "Creates Equipment Group")
+    @Operation(summary = "createGroup", description = "Creates Equipment Group")
     @Path("createGroup")
     public EquipmentGroup createGroup(
             @HeaderParam("authenticationKey") String authenticationKey,
@@ -91,7 +89,7 @@ public class GroupRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
-    @ApiOperation(value = "updateGroup", notes = "Updates Equipment Group")
+    @Operation(summary = "updateGroup", description = "Updates Equipment Group")
     @Path("updateGroup")
     public EquipmentGroup updateGroup(
             @HeaderParam("authenticationKey") String authenticationKey,

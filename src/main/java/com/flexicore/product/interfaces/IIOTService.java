@@ -15,9 +15,14 @@ import java.util.function.Consumer;
 
 public interface IIOTService extends ServicePlugin, InitPlugin {
 
+
+    <T extends FlexiCoreIOTRequest> void registerMessageListener(Class<T> c, Consumer<T> callback);
+
+    <T extends FlexiCoreIOTRequest> boolean unregisterMessageListener(String messageTypeClassName, Consumer<T> callback);
+
     OpenFlexiCoreGatewayResponse openFlexiCoreGateway(FlexiCoreGateway flexiCoreGateway) throws IOException, DeploymentException;
 
     CloseFlexiCoreGatewayResponse closeFlexiCoreGateway(String communicationId) throws IOException;
 
-    void executeViaFlexiCoreGateway(String communicationId, FlexiCoreIOTRequest flexiCoreExecutionRequest, Consumer<FlexiCoreIOTResponse> callback) throws IOException, EncodeException;
+    <T extends FlexiCoreIOTResponse> void executeViaFlexiCoreGateway(String communicationId, FlexiCoreIOTRequest flexiCoreExecutionRequest, Consumer<T> callback) throws IOException, EncodeException;
 }

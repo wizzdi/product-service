@@ -27,7 +27,7 @@ public class EquipmentShort {
         this.name=other.getName();
         this.lon = other.getLon();
         this.lat = other.getLat();
-        this.type=other.getJsonType();
+        this.type=other.getClass().getCanonicalName();
         currentStatus=statuses!=null?statuses:new ArrayList<>();
         this.iconMap=iconMap!=null?iconMap:new HashMap<>();
         this.defaultIcon=other.getProductType()!=null&&other.getProductType().getImage()!=null?other.getProductType().getImage().getId():null;
