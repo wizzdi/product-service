@@ -15,7 +15,6 @@ import com.flexicore.product.model.*;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
 import com.flexicore.product.service.GroupService;
-import com.flexicore.product.service.IOTService;
 import com.flexicore.security.SecurityContext;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,9 +62,7 @@ public class EquipmentRESTService implements RestServicePlugin {
     @PluginInfo(version = 1)
     private EventService eventService;
 
-    @Inject
-    @PluginInfo(version = 1)
-    private IOTService iotService;
+
 
     @Inject
     private Logger logger;

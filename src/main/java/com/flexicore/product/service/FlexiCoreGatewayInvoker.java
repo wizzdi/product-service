@@ -6,12 +6,10 @@ import com.flexicore.interfaces.dynamic.InvokerInfo;
 import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.containers.request.FlexiCoreGatewayCreate;
-import com.flexicore.product.containers.request.GatewayCreate;
-import com.flexicore.product.iot.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.product.model.FlexiCoreGateway;
 import com.flexicore.product.model.FlexiCoreGatewayFiltering;
 import com.flexicore.product.model.Gateway;
-import com.flexicore.product.model.GatewayFiltering;
+import com.flexicore.product.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;

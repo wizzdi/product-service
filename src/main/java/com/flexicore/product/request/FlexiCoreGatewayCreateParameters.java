@@ -1,4 +1,4 @@
-package com.flexicore.product.iot.request;
+package com.flexicore.product.request;
 
 import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.model.dynamic.ExecutionParametersHolder;

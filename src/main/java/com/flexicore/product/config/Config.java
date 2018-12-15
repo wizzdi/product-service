@@ -6,12 +6,10 @@ import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
 import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.model.territories.Neighbourhood;
 import com.flexicore.model.territories.Street;
-import com.flexicore.product.containers.request.FlexiCoreGatewayCreate;
-import com.flexicore.product.containers.request.GatewayCreate;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
-import com.flexicore.product.iot.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.product.model.*;
+import com.flexicore.product.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.service.BaseclassService;
 
 import javax.inject.Inject;
