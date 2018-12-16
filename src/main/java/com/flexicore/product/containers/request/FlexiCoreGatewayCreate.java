@@ -1,34 +1,36 @@
 package com.flexicore.product.containers.request;
 
-import com.flexicore.interfaces.dynamic.FieldInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
+import com.flexicore.model.FlexiCoreServer;
 
 public class FlexiCoreGatewayCreate extends GatewayCreate {
 
-    @FieldInfo(mandatory = true,description = "web socket url used to connect to this FlexiCore gateway")
-    private String webSocketUrl;
 
-    @FieldInfo(mandatory = true,description = "base api url")
-    private String baseApiUrl;
+    @IdRefFieldInfo(displayName = "flexicore server", refType = FlexiCoreServer.class,list = false)
+    private String flexicoreServerId;
+
+    @JsonIgnore
+    private FlexiCoreServer flexiCoreServer;
 
 
 
-    public String getWebSocketUrl() {
-        return webSocketUrl;
+    public String getFlexicoreServerId() {
+        return flexicoreServerId;
     }
 
-    public FlexiCoreGatewayCreate setWebSocketUrl(String webSocketUrl) {
-        this.webSocketUrl = webSocketUrl;
+    public FlexiCoreGatewayCreate setFlexicoreServerId(String flexicoreServerId) {
+        this.flexicoreServerId = flexicoreServerId;
         return this;
     }
 
-    public String getBaseApiUrl() {
-        return baseApiUrl;
+    @JsonIgnore
+    public FlexiCoreServer getFlexiCoreServer() {
+        return flexiCoreServer;
     }
 
-    public FlexiCoreGatewayCreate setBaseApiUrl(String baseApiUrl) {
-        this.baseApiUrl = baseApiUrl;
+    public FlexiCoreGatewayCreate setFlexiCoreServer(FlexiCoreServer flexiCoreServer) {
+        this.flexiCoreServer = flexiCoreServer;
         return this;
     }
-
-
 }

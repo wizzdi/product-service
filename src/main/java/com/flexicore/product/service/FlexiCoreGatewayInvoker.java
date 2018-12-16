@@ -6,6 +6,8 @@ import com.flexicore.interfaces.dynamic.InvokerInfo;
 import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.containers.request.FlexiCoreGatewayCreate;
+import com.flexicore.product.containers.request.FlexiCoreGatewayUpdate;
+import com.flexicore.product.containers.request.FlexiCoreGatewayUpdateParameters;
 import com.flexicore.product.model.FlexiCoreGateway;
 import com.flexicore.product.model.FlexiCoreGatewayFiltering;
 import com.flexicore.product.model.Gateway;
@@ -36,6 +38,14 @@ public class FlexiCoreGatewayInvoker implements ListingInvoker<FlexiCoreGateway,
         SecurityContext securityContext=flexiCoreGatewayCreateParameters.getSecurityContext();
         equipmentService.validateEquipmentCreate(gatewayCreate,securityContext);
         return equipmentService.createFlexiCoreGateway(gatewayCreate, securityContext);
+    }
+
+    @InvokerMethodInfo(displayName = "updates FlexiCore Gateway",description = "Updates FlexiCoreGateway",relatedClasses = {FlexiCoreGateway.class})
+    public FlexiCoreGateway update(FlexiCoreGatewayUpdateParameters flexiCoreGatewayCreateParameters) {
+        FlexiCoreGatewayUpdate gatewayCreate=flexiCoreGatewayCreateParameters.getFlexiCoreGatewayUpdate();
+        SecurityContext securityContext=flexiCoreGatewayCreateParameters.getSecurityContext();
+        equipmentService.validate(gatewayCreate,securityContext);
+        return equipmentService.updateFlexiCoreGateway(gatewayCreate, securityContext);
     }
 
     @Override

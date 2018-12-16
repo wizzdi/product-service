@@ -181,9 +181,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
     public void addFlexiCoreGatewayFiltering(FlexiCoreGatewayFiltering filtering, CriteriaBuilder cb, Root<FlexiCoreGateway> r, List<Predicate> preds) {
         addGatewayFiltering(filtering, r, preds);
-        if(filtering.getBasePathLike()!=null){
-            preds.add(cb.like(r.get(FlexiCoreGateway_.communicationWebSocketUrl),filtering.getBasePathLike()));
-        }
+
     }
 
     public<T extends Gateway> void addGatewayFiltering(GatewayFiltering filtering, Root<T> r, List<Predicate> preds) {
@@ -260,20 +258,5 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         return query.getResultList();
     }
 
-    public List<FlexiCoreGateway> getAllEnabledFCGateways() {
 
-
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<FlexiCoreGateway> q = cb.createQuery(FlexiCoreGateway.class);
-        Root<FlexiCoreGateway> r = q.from(FlexiCoreGateway.class);
-        Predicate pred = cb.and(
-                cb.isTrue(r.get(FlexiCoreGateway_.enable)),
-                r.get(FlexiCoreGateway_.communicationWebSocketUrl).isNotNull()
-                );
-
-
-        q.select(r).where(pred);
-        TypedQuery<FlexiCoreGateway> query = em.createQuery(q);
-        return query.getResultList();
-    }
 }

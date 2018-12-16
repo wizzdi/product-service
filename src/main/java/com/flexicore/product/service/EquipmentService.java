@@ -96,9 +96,6 @@ public class EquipmentService implements IEquipmentService {
         return new PaginationResponse<>(list, filtering, total);
     }
 
-    public List<FlexiCoreGateway> getAllEnabledFCGateways() {
-        return equipmentRepository.getAllEnabledFCGateways();
-    }
 
     public <T extends Equipment> long countAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         return equipmentRepository.countAllEquipments(c, filtering, securityContext);
@@ -687,13 +684,9 @@ public class EquipmentService implements IEquipmentService {
 
     private boolean updateFlexiCoreGatewayNoMerge(FlexiCoreGatewayCreate gatewayCreate, FlexiCoreGateway flexiCoreGateway) {
         boolean update = updateGatewayNoMerge(gatewayCreate, flexiCoreGateway);
-        if (gatewayCreate.getWebSocketUrl() != null && !gatewayCreate.getWebSocketUrl().equals(flexiCoreGateway.getCommunicationWebSocketUrl())) {
-            flexiCoreGateway.setCommunicationWebSocketUrl(gatewayCreate.getWebSocketUrl());
-            update = true;
-        }
 
-        if (gatewayCreate.getBaseApiUrl() != null && !gatewayCreate.getBaseApiUrl().equals(flexiCoreGateway.getBaseApiUrl())) {
-            flexiCoreGateway.setBaseApiUrl(gatewayCreate.getBaseApiUrl());
+        if (gatewayCreate.getFlexiCoreServer() != null && (flexiCoreGateway.getFlexiCoreServer()==null||!gatewayCreate.getFlexiCoreServer().getId().equals(flexiCoreGateway.getFlexiCoreServer().getId()))) {
+            flexiCoreGateway.setFlexiCoreServer(gatewayCreate.getFlexiCoreServer());
             update = true;
         }
 
@@ -709,4 +702,21 @@ public class EquipmentService implements IEquipmentService {
     }
 
 
+    public void validate(FlexiCoreGatewayUpdate gatewayCreate, SecurityContext securityContext) {
+
+        FlexiCoreGateway flexiCoreGateway = gatewayCreate.getId() != null ? getByIdOrNull(gatewayCreate.getId(), FlexiCoreGateway.class, null, securityContext) : null;
+        if (flexiCoreGateway == null) {
+            throw new BadRequestException("No FlexiCoreGateway with Id " + gatewayCreate.getId());
+        }
+        gatewayCreate.setFlexiCoreGateway(flexiCoreGateway);
+        validateEquipmentCreate(gatewayCreate,securityContext);
+    }
+
+    public FlexiCoreGateway updateFlexiCoreGateway(FlexiCoreGatewayUpdate gatewayCreate, SecurityContext securityContext) {
+        FlexiCoreGateway flexiCoreGateway=gatewayCreate.getFlexiCoreGateway();
+        if(updateFlexiCoreGatewayNoMerge(gatewayCreate,flexiCoreGateway)){
+            equipmentRepository.merge(flexiCoreGateway);
+        }
+        return flexiCoreGateway;
+    }
 }
