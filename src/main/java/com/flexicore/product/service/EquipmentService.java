@@ -279,6 +279,11 @@ public class EquipmentService implements IEquipmentService {
             equipment.setCommunicationGateway(equipmentCreate.getGateway());
             update = true;
         }
+        if(equipmentCreate.getSku()!=null && !equipmentCreate.getSku().equals(equipment.getSku())){
+            equipment.setSku(equipmentCreate.getSku());
+            update=true;
+
+        }
 
 
         return update;
