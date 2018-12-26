@@ -91,9 +91,14 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public PaginationResponse<FlexiCoreGateway> getAllFlexiCoreGateways(FlexiCoreGatewayFiltering filtering, SecurityContext securityContext) {
-        List<FlexiCoreGateway> list = equipmentRepository.getAllFlexiCoreGateways(filtering, securityContext);
+        List<FlexiCoreGateway> list = listAllFlexiCoreGateways(filtering, securityContext);
         long total = equipmentRepository.countAllFlexiCoreGateways(filtering, securityContext);
         return new PaginationResponse<>(list, filtering, total);
+    }
+
+    @Override
+    public List<FlexiCoreGateway> listAllFlexiCoreGateways(FlexiCoreGatewayFiltering filtering, SecurityContext securityContext) {
+        return equipmentRepository.getAllFlexiCoreGateways(filtering, securityContext);
     }
 
 
@@ -679,6 +684,7 @@ public class EquipmentService implements IEquipmentService {
         return enableLights.getEquipmentList();
     }
 
+    @Override
     public FlexiCoreGateway createFlexiCoreGateway(FlexiCoreGatewayCreate gatewayCreate, SecurityContext securityContext) {
         FlexiCoreGateway flexiCoreGateway = FlexiCoreGateway.s().CreateUnchecked(gatewayCreate.getName(), securityContext);
         flexiCoreGateway.Init();

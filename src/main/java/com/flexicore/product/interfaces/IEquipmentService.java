@@ -18,6 +18,8 @@ public interface IEquipmentService extends ServicePlugin {
 
     <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext);
 
+    List<FlexiCoreGateway> listAllFlexiCoreGateways(FlexiCoreGatewayFiltering filtering, SecurityContext securityContext);
+
     <T extends Equipment> PaginationResponse<EquipmentGroupHolder> getAllEquipmentsGrouped(Class<T> c, EquipmentGroupFiltering filtering, SecurityContext securityContext);
 
     <T extends Equipment> T createEquipment(Class<T> c, EquipmentCreate equipmentCreate, SecurityContext securityContext);
@@ -81,4 +83,6 @@ public interface IEquipmentService extends ServicePlugin {
 
 
     void massMerge(List<?> toMerge);
+
+    FlexiCoreGateway createFlexiCoreGateway(FlexiCoreGatewayCreate gatewayCreate, SecurityContext securityContext);
 }

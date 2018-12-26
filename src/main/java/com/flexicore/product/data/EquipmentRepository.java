@@ -181,6 +181,9 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
     public void addFlexiCoreGatewayFiltering(FlexiCoreGatewayFiltering filtering, CriteriaBuilder cb, Root<FlexiCoreGateway> r, List<Predicate> preds) {
         addGatewayFiltering(filtering, r, preds);
+        if(filtering.getFlexiCoreServer()!=null){
+            preds.add(cb.equal(r.get(FlexiCoreGateway_.flexiCoreServer),filtering.getFlexiCoreServer()));
+        }
 
     }
 
