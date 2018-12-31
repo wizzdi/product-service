@@ -471,7 +471,7 @@ public class EquipmentService implements IEquipmentService {
             filtering.setTypesToReturn(classes);
 
         }
-        if (filtering.getEquipmentIds() == null || filtering.getEquipmentIds().isEmpty()) {
+        if (filtering.getGroupIds() != null && !filtering.getGroupIds().isEmpty()) {
             Set<String> groupIds = filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
             List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty() ? new ArrayList<>() : groupService.listByIds(EquipmentGroup.class, groupIds, securityContext);
             groupIds.removeAll(groups.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
@@ -479,19 +479,23 @@ public class EquipmentService implements IEquipmentService {
                 throw new BadRequestException("could not find groups with ids " + filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
             }
             filtering.setEquipmentGroups(groups);
+        }
             ProductType productType = filtering.getProductTypeId() != null && filtering.getProductTypeId().getId() != null ? getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, null) : null;
             if (filtering.getProductTypeId() != null && productType == null) {
                 throw new BadRequestException("No Product type with id " + filtering.getProductTypeId());
             }
             filtering.setProductType(productType);
-            Set<String> statusIds = filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-            List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, statusIds, null);
-            statusIds.removeAll(status.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
-            if (!statusIds.isEmpty()) {
-                throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
+            if(filtering.getProductStatusIds()!=null&&!filtering.getProductStatusIds().isEmpty()){
+                Set<String> statusIds = filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+                List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, statusIds, null);
+                statusIds.removeAll(status.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+                if (!statusIds.isEmpty()) {
+                    throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
+                }
+                filtering.setProductStatusList(status);
             }
-            filtering.setProductStatusList(status);
-        }
+
+
 
         if (filtering.getNeighbourhoodIds() != null && !filtering.getNeighbourhoodIds().isEmpty()) {
             Set<String> ids = filtering.getNeighbourhoodIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
