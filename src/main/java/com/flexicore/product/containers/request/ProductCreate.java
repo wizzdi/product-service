@@ -32,43 +32,40 @@ public class ProductCreate {
     @JsonIgnore
     private Class<?> clazz;
 
-
-
     public String getName() {
         return name;
     }
 
-    public ProductCreate setName(String name) {
+    public <T extends ProductCreate> T setName(String name) {
         this.name = name;
-        return this;
+        return (T) this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public ProductCreate setDescription(String description) {
+    public <T extends ProductCreate> T setDescription(String description) {
         this.description = description;
-        return this;
+        return (T) this;
     }
-
 
     public String getSku() {
         return sku;
     }
 
-    public ProductCreate setSku(String sku) {
+    public <T extends ProductCreate> T setSku(String sku) {
         this.sku = sku;
-        return this;
+        return (T) this;
     }
 
     public String getProductTypeId() {
         return productTypeId;
     }
 
-    public ProductCreate setProductTypeId(String productTypeId) {
+    public <T extends ProductCreate> T setProductTypeId(String productTypeId) {
         this.productTypeId = productTypeId;
-        return this;
+        return (T) this;
     }
 
     @JsonIgnore
@@ -76,18 +73,18 @@ public class ProductCreate {
         return ProductType;
     }
 
-    public ProductCreate setProductType(ProductType productType) {
+    public <T extends ProductCreate> T setProductType(ProductType productType) {
         ProductType = productType;
-        return this;
+        return (T) this;
     }
 
     public String getClazzName() {
         return clazzName;
     }
 
-    public ProductCreate setClazzName(String clazzName) {
+    public <T extends ProductCreate> T setClazzName(String clazzName) {
         this.clazzName = clazzName;
-        return this;
+        return (T) this;
     }
 
     @JsonIgnore
@@ -95,10 +92,8 @@ public class ProductCreate {
         return clazz;
     }
 
-
-    public ProductCreate setClazz(Class<?> clazz) {
+    public <T extends ProductCreate> T setClazz(Class<?> clazz) {
         this.clazz = clazz;
-        return this;
+        return (T) this;
     }
-
 }
