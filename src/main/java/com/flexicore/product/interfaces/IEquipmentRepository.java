@@ -78,6 +78,10 @@ public interface IEquipmentRepository extends PluginRepository {
                 Predicate pred=join1.get(Street_.id).in(gids);
                 preds.add(pred);
             }
+            if(filtering.getExternalEquipmentIds()!=null && !filtering.getExternalEquipmentIds().isEmpty()){
+                preds.add(r.get(Equipment_.externalId).in(filtering.getExternalEquipmentIds().parallelStream().map(f->f.getId()+"").collect(Collectors.toSet())));
+
+            }
         }
 
     }
