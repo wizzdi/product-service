@@ -34,6 +34,7 @@ public class EquipmentCreate extends ProductCreate{
     @FieldInfo(description = "serial")
 
     private String serial;
+    private String externalId;
 
 
     public Double getLat() {
@@ -97,6 +98,15 @@ public class EquipmentCreate extends ProductCreate{
 
     public <T extends EquipmentCreate> T setSerial(String serial) {
         this.serial = serial;
+        return (T) this;
+    }
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public <T extends EquipmentCreate> T setExternalId(String externalId) {
+        this.externalId = externalId;
         return (T) this;
     }
 }
