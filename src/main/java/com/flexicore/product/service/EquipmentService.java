@@ -130,8 +130,8 @@ public class EquipmentService implements IEquipmentService {
 
 
     @Override
-    public <T extends Gateway> T createGatewayNoMerge(Class<T> c, GatewayCreate equipmentCreate, SecurityContext securityContext) {
-        T equipment = Baseclass.createUnckehcked(c, equipmentCreate.getName(), securityContext);
+    public Gateway createGatewayNoMerge(GatewayCreate equipmentCreate, SecurityContext securityContext) {
+        Gateway equipment = Gateway.s().CreateUnchecked( equipmentCreate.getName(), securityContext);
         equipment.Init();
         updateGatewayNoMerge(equipmentCreate, equipment);
         return equipment;
