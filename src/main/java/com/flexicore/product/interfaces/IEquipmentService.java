@@ -4,6 +4,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.FileResource;
+import com.flexicore.model.FlexiCoreServer;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.*;
@@ -14,7 +15,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface IEquipmentService extends ServicePlugin {
+public interface IEquipmentService extends ServicePlugin,InitPlugin {
+
+
+    ProductType getGatewayProductType();
+
+    ProductStatus getOnProductStatus();
+
+    ProductStatus getOffProductStatus();
+
+    ProductStatus getCommErrorProductStatus();
+
+    FlexiCoreServer getFlexiCoreServerToSync(Equipment equipment);
+
+    FlexiCoreGateway createThisFlexiCoreGateway(SecurityContext securityContext);
+
+    FlexiCoreGateway createDefaultFlexiCoreGateway(SecurityContext securityContext);
+
+
+    FlexiCoreGateway getOrCreateThisFlexiCoreGateway(SecurityContext securityContext);
 
     <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext);
 

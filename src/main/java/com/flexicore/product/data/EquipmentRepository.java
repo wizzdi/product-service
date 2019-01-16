@@ -132,7 +132,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         }
         QueryInformationHolder<ProductStatus> queryInformationHolder = new QueryInformationHolder<>(productStatusFiltering, ProductStatus.class, securityContext);
-        return getAllFiltered(queryInformationHolder);
+        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 
     public long countAllProductStatus(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
@@ -147,7 +147,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         }
         QueryInformationHolder<ProductStatus> queryInformationHolder = new QueryInformationHolder<>(productStatusFiltering, ProductStatus.class, securityContext);
-        return countAllFiltered(queryInformationHolder);
+        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 
 
@@ -161,7 +161,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         addGatewayFiltering(filtering, r, preds);
         QueryInformationHolder<Gateway> queryInformationHolder = new QueryInformationHolder<>(filtering, Gateway.class, securityContext);
-        return getAllFiltered(queryInformationHolder);
+        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
 
     }
 
@@ -175,7 +175,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         addFlexiCoreGatewayFiltering(filtering, cb, r, preds);
         QueryInformationHolder<FlexiCoreGateway> queryInformationHolder = new QueryInformationHolder<>(filtering, FlexiCoreGateway.class, securityContext);
-        return getAllFiltered(queryInformationHolder);
+        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
 
     }
 
@@ -204,7 +204,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         addGatewayFiltering(filtering, r, preds);
         QueryInformationHolder<Gateway> queryInformationHolder = new QueryInformationHolder<>(filtering, Gateway.class, securityContext);
-        return countAllFiltered(queryInformationHolder);
+        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 
     public long countAllFlexiCoreGateways(FlexiCoreGatewayFiltering filtering, SecurityContext securityContext) {
@@ -217,7 +217,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         addFlexiCoreGatewayFiltering(filtering,cb, r, preds);
         QueryInformationHolder<FlexiCoreGateway> queryInformationHolder = new QueryInformationHolder<>(filtering, FlexiCoreGateway.class, securityContext);
-        return countAllFiltered(queryInformationHolder);
+        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 
     @Override

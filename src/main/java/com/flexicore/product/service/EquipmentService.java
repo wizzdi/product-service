@@ -3,8 +3,11 @@ package com.flexicore.product.service;
 import ch.hsr.geohash.GeoHash;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
+import com.flexicore.constants.Constants;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.iot.request.FlexiCoreServerConnected;
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.FlexiCoreServer;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.model.User;
 import com.flexicore.model.territories.Neighbourhood;
@@ -16,6 +19,8 @@ import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
+import com.flexicore.request.FlexiCoreServerCreate;
+import com.flexicore.request.FlexiCoreServerFilter;
 import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
@@ -30,11 +35,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-@PluginInfo(version = 1)
+@PluginInfo(version = 1, autoInstansiate = true)
 public class EquipmentService implements IEquipmentService {
 
     private static final String DESCRIMINATOR = "";
@@ -55,18 +61,170 @@ public class EquipmentService implements IEquipmentService {
     @Inject
     private SecurityService securityService;
 
+
     @Inject
-    private PluginService pluginService;
+    private FlexiCoreServerService flexiCoreServerService;
 
     @Inject
     private Logger logger;
 
 
-
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
+    private static AtomicBoolean init = new AtomicBoolean(false);
+    private ProductType gatewayProductType;
+    private ProductType fcGatewayType;
+    private ProductStatus onProductStatus;
+    private ProductStatus offProductStatus;
+    private ProductStatus commErrorProductStatus;
+
+    @Override
+    public void init() {
+        if (init.compareAndSet(false, true)) {
+            SecurityContext securityContext = securityService.getAdminUserSecurityContext();
+
+            createDefaultProductStatusAndType(securityContext);
+            FlexiCoreGateway thisGateway=createThisFlexiCoreGateway(securityContext);
+            FlexiCoreGateway remoteGateway=createDefaultFlexiCoreGateway(securityContext);
+            if(thisGateway!=null && remoteGateway!=null){
+                attachThisFlexicoreGatewayToDefaultRemote(thisGateway,remoteGateway,securityContext);
+
+            }
+
+
+        }
+    }
+
+    @Override
+    public ProductType getGatewayProductType(){
+        return gatewayProductType;
+    }
+    @Override
+    public ProductStatus getOnProductStatus(){
+        return onProductStatus;
+    }
+    @Override
+    public ProductStatus getOffProductStatus(){
+        return offProductStatus;
+    }
+    @Override
+    public ProductStatus getCommErrorProductStatus(){
+        return commErrorProductStatus;
+    }
+
+    private void createDefaultProductStatusAndType(SecurityContext securityContext) {
+        gatewayProductType = getOrCreateProductType(new ProductTypeCreate().setName("Gateway").setDescription("Gateway"), securityContext);
+        fcGatewayType = getOrCreateProductType(new ProductTypeCreate().setName("FlexiCore Gateway").setDescription("FlexiCore Gateway"), securityContext);
+
+
+        onProductStatus = getOrCreateProductStatus(new ProductStatusCreate().setName("ON").setDescription("on"), securityContext);
+        offProductStatus = getOrCreateProductStatus(new ProductStatusCreate().setName("OFF").setDescription("off"), securityContext);
+        commErrorProductStatus = getOrCreateProductStatus(new ProductStatusCreate().setName("Communication Error").setDescription("Communication Error"), securityContext);
+
+        linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(gatewayProductType).setProductStatus(onProductStatus), securityContext);
+        linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(gatewayProductType).setProductStatus(offProductStatus), securityContext);
+        linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(gatewayProductType).setProductStatus(commErrorProductStatus), securityContext);
+
+        linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(fcGatewayType).setProductStatus(onProductStatus), securityContext);
+        linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(fcGatewayType).setProductStatus(offProductStatus), securityContext);
+        linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(fcGatewayType).setProductStatus(commErrorProductStatus), securityContext);
+
+    }
+
+    @Override
+    public FlexiCoreServer getFlexiCoreServerToSync(Equipment equipment){
+
+        for (Gateway current=equipment.getCommunicationGateway();current!=null;current=current.getCommunicationGateway()){
+            if(current instanceof FlexiCoreGateway){
+                FlexiCoreGateway flexiCoreGateway= (FlexiCoreGateway) current;
+                FlexiCoreServer flexiCoreServer = flexiCoreGateway.getFlexiCoreServer();
+                if(flexiCoreServer !=null && !Constants.iOTExternalId.equals(flexiCoreServer.getExternalId())){
+                    return flexiCoreServer;
+                }
+            }
+        }
+        return null;
+    }
 
 
 
+    @Override
+    public FlexiCoreGateway createThisFlexiCoreGateway(SecurityContext securityContext) {
+        if(Constants.iOTExternalId==null){
+            return null;
+        }
+        List<FlexiCoreServer> flexiCoreServers = flexiCoreServerService.listAllFlexiCoreServers(new FlexiCoreServerFilter().setExternalId(Constants.iOTExternalId), securityContext);
+        FlexiCoreServer flexiCoreServer;
+        if (flexiCoreServers.isEmpty()) {
+            flexiCoreServer = flexiCoreServerService.createFlexiCoreServer(new FlexiCoreServerCreate().setExternalId(Constants.iOTExternalId).setName(Constants.iOTExternalId + " Server").setEnabled(true), securityContext);
+
+        } else {
+            flexiCoreServer = flexiCoreServers.get(0);
+        }
+        List<FlexiCoreGateway> gateways = listAllFlexiCoreGateways(new FlexiCoreGatewayFiltering().setFlexiCoreServer(flexiCoreServer), securityContext);
+        FlexiCoreGateway flexiCoreGateway;
+        if (gateways.isEmpty()) {
+            FlexiCoreGatewayCreate flexiCoreGatewayCreate = new FlexiCoreGatewayCreate()
+                    .setFlexiCoreServer(flexiCoreServer);
+            flexiCoreGatewayCreate.setName(flexiCoreServer.getExternalId() + " FlexiCore Gateway");
+            flexiCoreGateway = createFlexiCoreGateway(flexiCoreGatewayCreate, securityContext);
+        } else {
+            flexiCoreGateway = gateways.get(0);
+        }
+        return flexiCoreGateway;
+    }
+
+    public void attachThisFlexicoreGatewayToDefaultRemote(FlexiCoreGateway thisGateway,FlexiCoreGateway remoteGateway,SecurityContext securityContext){
+        FlexiCoreGatewayUpdate flexiCoreGatewayUpdate=new FlexiCoreGatewayUpdate().setFlexiCoreGateway(thisGateway).setGateway(remoteGateway);
+        updateFlexiCoreGateway(flexiCoreGatewayUpdate,securityContext);
+        logger.info("updated local flexicore server");
+    }
+
+    @Override
+    public FlexiCoreGateway createDefaultFlexiCoreGateway(SecurityContext securityContext) {
+
+        List<FlexiCoreServer> defaultFCServer=flexiCoreServerService.listAllFlexiCoreServers(new FlexiCoreServerFilter().setDefaultRemoteServer(true),null);
+        if(!defaultFCServer.isEmpty()){
+            FlexiCoreServer flexiCoreServer = defaultFCServer.get(0);
+            List<FlexiCoreGateway> defaultGateways=listAllFlexiCoreGateways(new FlexiCoreGatewayFiltering().setFlexiCoreServer(flexiCoreServer),null);
+            if(defaultGateways.isEmpty()){
+                FlexiCoreGatewayCreate gatewayCreate = new FlexiCoreGatewayCreate().setFlexiCoreServer(flexiCoreServer).setExternalId(flexiCoreServer.getExternalId());
+                FlexiCoreGateway flexiCoreGateway=createFlexiCoreGateway(gatewayCreate,securityContext);
+                logger.info("created default fc gateway ");
+                return flexiCoreGateway;
+
+            }
+            else{
+                logger.info("default fc gateway already exists");
+                return defaultGateways.get(0);
+
+            }
+
+        }
+        else{
+            logger.warning("Could not create default fc gateway, no default fc server");
+        }
+        return null;
+    }
+
+    @Override
+    public FlexiCoreGateway getOrCreateThisFlexiCoreGateway(SecurityContext securityContext){
+        if(Constants.iOTExternalId==null){
+            return null;
+        }
+        FlexiCoreGateway flexiCoreGateway;
+        List<FlexiCoreGateway> gateways=listAllFlexiCoreGateways(new FlexiCoreGatewayFiltering().setExternalEquipmentIds(Collections.singleton(new EquipmentExternalIdFiltering().setId(Constants.iOTExternalId))),null);
+        if(gateways.isEmpty()) {
+            flexiCoreGateway=createThisFlexiCoreGateway(securityContext);
+            FlexiCoreGateway remote=createDefaultFlexiCoreGateway(securityContext);
+            if(remote!=null && flexiCoreGateway!=null){
+                attachThisFlexicoreGatewayToDefaultRemote(flexiCoreGateway,remote,securityContext);
+            }
+        }
+        else{
+            flexiCoreGateway=gateways.get(0);
+        }
+        return flexiCoreGateway;
+    }
 
     public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContext securityContext) {
         return equipmentRepository.listByIds(c, ids, securityContext);
@@ -131,7 +289,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public Gateway createGatewayNoMerge(GatewayCreate equipmentCreate, SecurityContext securityContext) {
-        Gateway equipment = Gateway.s().CreateUnchecked( equipmentCreate.getName(), securityContext);
+        Gateway equipment = Gateway.s().CreateUnchecked(equipmentCreate.getName(), securityContext);
         equipment.Init();
         updateGatewayNoMerge(equipmentCreate, equipment);
         return equipment;
@@ -164,9 +322,8 @@ public class EquipmentService implements IEquipmentService {
                     equipment.setEncryptedPassword(encryptedPassword);
                     update = true;
                 }
-            }
-            catch (Exception e){
-                logger.log(Level.SEVERE,"could not encrypt password",e);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "could not encrypt password", e);
             }
 
         }
@@ -284,15 +441,15 @@ public class EquipmentService implements IEquipmentService {
             equipment.setCommunicationGateway(equipmentCreate.getGateway());
             update = true;
         }
-        if(equipmentCreate.getSku()!=null && !equipmentCreate.getSku().equals(equipment.getSku())){
+        if (equipmentCreate.getSku() != null && !equipmentCreate.getSku().equals(equipment.getSku())) {
             equipment.setSku(equipmentCreate.getSku());
-            update=true;
+            update = true;
 
         }
 
-        if(equipmentCreate.getExternalId()!=null && !equipmentCreate.getExternalId().equals(equipment.getExternalId())){
+        if (equipmentCreate.getExternalId() != null && !equipmentCreate.getExternalId().equals(equipment.getExternalId())) {
             equipment.setExternalId(equipmentCreate.getExternalId());
-            update=true;
+            update = true;
 
         }
 
@@ -486,21 +643,20 @@ public class EquipmentService implements IEquipmentService {
             }
             filtering.setEquipmentGroups(groups);
         }
-            ProductType productType = filtering.getProductTypeId() != null && filtering.getProductTypeId().getId() != null ? getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, null) : null;
-            if (filtering.getProductTypeId() != null && productType == null) {
-                throw new BadRequestException("No Product type with id " + filtering.getProductTypeId());
+        ProductType productType = filtering.getProductTypeId() != null && filtering.getProductTypeId().getId() != null ? getByIdOrNull(filtering.getProductTypeId().getId(), ProductType.class, null, null) : null;
+        if (filtering.getProductTypeId() != null && productType == null) {
+            throw new BadRequestException("No Product type with id " + filtering.getProductTypeId());
+        }
+        filtering.setProductType(productType);
+        if (filtering.getProductStatusIds() != null && !filtering.getProductStatusIds().isEmpty()) {
+            Set<String> statusIds = filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, statusIds, null);
+            statusIds.removeAll(status.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+            if (!statusIds.isEmpty()) {
+                throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
             }
-            filtering.setProductType(productType);
-            if(filtering.getProductStatusIds()!=null&&!filtering.getProductStatusIds().isEmpty()){
-                Set<String> statusIds = filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-                List<ProductStatus> status = filtering.getProductStatusIds().isEmpty() ? new ArrayList<>() : listByIds(ProductStatus.class, statusIds, null);
-                statusIds.removeAll(status.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
-                if (!statusIds.isEmpty()) {
-                    throw new BadRequestException("could not find status with ids " + filtering.getProductStatusIds().parallelStream().map(f -> f.getId()).collect(Collectors.joining(",")));
-                }
-                filtering.setProductStatusList(status);
-            }
-
+            filtering.setProductStatusList(status);
+        }
 
 
         if (filtering.getNeighbourhoodIds() != null && !filtering.getNeighbourhoodIds().isEmpty()) {
@@ -698,6 +854,10 @@ public class EquipmentService implements IEquipmentService {
     public FlexiCoreGateway createFlexiCoreGateway(FlexiCoreGatewayCreate gatewayCreate, SecurityContext securityContext) {
         FlexiCoreGateway flexiCoreGateway = FlexiCoreGateway.s().CreateUnchecked(gatewayCreate.getName(), securityContext);
         flexiCoreGateway.Init();
+        if (gatewayCreate.getProductType() == null) {
+            flexiCoreGateway.setProductType(fcGatewayType);
+        }
+
         updateFlexiCoreGatewayNoMerge(gatewayCreate, flexiCoreGateway);
         equipmentRepository.merge(flexiCoreGateway);
         return flexiCoreGateway;
@@ -706,7 +866,7 @@ public class EquipmentService implements IEquipmentService {
     private boolean updateFlexiCoreGatewayNoMerge(FlexiCoreGatewayCreate gatewayCreate, FlexiCoreGateway flexiCoreGateway) {
         boolean update = updateGatewayNoMerge(gatewayCreate, flexiCoreGateway);
 
-        if (gatewayCreate.getFlexiCoreServer() != null && (flexiCoreGateway.getFlexiCoreServer()==null||!gatewayCreate.getFlexiCoreServer().getId().equals(flexiCoreGateway.getFlexiCoreServer().getId()))) {
+        if (gatewayCreate.getFlexiCoreServer() != null && (flexiCoreGateway.getFlexiCoreServer() == null || !gatewayCreate.getFlexiCoreServer().getId().equals(flexiCoreGateway.getFlexiCoreServer().getId()))) {
             flexiCoreGateway.setFlexiCoreServer(gatewayCreate.getFlexiCoreServer());
             update = true;
         }
@@ -730,12 +890,12 @@ public class EquipmentService implements IEquipmentService {
             throw new BadRequestException("No FlexiCoreGateway with Id " + gatewayCreate.getId());
         }
         gatewayCreate.setFlexiCoreGateway(flexiCoreGateway);
-        validateEquipmentCreate(gatewayCreate,securityContext);
+        validateEquipmentCreate(gatewayCreate, securityContext);
     }
 
     public FlexiCoreGateway updateFlexiCoreGateway(FlexiCoreGatewayUpdate gatewayCreate, SecurityContext securityContext) {
-        FlexiCoreGateway flexiCoreGateway=gatewayCreate.getFlexiCoreGateway();
-        if(updateFlexiCoreGatewayNoMerge(gatewayCreate,flexiCoreGateway)){
+        FlexiCoreGateway flexiCoreGateway = gatewayCreate.getFlexiCoreGateway();
+        if (updateFlexiCoreGatewayNoMerge(gatewayCreate, flexiCoreGateway)) {
             equipmentRepository.merge(flexiCoreGateway);
         }
         return flexiCoreGateway;
