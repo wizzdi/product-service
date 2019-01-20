@@ -5,6 +5,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
 import com.flexicore.constants.Constants;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.iot.ExternalServer;
 import com.flexicore.iot.request.FlexiCoreServerConnected;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FlexiCoreServer;
@@ -83,31 +84,28 @@ public class EquipmentService implements IEquipmentService {
             SecurityContext securityContext = securityService.getAdminUserSecurityContext();
 
             createDefaultProductStatusAndType(securityContext);
-            FlexiCoreGateway thisGateway=createThisFlexiCoreGateway(securityContext);
-            FlexiCoreGateway remoteGateway=createDefaultFlexiCoreGateway(securityContext);
-            if(thisGateway!=null && remoteGateway!=null){
-                attachThisFlexicoreGatewayToDefaultRemote(thisGateway,remoteGateway,securityContext);
-
-            }
 
 
         }
     }
 
     @Override
-    public ProductType getGatewayProductType(){
+    public ProductType getGatewayProductType() {
         return gatewayProductType;
     }
+
     @Override
-    public ProductStatus getOnProductStatus(){
+    public ProductStatus getOnProductStatus() {
         return onProductStatus;
     }
+
     @Override
-    public ProductStatus getOffProductStatus(){
+    public ProductStatus getOffProductStatus() {
         return offProductStatus;
     }
+
     @Override
-    public ProductStatus getCommErrorProductStatus(){
+    public ProductStatus getCommErrorProductStatus() {
         return commErrorProductStatus;
     }
 
@@ -131,13 +129,13 @@ public class EquipmentService implements IEquipmentService {
     }
 
     @Override
-    public FlexiCoreServer getFlexiCoreServerToSync(Equipment equipment){
+    public FlexiCoreServer getFlexiCoreServerToSync(Equipment equipment) {
 
-        for (Gateway current=equipment.getCommunicationGateway();current!=null;current=current.getCommunicationGateway()){
-            if(current instanceof FlexiCoreGateway){
-                FlexiCoreGateway flexiCoreGateway= (FlexiCoreGateway) current;
+        for (Gateway current = equipment.getCommunicationGateway(); current != null; current = current.getCommunicationGateway()) {
+            if (current instanceof FlexiCoreGateway) {
+                FlexiCoreGateway flexiCoreGateway = (FlexiCoreGateway) current;
                 FlexiCoreServer flexiCoreServer = flexiCoreGateway.getFlexiCoreServer();
-                if(flexiCoreServer !=null && !Constants.iOTExternalId.equals(flexiCoreServer.getExternalId())){
+                if (flexiCoreServer != null && !Constants.iOTExternalId.equals(flexiCoreServer.getExternalId())) {
                     return flexiCoreServer;
                 }
             }
@@ -146,82 +144,16 @@ public class EquipmentService implements IEquipmentService {
     }
 
 
-
     @Override
-    public FlexiCoreGateway createThisFlexiCoreGateway(SecurityContext securityContext) {
-        if(Constants.iOTExternalId==null){
+    public FlexiCoreGateway getThisFlexiCoreGateway(SecurityContext securityContext) {
+        if (Constants.iOTExternalId == null) {
             return null;
         }
-        List<FlexiCoreServer> flexiCoreServers = flexiCoreServerService.listAllFlexiCoreServers(new FlexiCoreServerFilter().setExternalId(Constants.iOTExternalId), securityContext);
-        FlexiCoreServer flexiCoreServer;
-        if (flexiCoreServers.isEmpty()) {
-            flexiCoreServer = flexiCoreServerService.createFlexiCoreServer(new FlexiCoreServerCreate().setExternalId(Constants.iOTExternalId).setName(Constants.iOTExternalId + " Server").setEnabled(true), securityContext);
+        FlexiCoreGateway flexiCoreGateway = null;
+        Optional<FlexiCoreGateway> gateways = listAllFlexiCoreGateways(new FlexiCoreGatewayFiltering().setExternalEquipmentIds(Collections.singleton(new EquipmentExternalIdFiltering().setId(Constants.iOTExternalId))), null).parallelStream().findFirst();
 
-        } else {
-            flexiCoreServer = flexiCoreServers.get(0);
-        }
-        List<FlexiCoreGateway> gateways = listAllFlexiCoreGateways(new FlexiCoreGatewayFiltering().setFlexiCoreServer(flexiCoreServer), securityContext);
-        FlexiCoreGateway flexiCoreGateway;
-        if (gateways.isEmpty()) {
-            FlexiCoreGatewayCreate flexiCoreGatewayCreate = new FlexiCoreGatewayCreate()
-                    .setFlexiCoreServer(flexiCoreServer);
-            flexiCoreGatewayCreate.setName(flexiCoreServer.getExternalId() + " FlexiCore Gateway");
-            flexiCoreGateway = createFlexiCoreGateway(flexiCoreGatewayCreate, securityContext);
-        } else {
-            flexiCoreGateway = gateways.get(0);
-        }
-        return flexiCoreGateway;
-    }
-
-    public void attachThisFlexicoreGatewayToDefaultRemote(FlexiCoreGateway thisGateway,FlexiCoreGateway remoteGateway,SecurityContext securityContext){
-        FlexiCoreGatewayUpdate flexiCoreGatewayUpdate=new FlexiCoreGatewayUpdate().setFlexiCoreGateway(thisGateway).setGateway(remoteGateway);
-        updateFlexiCoreGateway(flexiCoreGatewayUpdate,securityContext);
-        logger.info("updated local flexicore server");
-    }
-
-    @Override
-    public FlexiCoreGateway createDefaultFlexiCoreGateway(SecurityContext securityContext) {
-
-        List<FlexiCoreServer> defaultFCServer=flexiCoreServerService.listAllFlexiCoreServers(new FlexiCoreServerFilter().setDefaultRemoteServer(true),null);
-        if(!defaultFCServer.isEmpty()){
-            FlexiCoreServer flexiCoreServer = defaultFCServer.get(0);
-            List<FlexiCoreGateway> defaultGateways=listAllFlexiCoreGateways(new FlexiCoreGatewayFiltering().setFlexiCoreServer(flexiCoreServer),null);
-            if(defaultGateways.isEmpty()){
-                FlexiCoreGatewayCreate gatewayCreate = new FlexiCoreGatewayCreate().setFlexiCoreServer(flexiCoreServer).setExternalId(flexiCoreServer.getExternalId());
-                FlexiCoreGateway flexiCoreGateway=createFlexiCoreGateway(gatewayCreate,securityContext);
-                logger.info("created default fc gateway ");
-                return flexiCoreGateway;
-
-            }
-            else{
-                logger.info("default fc gateway already exists");
-                return defaultGateways.get(0);
-
-            }
-
-        }
-        else{
-            logger.warning("Could not create default fc gateway, no default fc server");
-        }
-        return null;
-    }
-
-    @Override
-    public FlexiCoreGateway getOrCreateThisFlexiCoreGateway(SecurityContext securityContext){
-        if(Constants.iOTExternalId==null){
-            return null;
-        }
-        FlexiCoreGateway flexiCoreGateway;
-        List<FlexiCoreGateway> gateways=listAllFlexiCoreGateways(new FlexiCoreGatewayFiltering().setExternalEquipmentIds(Collections.singleton(new EquipmentExternalIdFiltering().setId(Constants.iOTExternalId))),null);
-        if(gateways.isEmpty()) {
-            flexiCoreGateway=createThisFlexiCoreGateway(securityContext);
-            FlexiCoreGateway remote=createDefaultFlexiCoreGateway(securityContext);
-            if(remote!=null && flexiCoreGateway!=null){
-                attachThisFlexicoreGatewayToDefaultRemote(flexiCoreGateway,remote,securityContext);
-            }
-        }
-        else{
-            flexiCoreGateway=gateways.get(0);
+        if (gateways.isPresent()) {
+            flexiCoreGateway = gateways.get();
         }
         return flexiCoreGateway;
     }
@@ -372,6 +304,17 @@ public class EquipmentService implements IEquipmentService {
             throw new BadRequestException("No Gateway with Id " + equipmentCreate.getCommunicationGatewayId());
         }
         equipmentCreate.setGateway(gateway);
+
+    }
+
+    public void validateCreate(FlexiCoreGatewayCreate equipmentCreate, SecurityContext securityContext) {
+        validateEquipmentCreate(equipmentCreate, securityContext);
+        FlexiCoreServer flexiCoreServer = equipmentCreate.getFlexicoreServerId() != null ? getByIdOrNull(equipmentCreate.getFlexicoreServerId(), FlexiCoreServer.class, null, securityContext) : null;
+        if (flexiCoreServer == null && equipmentCreate.getFlexicoreServerId() != null) {
+            throw new BadRequestException("No FlexiCoreServer with Id " + equipmentCreate.getFlexicoreServerId());
+        }
+        equipmentCreate.setFlexiCoreServer(flexiCoreServer);
+
 
     }
 
@@ -688,6 +631,16 @@ public class EquipmentService implements IEquipmentService {
             filtering.setGateways(gateways);
         }
 
+        if (filtering.getExternalServerIds() != null && !filtering.getExternalServerIds().isEmpty()) {
+            Set<String> ids = filtering.getExternalServerIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            List<ExternalServer> externalServers = listByIds(ExternalServer.class, ids, securityContext);
+            ids.removeAll(externalServers.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+            if (!ids.isEmpty()) {
+                throw new BadRequestException("No ExternalServer with ids " + ids);
+            }
+            filtering.setExternalServers(externalServers);
+        }
+
         return c;
     }
 
@@ -890,7 +843,7 @@ public class EquipmentService implements IEquipmentService {
             throw new BadRequestException("No FlexiCoreGateway with Id " + gatewayCreate.getId());
         }
         gatewayCreate.setFlexiCoreGateway(flexiCoreGateway);
-        validateEquipmentCreate(gatewayCreate, securityContext);
+        validateCreate(gatewayCreate,securityContext);
     }
 
     public FlexiCoreGateway updateFlexiCoreGateway(FlexiCoreGatewayUpdate gatewayCreate, SecurityContext securityContext) {

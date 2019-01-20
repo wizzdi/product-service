@@ -2,6 +2,8 @@ package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.SortingOrder;
 import com.flexicore.interfaces.PluginRepository;
+import com.flexicore.iot.ExternalServer;
+import com.flexicore.iot.ExternalServer_;
 import com.flexicore.model.Baselink_;
 import com.flexicore.model.FileResource;
 import com.flexicore.model.QueryInformationHolder;
@@ -41,8 +43,15 @@ public interface IEquipmentRepository extends PluginRepository {
                 predicate = cb.and(predicate, cb.between(r.get(Equipment_.lon), filtering.getLocationArea().getLonStart(), filtering.getLocationArea().getLonEnd()));
                 preds.add(predicate);
             }
-            if (filtering.getProductType()!=null && filtering.getProductType() != null) {
+            if (filtering.getProductType()!=null ) {
                 Predicate predicate = cb.equal(r.get(Equipment_.productType), filtering.getProductType());
+                preds.add(predicate);
+            }
+
+            if (filtering.getExternalServers()!=null && !filtering.getExternalServers().isEmpty()) {
+                Set<String> externalServersIds=filtering.getExternalServers().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+                Join<T, ExternalServer> externalServerJoin=r.join(Equipment_.externalServer);
+                Predicate predicate =externalServerJoin.get(ExternalServer_.id).in(externalServersIds);
                 preds.add(predicate);
             }
             if (filtering.getProductStatusList()!=null && !filtering.getProductStatusList().isEmpty()) {
@@ -78,6 +87,8 @@ public interface IEquipmentRepository extends PluginRepository {
                 Predicate pred=join1.get(Street_.id).in(gids);
                 preds.add(pred);
             }
+
+
             if(filtering.getExternalEquipmentIds()!=null && !filtering.getExternalEquipmentIds().isEmpty()){
                 preds.add(r.get(Equipment_.externalId).in(filtering.getExternalEquipmentIds().parallelStream().map(f->f.getId()+"").collect(Collectors.toSet())));
 

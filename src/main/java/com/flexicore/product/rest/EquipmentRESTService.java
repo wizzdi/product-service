@@ -244,6 +244,33 @@ public class EquipmentRESTService implements RestServicePlugin {
         return service.createEquipment(c, equipmentCreate, securityContext);
     }
 
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "createFCGateway", description = "Creates FC Gateway")
+    @Path("createFCGateway")
+    public FlexiCoreGateway createFCGateway(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            FlexiCoreGatewayCreate equipmentCreate,
+            @Context SecurityContext securityContext) {
+        service.validateCreate(equipmentCreate, securityContext);
+
+        return service.createFlexiCoreGateway(equipmentCreate, securityContext);
+    }
+
+
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "updateFCGateway", description = "Updates FC Gateway")
+    @Path("updateFCGateway")
+    public FlexiCoreGateway updateFCGateway(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            FlexiCoreGatewayUpdate equipmentCreate,
+            @Context SecurityContext securityContext) {
+        service.validate(equipmentCreate, securityContext);
+
+        return service.updateFlexiCoreGateway(equipmentCreate, securityContext);
+    }
+
 
 
     @POST

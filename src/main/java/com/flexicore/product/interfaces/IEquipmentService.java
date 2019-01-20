@@ -28,12 +28,8 @@ public interface IEquipmentService extends ServicePlugin,InitPlugin {
 
     FlexiCoreServer getFlexiCoreServerToSync(Equipment equipment);
 
-    FlexiCoreGateway createThisFlexiCoreGateway(SecurityContext securityContext);
 
-    FlexiCoreGateway createDefaultFlexiCoreGateway(SecurityContext securityContext);
-
-
-    FlexiCoreGateway getOrCreateThisFlexiCoreGateway(SecurityContext securityContext);
+    FlexiCoreGateway getThisFlexiCoreGateway(SecurityContext securityContext);
 
     <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext);
 
