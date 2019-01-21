@@ -13,8 +13,6 @@
         <version.eclipselink>2.7.1</version.eclipselink>
         <version.jackson>2.8.4</version.jackson>
         <version.jboss.bom>9.0.0.Beta2</version.jboss.bom>
-
-
         
     </properties>
 
@@ -59,6 +57,7 @@
     </dependencyManagement>
 
     <dependencies>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>

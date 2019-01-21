@@ -3,6 +3,7 @@ package com.flexicore.product.containers.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
+import com.flexicore.iot.ExternalServer;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.Gateway;
 import com.flexicore.product.model.ProductType;
@@ -35,7 +36,19 @@ public class EquipmentCreate extends ProductCreate{
 
     private String serial;
     private String externalId;
+    @IdRefFieldInfo(refType = ExternalServer.class,list = false)
+    private String externalServerId;
+    @JsonIgnore
+    private ExternalServer externalServer;
 
+    public String getExternalServerId() {
+        return externalServerId;
+    }
+
+    public <T extends EquipmentCreate> T setExternalServerId(String externalServerId) {
+        this.externalServerId = externalServerId;
+        return (T) this;
+    }
 
     public Double getLat() {
         return lat;
@@ -107,6 +120,15 @@ public class EquipmentCreate extends ProductCreate{
 
     public <T extends EquipmentCreate> T setExternalId(String externalId) {
         this.externalId = externalId;
+        return (T) this;
+    }
+
+    public ExternalServer getExternalServer() {
+        return externalServer;
+    }
+
+    public <T extends EquipmentCreate> T setExternalServer(ExternalServer externalServer) {
+        this.externalServer = externalServer;
         return (T) this;
     }
 }

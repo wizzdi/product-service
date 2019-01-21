@@ -396,6 +396,11 @@ public class EquipmentService implements IEquipmentService {
 
         }
 
+        if (equipmentCreate.getExternalServer() != null && (equipment.getExternalServer() == null || !equipment.getExternalServer().getId().equals(equipmentCreate.getExternalServer().getId()))) {
+            equipment.setExternalServer(equipmentCreate.getExternalServer());
+            update = true;
+        }
+
 
         return update;
 
