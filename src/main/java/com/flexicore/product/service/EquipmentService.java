@@ -236,7 +236,7 @@ public class EquipmentService implements IEquipmentService {
             update = true;
         }
 
-        if (equipmentCreate.getPort() != equipment.getPort()) {
+        if (equipmentCreate.getPort()!=null&&equipmentCreate.getPort() != equipment.getPort()) {
             equipment.setPort(equipmentCreate.getPort());
             update = true;
         }
@@ -486,8 +486,13 @@ public class EquipmentService implements IEquipmentService {
     public ProductTypeToProductStatus createProductTypeToProductStatusLink(ProductStatusToTypeCreate productStatusCreate, SecurityContext securityContext) {
         ProductTypeToProductStatus productTypeToProductStatus = ProductTypeToProductStatus.s().CreateUnchecked("link", securityContext);
         productTypeToProductStatus.Init(productStatusCreate.getProductType(), productStatusCreate.getProductStatus());
+        productTypeToProductStatus.setId(getProductTypeToStatusId(productTypeToProductStatus));
         baselinkService.merge(productTypeToProductStatus);
         return productTypeToProductStatus;
+    }
+
+    private String getProductTypeToStatusId(ProductTypeToProductStatus productTypeToProductStatus) {
+        return Baseclass.generateUUIDFromString("ProductTypeToProductStatus-"+productTypeToProductStatus.getLeftside().getId()+"-"+productTypeToProductStatus.getRightside().getId());
     }
 
     @Override
@@ -514,8 +519,13 @@ public class EquipmentService implements IEquipmentService {
     public ProductToStatus createProductToProductStatusLinkNoMerge(ProductStatusToProductCreate productStatusCreate, SecurityContext securityContext) {
         ProductToStatus productToStatus = ProductToStatus.s().CreateUnchecked("link", securityContext);
         productToStatus.Init(productStatusCreate.getProduct(), productStatusCreate.getProductStatus());
+        productToStatus.setId(getProductToStatusId(productToStatus));
         productToStatus.setEnabled(true);
         return productToStatus;
+    }
+
+    private String getProductToStatusId(ProductToStatus productToStatus) {
+        return Baseclass.generateUUIDFromString("ProductToStatus-"+productToStatus.getLeftside().getId() +"-"+productToStatus.getRightside().getId());
     }
 
     @Override
@@ -529,8 +539,13 @@ public class EquipmentService implements IEquipmentService {
     public ProductStatus createProductStatus(ProductStatusCreate productStatusCreate, SecurityContext securityContext) {
         ProductStatus productStatus = ProductStatus.s().CreateUnchecked(productStatusCreate.getName(), securityContext);
         productStatus.Init();
+        productStatus.setId(getProductStatusId(productStatusCreate.getName()));
         productStatus.setDescription(productStatusCreate.getDescription());
         return productStatus;
+    }
+
+    private String getProductStatusId(String name) {
+        return Baseclass.generateUUIDFromString("ProductStatus-"+name);
     }
 
     public SecurityContext getAdminSecurityContext() {
@@ -555,8 +570,13 @@ public class EquipmentService implements IEquipmentService {
     public ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
         ProductType productType = ProductType.s().CreateUnchecked(productTypeCreate.getName(), securityContext);
         productType.Init();
+        productType.setId(getProductTypeId(productTypeCreate.getName()));
         productType.setDescription(productTypeCreate.getDescription());
         return productType;
+    }
+
+    private String getProductTypeId(String name) {
+        return Baseclass.generateUUIDFromString("ProductType-"+name);
     }
 
     @Override

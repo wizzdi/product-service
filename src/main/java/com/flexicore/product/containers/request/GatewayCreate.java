@@ -7,9 +7,9 @@ public class GatewayCreate extends EquipmentCreate {
     @FieldInfo(mandatory = true,description = "ip used to connect to this gateway")
 
     private String ip;
-    @FieldInfo(mandatory = true,description = "port used to connect to this gateway")
+    @FieldInfo(mandatory = true,description = "port used to connect to this gateway",defaultValue = "0")
 
-    private int port;
+    private Integer port;
 
     @FieldInfo(description = "username")
     private String username;
@@ -25,11 +25,11 @@ public class GatewayCreate extends EquipmentCreate {
         return this;
     }
 
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public GatewayCreate setPort(int port) {
+    public GatewayCreate setPort(Integer port) {
         this.port = port;
         return this;
     }
