@@ -305,6 +305,12 @@ public class EquipmentService implements IEquipmentService {
         }
         equipmentCreate.setGateway(gateway);
 
+        Model model = equipmentCreate.getModelId() != null ? getByIdOrNull(equipmentCreate.getModelId(), Model.class, null, securityContext) : null;
+        if (model == null && equipmentCreate.getProductTypeId() != null) {
+            throw new BadRequestException("No model with Id " + equipmentCreate.getProductTypeId());
+        }
+        equipmentCreate.setModel(model);
+
     }
 
     public void validateCreate(FlexiCoreGatewayCreate equipmentCreate, SecurityContext securityContext) {
@@ -337,6 +343,11 @@ public class EquipmentService implements IEquipmentService {
         }
         if (productCreate.getProductType() != null && (product.getProductType() == null || !product.getProductType().getId().equals(productCreate.getProductType().getId()))) {
             product.setProductType(productCreate.getProductType());
+            update = true;
+        }
+
+        if (productCreate.getModel() != null && (product.getModel() == null || !product.getModel().getId().equals(productCreate.getModel().getId()))) {
+            product.setModel(productCreate.getModel());
             update = true;
         }
 

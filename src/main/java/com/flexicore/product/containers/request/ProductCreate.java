@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
 import com.flexicore.product.model.Gateway;
+import com.flexicore.product.model.Model;
 import com.flexicore.product.model.ProductType;
 
 import java.time.LocalDateTime;
@@ -31,6 +32,11 @@ public class ProductCreate {
     private String clazzName;
     @JsonIgnore
     private Class<?> clazz;
+
+    @JsonIgnore
+    private Model model;
+
+    private String modelId;
 
     public String getName() {
         return name;
@@ -94,6 +100,25 @@ public class ProductCreate {
 
     public <T extends ProductCreate> T setClazz(Class<?> clazz) {
         this.clazz = clazz;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public Model getModel() {
+        return model;
+    }
+
+    public <T extends ProductCreate> T setModel(Model model) {
+        this.model = model;
+        return (T) this;
+    }
+
+    public String getModelId() {
+        return modelId;
+    }
+
+    public <T extends ProductCreate> T setModelId(String modelId) {
+        this.modelId = modelId;
         return (T) this;
     }
 }
