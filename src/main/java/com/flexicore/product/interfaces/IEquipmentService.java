@@ -55,6 +55,8 @@ public interface IEquipmentService extends ServicePlugin,InitPlugin {
 
     boolean updateEquipmentNoMerge(EquipmentCreate equipmentCreate, Equipment equipment);
 
+    void generateGeoHash(Equipment equipment);
+
     Equipment updateEquipment(EquipmentUpdate equipmentUpdate, SecurityContext securityContext);
 
     PaginationResponse<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext);

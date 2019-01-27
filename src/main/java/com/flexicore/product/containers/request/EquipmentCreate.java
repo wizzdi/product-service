@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
 import com.flexicore.iot.ExternalServer;
+import com.flexicore.model.territories.Address;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.Gateway;
 import com.flexicore.product.model.ProductType;
@@ -40,6 +41,10 @@ public class EquipmentCreate extends ProductCreate{
     private String externalServerId;
     @JsonIgnore
     private ExternalServer externalServer;
+
+    @JsonIgnore
+    private Address address;
+    private String addressId;
 
     public String getExternalServerId() {
         return externalServerId;
@@ -129,6 +134,24 @@ public class EquipmentCreate extends ProductCreate{
 
     public <T extends EquipmentCreate> T setExternalServer(ExternalServer externalServer) {
         this.externalServer = externalServer;
+        return (T) this;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public <T extends EquipmentCreate> T setAddress(Address address) {
+        this.address = address;
+        return (T) this;
+    }
+
+    public String getAddressId() {
+        return addressId;
+    }
+
+    public <T extends EquipmentCreate> T setAddressId(String addressId) {
+        this.addressId = addressId;
         return (T) this;
     }
 }

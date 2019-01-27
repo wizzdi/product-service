@@ -6,11 +6,11 @@ import com.flexicore.annotations.rest.Read;
 import com.flexicore.constants.Constants;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.iot.ExternalServer;
-import com.flexicore.iot.request.FlexiCoreServerConnected;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FlexiCoreServer;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.model.User;
+import com.flexicore.model.territories.Address;
 import com.flexicore.model.territories.Neighbourhood;
 import com.flexicore.model.territories.Street;
 import com.flexicore.product.containers.request.*;
@@ -20,8 +20,6 @@ import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
-import com.flexicore.request.FlexiCoreServerCreate;
-import com.flexicore.request.FlexiCoreServerFilter;
 import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
@@ -306,12 +304,20 @@ public class EquipmentService implements IEquipmentService {
         equipmentCreate.setGateway(gateway);
 
         Model model = equipmentCreate.getModelId() != null ? getByIdOrNull(equipmentCreate.getModelId(), Model.class, null, securityContext) : null;
-        if (model == null && equipmentCreate.getProductTypeId() != null) {
+        if (model == null && equipmentCreate.getModelId() != null) {
             throw new BadRequestException("No model with Id " + equipmentCreate.getProductTypeId());
         }
         equipmentCreate.setModel(model);
 
+        Address address = equipmentCreate.getAddressId() != null ? getByIdOrNull(equipmentCreate.getAddressId(), Address.class, null, securityContext) : null;
+        if (address == null && equipmentCreate.getAddressId() != null) {
+            throw new BadRequestException("No address with Id " + equipmentCreate.getAddressId());
+        }
+        equipmentCreate.setAddress(address);
+
     }
+
+
 
     public void validateCreate(FlexiCoreGatewayCreate equipmentCreate, SecurityContext securityContext) {
         validateEquipmentCreate(equipmentCreate, securityContext);
@@ -395,6 +401,10 @@ public class EquipmentService implements IEquipmentService {
             equipment.setCommunicationGateway(equipmentCreate.getGateway());
             update = true;
         }
+        if (equipmentCreate.getAddress() != null && (equipment.getAddress() == null || !equipment.getAddress().getId().equals(equipmentCreate.getAddress().getId()))) {
+            equipment.setAddress(equipmentCreate.getAddress());
+            update = true;
+        }
         if (equipmentCreate.getSku() != null && !equipmentCreate.getSku().equals(equipment.getSku())) {
             equipment.setSku(equipmentCreate.getSku());
             update = true;
@@ -426,7 +436,8 @@ public class EquipmentService implements IEquipmentService {
         return null;
     }
 
-    private void generateGeoHash(Equipment equipment) {
+    @Override
+    public void generateGeoHash(Equipment equipment) {
         for (int i = 1; i < 13; i++) {
             String setterName = "setGeoHash" + i;
             try {
