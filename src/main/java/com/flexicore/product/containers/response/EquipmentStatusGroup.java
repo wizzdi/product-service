@@ -1,13 +1,13 @@
 package com.flexicore.product.containers.response;
 
-import com.flexicore.product.model.ProductStatus;
-
 public class EquipmentStatusGroup {
 
     private Long count;
     private String statusName;
     private String statusDescription;
     private String statusId;
+    private String tenantId;
+    private String tenantName;
 
 
     public EquipmentStatusGroup( String statusId,String statusName, String statusDescription, Long count) {
@@ -15,6 +15,15 @@ public class EquipmentStatusGroup {
         this.statusName = statusName;
         this.statusDescription = statusDescription;
         this.statusId = statusId;
+    }
+
+    public EquipmentStatusGroup(String tenantId,String tenantName, String statusId,String statusName, String statusDescription, Long count) {
+        this.count = count;
+        this.statusName = statusName;
+        this.statusDescription = statusDescription;
+        this.statusId = statusId;
+        this.tenantId=tenantId;
+        this.tenantName=tenantName;
     }
 
     public Long getCount() {
@@ -51,5 +60,23 @@ public class EquipmentStatusGroup {
     public EquipmentStatusGroup setStatusId(String statusId) {
         this.statusId = statusId;
         return this;
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public <T extends EquipmentStatusGroup> T setTenantId(String tenantId) {
+        this.tenantId = tenantId;
+        return (T) this;
+    }
+
+    public String getTenantName() {
+        return tenantName;
+    }
+
+    public <T extends EquipmentStatusGroup> T setTenantName(String tenantName) {
+        this.tenantName = tenantName;
+        return (T) this;
     }
 }

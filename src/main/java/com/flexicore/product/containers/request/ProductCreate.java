@@ -3,6 +3,7 @@ package com.flexicore.product.containers.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
+import com.flexicore.model.Tenant;
 import com.flexicore.product.model.Gateway;
 import com.flexicore.product.model.Model;
 import com.flexicore.product.model.ProductType;
@@ -35,8 +36,10 @@ public class ProductCreate {
 
     @JsonIgnore
     private Model model;
-
     private String modelId;
+
+    @JsonIgnore
+    private Tenant tenant;
 
     public String getName() {
         return name;
@@ -121,4 +124,15 @@ public class ProductCreate {
         this.modelId = modelId;
         return (T) this;
     }
+
+    @JsonIgnore
+    public Tenant getTenant() {
+        return tenant;
+    }
+
+    public <T extends ProductCreate> T setTenant(Tenant tenant) {
+        this.tenant = tenant;
+        return (T) this;
+    }
+
 }

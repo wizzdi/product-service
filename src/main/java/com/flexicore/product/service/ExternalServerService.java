@@ -66,6 +66,10 @@ public class ExternalServerService implements IExternalServerService {
             externalServerUser.setUsername(externalServerCreate.getUsername());
             update = true;
         }
+        if (externalServerCreate.getExternalServer() != null && (externalServerUser.getExternalServer()==null||!externalServerCreate.getExternalServer().getId().equals(externalServerUser.getExternalServer().getId()))) {
+            externalServerUser.setExternalServer(externalServerCreate.getExternalServer());
+            update = true;
+        }
         String password = externalServerCreate.getPassword();
 
         EncryptionService.initEncryption(logger);

@@ -210,6 +210,21 @@ public class EquipmentRESTService implements RestServicePlugin {
         return service.getProductGroupedByStatus(c, equipmentFiltering, securityContext);
     }
 
+
+
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "getProductGroupedByStatusAndTenant", description = "returns product stats grouped by status")
+    @Path("getProductGroupedByStatusAndTenant")
+    public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndTenant(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EquipmentFiltering equipmentFiltering,
+            @Context SecurityContext securityContext) {
+        Class<T> c = service.validateFiltering(equipmentFiltering, securityContext);
+
+        return service.getProductGroupedByStatusAndTenant(c, equipmentFiltering, securityContext);
+    }
+
     @POST
     @Produces("application/json")
     @Operation(summary = "disableGateway", description = "disables Gateway")

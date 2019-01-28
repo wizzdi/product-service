@@ -357,6 +357,11 @@ public class EquipmentService implements IEquipmentService {
             update = true;
         }
 
+        if (productCreate.getTenant() != null && (product.getTenant() == null || !product.getTenant().getId().equals(productCreate.getTenant().getId()))) {
+            product.setTenant(productCreate.getTenant());
+            update = true;
+        }
+
 
         return update;
     }
@@ -899,5 +904,9 @@ public class EquipmentService implements IEquipmentService {
             equipmentRepository.merge(flexiCoreGateway);
         }
         return flexiCoreGateway;
+    }
+
+    public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndTenant(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
+        return equipmentRepository.getProductGroupedByStatusAndTenant(c,equipmentFiltering,securityContext);
     }
 }
