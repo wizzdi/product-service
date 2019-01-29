@@ -22,14 +22,12 @@ public class Alert extends Event{
 
     public Alert() {
         super();
-        setEventType(Alert.class.getCanonicalName());
     }
 
     public Alert(Equipment equipment) {
         super(equipment);
-        setEventType(Alert.class.getCanonicalName());
         this.externalGatewayId=equipment.getCommunicationGateway()!=null?equipment.getCommunicationGateway().getId():null;
-        this.gatewayName=equipment.getCommunicationGateway().getName();
+        this.gatewayName=equipment.getCommunicationGateway()!=null?equipment.getCommunicationGateway().getName():null;
         this.streetId=equipment.getAddress()!=null&&equipment.getAddress().getStreet()!=null?equipment.getAddress().getStreet().getId():null;
         this.streetExternalId=equipment.getAddress()!=null&&equipment.getAddress().getStreet()!=null?equipment.getAddress().getStreet().getExternalId():null;
         this.streetName=equipment.getAddress()!=null&&equipment.getAddress().getStreet()!=null?equipment.getAddress().getStreet().getName():null;

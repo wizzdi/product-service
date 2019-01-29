@@ -63,13 +63,13 @@ public interface IEventNoSqlRepository extends PluginRepository {
             Bson lte = lte(EVENT_DATE, end);
             pred = pred == null ? lte : and(pred, lte);
         }
-        if (!eventFiltering.getBaseclass().isEmpty()) {
+        if (eventFiltering.getBaseclass()!=null&&!eventFiltering.getBaseclass().isEmpty()) {
             Set<String> baseclasIds = eventFiltering.getBaseclass().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
             Bson in = in(BASECLASS_ID, baseclasIds);
             pred = pred == null ? in : and(pred, in);
         }
 
-        if (!eventFiltering.getTenantIds().isEmpty()) {
+        if (eventFiltering.getTenantIds()!=null&&!eventFiltering.getTenantIds().isEmpty()) {
             Set<String> tenantsIds = eventFiltering.getTenantIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
             Bson in = in(TENANT_ID, tenantsIds);
             pred = pred == null ? in : and(pred, in);
