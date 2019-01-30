@@ -18,11 +18,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 /**
@@ -65,6 +63,8 @@ public class EventRESTService implements RestServicePlugin {
 
     }
 
+    private static AtomicBoolean usersUsingReport=new AtomicBoolean(false);
+
     @POST
     @Produces("application/json")
     @Operation(summary = "generateReport", description = "Generates report")
@@ -73,9 +73,18 @@ public class EventRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             CreateAggregatedReport filtering,
             @Context SecurityContext securityContext) {
-        service.validateFiltering(filtering, securityContext);
+        if(usersUsingReport.compareAndSet(false,true)){
+            try {
+                service.validateFiltering(filtering, securityContext);
 
-        return service.generateReport(securityContext, filtering);
+                return service.generateReport(securityContext, filtering);
+            }
+            finally {
+                usersUsingReport.set(false);
+            }
+        }
+
+       throw new ServiceUnavailableException("generate report has exceeded its use , please wait for it to become available");
     }
 
 

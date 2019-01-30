@@ -1,6 +1,7 @@
 package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.product.containers.request.AlertFiltering;
 import com.flexicore.product.containers.request.EventFiltering;

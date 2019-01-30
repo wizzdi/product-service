@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
@@ -42,6 +43,7 @@ public class EventService implements IEventService {
     private EquipmentService equipmentService;
     @Inject
     private TenantService tenantService;
+    private static AtomicBoolean init=new AtomicBoolean(false);
 
 
     @Override
@@ -53,6 +55,8 @@ public class EventService implements IEventService {
     public void massMergeEvents(List<? extends Event> o) {
         repository.massMergeEvents(o);
     }
+
+
 
     @Override
     public <T extends Event> PaginationResponse<T> getAllEvents(EventFiltering eventFiltering, Class<T> c) {
