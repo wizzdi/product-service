@@ -14,6 +14,7 @@ import com.flexicore.service.EncryptionService;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,6 +22,7 @@ import java.util.logging.Logger;
 @PluginInfo(version = 1)
 public class ExternalServerService implements IExternalServerService {
 
+    public static final String SALT = "test";
     @Inject
     private Logger logger;
 
@@ -74,7 +76,7 @@ public class ExternalServerService implements IExternalServerService {
 
         EncryptionService.initEncryption(logger);
         try {
-            String encryptedPassword = Base64.getEncoder().encodeToString(EncryptionService.getAead().encrypt(password.getBytes(StandardCharsets.UTF_8), "test".getBytes()));
+            String encryptedPassword = Base64.getEncoder().encodeToString(EncryptionService.getAead().encrypt(password.getBytes(StandardCharsets.UTF_8), SALT.getBytes()));
             if (!encryptedPassword.equals(externalServerUser.getPassword())) {
                 externalServerUser.setPassword(encryptedPassword);
                 update = true;
@@ -84,5 +86,11 @@ public class ExternalServerService implements IExternalServerService {
             logger.log(Level.SEVERE,"could not encrypt password",e);
         }
         return update;
+    }
+
+    @Override
+    public String getDecryptedPassword(String encryptedPassword) throws GeneralSecurityException {
+        EncryptionService.initEncryption(logger);
+        return new String(EncryptionService.getAead().decrypt(Base64.getDecoder().decode(encryptedPassword),SALT.getBytes()),StandardCharsets.UTF_8);
     }
 }
