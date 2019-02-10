@@ -43,7 +43,11 @@ import java.util.stream.Collectors;
 @OpenAPIDefinition(tags = {
         @Tag(name = "Events", description = "Events Services"),
         @Tag(name = "Equipments", description = "Equipments Services"),
-        @Tag(name = "EquipmentGroups", description = "EquipmentGroups Services")
+        @Tag(name = "EquipmentGroups", description = "EquipmentGroups Services"),
+        @Tag(name = "ProductModel", description = "ProductModel Services"),
+        @Tag(name = "Manufacturer", description = "Manufacturer Services")
+
+
 
 })
 @Tag(name = "Equipments")
