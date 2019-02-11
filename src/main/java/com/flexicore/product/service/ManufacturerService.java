@@ -12,11 +12,8 @@ import com.flexicore.product.request.ManufacturerUpdate;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
-import javax.ws.rs.BadRequestException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
 public class ManufacturerService implements IManufacturerService {
