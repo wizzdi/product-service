@@ -26,12 +26,14 @@ import org.bson.conversions.Bson;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
+import static com.flexicore.service.MongoConnectionService.MONGO_DB;
 import static com.mongodb.client.model.Filters.lte;
 import static com.mongodb.client.model.Sorts.descending;
 import static com.mongodb.client.model.Sorts.orderBy;
@@ -56,10 +58,15 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
     public static CodecRegistry getPojoCodecRegistry() {
         return pojoCodecRegistry;
     }
+    @Inject
+    private MongoClient mongoClient;
+
+    @Inject
+    @Named(MONGO_DB)
+    private String mongoDBName;
 
     @PostConstruct
     private void postConstruct() {
-        MongoConnectionService.init(logger, em);
         if (pojoTime != IEventService.lastListUpdateTime.get() || init.compareAndSet(false, true)) {
             PojoCodecProvider.Builder builder = PojoCodecProvider.builder();
             Pair<Long, Set<Class<? extends Event>>> alertClazzToRegister = IEventService.getAlertClazzToRegister();
@@ -76,7 +83,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
     public List<AggregationReportEntry> generateReport(CreateAggregatedReport createAggregatedReport, LocalDateTime endTime) {
         createAggregatedReport = new CreateAggregatedReport(createAggregatedReport);
         createAggregatedReport.setToDate(endTime);
-        MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
+        MongoDatabase db =mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Document> collection = db.getCollection(EVENTS_COLLECTION_NAME);
         Bson pred = IEventNoSqlRepository.getEventsPredicate(createAggregatedReport);
         List<Bson> aggregatePipeline = new ArrayList<>(Arrays.asList(
@@ -122,7 +129,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
     public void merge(Object o) {
 
         if (o instanceof Event) {
-            MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName());
+            MongoDatabase db = mongoClient.getDatabase(mongoDBName);
             MongoCollection<Event> collection = db.getCollection(EVENTS_COLLECTION_NAME, Event.class).withCodecRegistry(pojoCodecRegistry);
             collection.insertOne((Event) o);
         }
@@ -131,7 +138,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
     @Override
     public void massMergeEvents(List<? extends Event> o) {
-        MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName());
+        MongoDatabase db =mongoClient.getDatabase(mongoDBName);
         MongoCollection<Event> collection = db.getCollection(EVENTS_COLLECTION_NAME, Event.class).withCodecRegistry(pojoCodecRegistry);
         collection.insertMany(o);
 
@@ -140,7 +147,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
     @Override
     public long countAllEvents(EventFiltering eventFiltering) {
-        MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
+        MongoDatabase db =mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Event> collection = db.getCollection(EVENTS_COLLECTION_NAME, Event.class).withCodecRegistry(pojoCodecRegistry);
 
         Bson pred = IEventNoSqlRepository.getEventsPredicate(eventFiltering);
@@ -151,7 +158,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
     @Override
     public long countAllAlerts(AlertFiltering eventFiltering) {
-        MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Event> collection = db.getCollection(EVENTS_COLLECTION_NAME, Event.class).withCodecRegistry(pojoCodecRegistry);
 
         Bson pred = IEventNoSqlRepository.getAlertsPredicate(eventFiltering);
@@ -162,7 +169,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
     @Override
     public <T extends Event> List<T> getAllEvents(EventFiltering eventFiltering, Class<T> c) {
-        MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<T> collection = db.getCollection(EVENTS_COLLECTION_NAME, c).withCodecRegistry(pojoCodecRegistry);
 
         Bson pred = IEventNoSqlRepository.getEventsPredicate(eventFiltering);
@@ -182,7 +189,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
     @Override
     public <T extends Alert> List<T> getAllAlerts(AlertFiltering eventFiltering, Class<T> c) {
-        MongoDatabase db = MongoConnectionService.getMongoClient().getDatabase(MongoConnectionService.getDbName()).withCodecRegistry(pojoCodecRegistry);
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<T> collection = db.getCollection(EVENTS_COLLECTION_NAME, c).withCodecRegistry(pojoCodecRegistry);
 
         Bson pred = IEventNoSqlRepository.getAlertsPredicate(eventFiltering);
