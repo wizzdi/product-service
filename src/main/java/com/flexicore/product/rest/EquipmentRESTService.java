@@ -10,6 +10,7 @@ import com.flexicore.model.FileResource;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
+import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
 import com.flexicore.product.service.EquipmentService;
@@ -212,6 +213,19 @@ public class EquipmentRESTService implements RestServicePlugin {
         Class<T> c = service.validateFiltering(equipmentFiltering, securityContext);
 
         return service.getProductGroupedByStatus(c, equipmentFiltering, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "getProductGroupedBySpecificType", description = "returns product stats grouped by specific type")
+    @Path("getProductGroupedBySpecificType")
+    public <T extends Equipment> List<EquipmentSpecificTypeGroup> getProductGroupedBySpecificType(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EquipmentFiltering equipmentFiltering,
+            @Context SecurityContext securityContext) {
+        Class<T> c = service.validateFiltering(equipmentFiltering, securityContext);
+
+        return service.getProductGroupedBySpecificType(c, equipmentFiltering, securityContext);
     }
 
 

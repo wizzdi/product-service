@@ -3,12 +3,10 @@ package com.flexicore.product.data;
 import com.flexicore.annotations.InjectProperties;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
-import com.flexicore.model.Baselink_;
-import com.flexicore.model.QueryInformationHolder;
+import com.flexicore.model.*;
 
-import com.flexicore.model.Tenant;
-import com.flexicore.model.Tenant_;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
+import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
 import com.flexicore.product.model.*;
@@ -285,6 +283,26 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         q.orderBy(cb.asc( statusJoin.get(ProductStatus_.id)));
         TypedQuery<EquipmentStatusGroup> query = em.createQuery(q);
+        return query.getResultList();
+
+    }
+
+    public <T extends Equipment> List<EquipmentSpecificTypeGroup> getProductGroupedBySpecificType(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<EquipmentSpecificTypeGroup> q = cb.createQuery(EquipmentSpecificTypeGroup.class);
+        Root<T> r = q.from(c);
+
+        List<Predicate> preds = new ArrayList<>();
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+        QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
+        prepareQuery(queryInformationHolder, preds, cb, q, r);
+        Predicate[] predsArray = new Predicate[preds.size()];
+        predsArray =preds.toArray(predsArray);
+        CompoundSelection<EquipmentSpecificTypeGroup> construct = cb.construct(EquipmentSpecificTypeGroup.class, r.get(Baseclass_.dtype), cb.countDistinct(r.get(Equipment_.id)));
+        q.select(construct).where(predsArray).groupBy(r.get(Baseclass_.dtype)).distinct(true);
+
+        q.orderBy(cb.asc(r.get(Baseclass_.dtype)));
+        TypedQuery<EquipmentSpecificTypeGroup> query = em.createQuery(q);
         return query.getResultList();
 
     }

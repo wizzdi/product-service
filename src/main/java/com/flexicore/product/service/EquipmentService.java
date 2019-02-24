@@ -16,6 +16,7 @@ import com.flexicore.model.territories.Street;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
+import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.interfaces.IEquipmentService;
@@ -908,5 +909,9 @@ public class EquipmentService implements IEquipmentService {
 
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndTenant(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
         return equipmentRepository.getProductGroupedByStatusAndTenant(c,equipmentFiltering,securityContext);
+    }
+
+    public <T extends Equipment> List<EquipmentSpecificTypeGroup> getProductGroupedBySpecificType(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
+        return equipmentRepository.getProductGroupedBySpecificType(c,equipmentFiltering,securityContext);
     }
 }
