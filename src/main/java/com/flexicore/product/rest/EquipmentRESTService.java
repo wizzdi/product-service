@@ -13,6 +13,8 @@ import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
+import com.flexicore.product.request.CreateLatLon;
+import com.flexicore.product.request.UpdateLatLon;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
 import com.flexicore.product.service.GroupService;
@@ -277,6 +279,7 @@ public class EquipmentRESTService implements RestServicePlugin {
         return service.createEquipment(c, equipmentCreate, securityContext);
     }
 
+
     @POST
     @Produces("application/json")
     @Operation(summary = "createFCGateway", description = "Creates FC Gateway")
@@ -288,6 +291,37 @@ public class EquipmentRESTService implements RestServicePlugin {
         service.validateCreate(equipmentCreate, securityContext);
 
         return service.createFlexiCoreGateway(equipmentCreate, securityContext);
+    }
+
+
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "createLatLon", description = "Creates LatLon")
+    @Path("createLatLon")
+    public LatLon createLatLon(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            CreateLatLon createLatLon,
+            @Context SecurityContext securityContext) {
+        service.validateLatLon(createLatLon, securityContext);
+
+        return service.createLatLon(createLatLon, securityContext);
+    }
+
+    @PUT
+    @Produces("application/json")
+    @Operation(summary = "updateLatLon", description = "Updates LatLon")
+    @Path("updateLatLon")
+    public LatLon updateLatLon(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            UpdateLatLon updateLatLon,
+            @Context SecurityContext securityContext) {
+        service.validateLatLon(updateLatLon, securityContext);
+
+        LatLon latLon=service.getByIdOrNull(updateLatLon.getId(),LatLon.class,null,securityContext);
+        if(latLon==null){
+            throw new BadRequestException("No Lat Lon with id "+updateLatLon.getId());
+        }
+        return service.updateLatLon(updateLatLon, securityContext);
     }
 
 

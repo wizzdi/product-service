@@ -21,6 +21,9 @@ import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
+import com.flexicore.product.request.CreateLatLon;
+import com.flexicore.product.request.CreateMultiLatLonEquipment;
+import com.flexicore.product.request.UpdateLatLon;
 import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
@@ -714,6 +717,66 @@ public class EquipmentService implements IEquipmentService {
         return equipmentRepository.getProductGroupedByStatus(c, equipmentFiltering, securityContext);
     }
 
+    @Override
+    public boolean updateMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, MultiLatLonEquipment multiLatLonEquipment){
+        return updateEquipmentNoMerge(createMultiLatLonEquipment,multiLatLonEquipment);
+    }
+
+    @Override
+    public MultiLatLonEquipment createMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, SecurityContext securityContext){
+        MultiLatLonEquipment multiLatLonEquipment=MultiLatLonEquipment.s().CreateUnchecked(createMultiLatLonEquipment.getName(),securityContext);
+        multiLatLonEquipment.Init();
+        updateMultiLatLonEquipmentNoMerge(createMultiLatLonEquipment,multiLatLonEquipment);
+        return multiLatLonEquipment;
+    }
+
+    public void validateLatLon(CreateLatLon createLatLon,SecurityContext securityContext){
+        MultiLatLonEquipment multiLatLonEquipment=equipmentRepository.getByIdOrNull(createLatLon.getMultiLatLonEquipmentId(),MultiLatLonEquipment.class,null,securityContext);
+        if(multiLatLonEquipment==null&&createLatLon.getMultiLatLonEquipmentId()!=null){
+            throw new BadRequestException("No MultiLatLon Equipment with id "+createLatLon.getMultiLatLonEquipmentId());
+        }
+        createLatLon.setMultiLatLonEquipment(multiLatLonEquipment);
+
+    }
+
+    public LatLon updateLatLon(UpdateLatLon updateLatLon, SecurityContext securityContext) {
+        LatLon latLon=updateLatLon.getLatLon();
+        if(updateLatLonNoMerge(updateLatLon,latLon)){
+            equipmentRepository.merge(latLon);
+        }
+        return latLon;
+    }
+
+    public LatLon createLatLon(CreateLatLon createLatLon, SecurityContext securityContext) {
+        LatLon latLon=createLatLonNoMerge(createLatLon,securityContext);
+        equipmentRepository.merge(latLon);
+        return latLon;
+    }
+
+    public LatLon createLatLonNoMerge(CreateLatLon createLatLon, SecurityContext securityContext){
+        LatLon latLon=LatLon.s().CreateUnchecked("LatLon",securityContext);
+        latLon.Init();
+        updateLatLonNoMerge(createLatLon,latLon);
+        return latLon;
+    }
+
+    private boolean updateLatLonNoMerge(CreateLatLon createLatLon, LatLon latLon) {
+        boolean update=false;
+        if(createLatLon.getMultiLatLonEquipment()!=null && (latLon.getMultiLatLonEquipment()==null||createLatLon.getMultiLatLonEquipment().getId().equals(latLon.getMultiLatLonEquipment().getId()))){
+            latLon.setMultiLatLonEquipment(createLatLon.getMultiLatLonEquipment());
+            update=true;
+        }
+        if(createLatLon.getLat()!=null && createLatLon.getLat()!=latLon.getLat()){
+            latLon.setLat(createLatLon.getLat());
+            update=true;
+        }
+        if(createLatLon.getLon()!=null && createLatLon.getLon()!=latLon.getLon()){
+            latLon.setLon(createLatLon.getLon());
+            update=true;
+        }
+        return update;
+    }
+
 
     @Override
     public List<ProductToStatus> getStatusLinks(Set<String> collect) {
@@ -914,4 +977,5 @@ public class EquipmentService implements IEquipmentService {
     public <T extends Equipment> List<EquipmentSpecificTypeGroup> getProductGroupedBySpecificType(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
         return equipmentRepository.getProductGroupedBySpecificType(c,equipmentFiltering,securityContext);
     }
+
 }

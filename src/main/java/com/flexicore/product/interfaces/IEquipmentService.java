@@ -8,6 +8,7 @@ import com.flexicore.model.FlexiCoreServer;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.*;
+import com.flexicore.product.request.CreateMultiLatLonEquipment;
 import com.flexicore.security.SecurityContext;
 
 import javax.ws.rs.core.Context;
@@ -88,6 +89,10 @@ public interface IEquipmentService extends ServicePlugin,InitPlugin {
     ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext);
 
     <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext);
+
+    boolean updateMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, MultiLatLonEquipment multiLatLonEquipment);
+
+    MultiLatLonEquipment createMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, SecurityContext securityContext);
 
     List<ProductToStatus> getStatusLinks(Set<String> collect);
 
