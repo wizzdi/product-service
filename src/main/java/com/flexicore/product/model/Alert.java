@@ -37,110 +37,53 @@ public class Alert extends Event{
         return severity;
     }
 
-    public Alert setSeverity(int severity) {
+    public <T extends Alert> T setSeverity(int severity) {
         this.severity = severity;
-        return this;
-    }
-
-    @Override
-    public Alert setEventDate(Date eventDate) {
-        return (Alert)super.setEventDate(eventDate);
-    }
-
-    @Override
-    public Alert setHumanReadableText(String humanReadableText) {
-        return (Alert)super.setHumanReadableText(humanReadableText);
-    }
-
-    @Override
-    public Alert setEventType(String eventType) {
-        return (Alert)super.setEventType(eventType);
-    }
-
-    @Override
-    public Alert setBaseclassId(String baseclassId) {
-        return (Alert)super.setBaseclassId(baseclassId);
-    }
-
-    @Override
-    public Alert setClazzName(String clazzName) {
-        return (Alert)super.setClazzName(clazzName);
-    }
-
-    @Override
-    public Alert setBaseclassName(String baseclassName) {
-        return (Alert)super.setBaseclassName(baseclassName);
-    }
-
-    @Override
-    public Alert setBaseclassTenantId(String baseclassTenantId) {
-        return (Alert)super.setBaseclassTenantId(baseclassTenantId);
-    }
-
-    @Override
-    public Alert setEventSubType(String eventSubType) {
-        return (Alert)super.setEventSubType(eventSubType);
-    }
-
-    @Override
-    public Alert setEquipmentGroupIds(Set<String> equipmentGroupIds) {
-        return (Alert) super.setEquipmentGroupIds(equipmentGroupIds);
-    }
-
-    @Override
-    public Alert setCommunicationGatewayId(String communicationGatewayId) {
-        return (Alert) super.setCommunicationGatewayId(communicationGatewayId);
-    }
-
-    @Override
-    public Alert setStatusIds(Set<String> statusIds) {
-        return (Alert) super.setStatusIds(statusIds);
+        return (T) this;
     }
 
     public String getExternalGatewayId() {
         return externalGatewayId;
     }
 
-    public Alert setExternalGatewayId(String externalGatewayId) {
+    public <T extends Alert> T setExternalGatewayId(String externalGatewayId) {
         this.externalGatewayId = externalGatewayId;
-        return this;
+        return (T) this;
     }
 
     public String getGatewayName() {
         return gatewayName;
     }
 
-    public Alert setGatewayName(String gatewayName) {
+    public <T extends Alert> T setGatewayName(String gatewayName) {
         this.gatewayName = gatewayName;
-        return this;
+        return (T) this;
     }
 
     public String getStreetId() {
         return streetId;
     }
 
-    public Alert setStreetId(String streetId) {
+    public <T extends Alert> T setStreetId(String streetId) {
         this.streetId = streetId;
-        return this;
+        return (T) this;
     }
 
     public String getStreetExternalId() {
         return streetExternalId;
     }
 
-    public Alert setStreetExternalId(String streetExternalId) {
+    public <T extends Alert> T setStreetExternalId(String streetExternalId) {
         this.streetExternalId = streetExternalId;
-        return this;
+        return (T) this;
     }
 
     public String getStreetName() {
         return streetName;
     }
 
-    public Alert setStreetName(String streetName) {
+    public <T extends Alert> T setStreetName(String streetName) {
         this.streetName = streetName;
-        return this;
+        return (T) this;
     }
-
-
 }

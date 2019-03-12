@@ -10,6 +10,7 @@ import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
 import com.flexicore.product.model.*;
+import com.flexicore.product.request.LatLonFilter;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
@@ -305,5 +306,35 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         TypedQuery<EquipmentSpecificTypeGroup> query = em.createQuery(q);
         return query.getResultList();
 
+    }
+
+    public List<LatLon> getAllLatLons(LatLonFilter latLonFilter, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<LatLon> q = cb.createQuery(LatLon.class);
+        Root<LatLon> r = q.from(LatLon.class);
+        List<Predicate> preds = new ArrayList<>();
+        addLatLonPredicates(latLonFilter,preds,cb,r);
+        QueryInformationHolder<LatLon> queryInformationHolder = new QueryInformationHolder<>(latLonFilter, LatLon.class, securityContext);
+        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
+
+    }
+
+    public long countAllLatLons(LatLonFilter latLonFilter, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> q = cb.createQuery(Long.class);
+        Root<LatLon> r = q.from(LatLon.class);
+        List<Predicate> preds = new ArrayList<>();
+        addLatLonPredicates(latLonFilter,preds,cb,r);
+        QueryInformationHolder<LatLon> queryInformationHolder = new QueryInformationHolder<>(latLonFilter, LatLon.class, securityContext);
+        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
+
+    }
+
+    private void addLatLonPredicates(LatLonFilter latLonFilter, List<Predicate> preds, CriteriaBuilder cb, Root<LatLon> r) {
+        if(latLonFilter.getMultiLatLonEquipments()!=null&&!latLonFilter.getMultiLatLonEquipments().isEmpty()){
+            Set<String> ids=latLonFilter.getMultiLatLonEquipments().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<LatLon,MultiLatLonEquipment> join=r.join(LatLon_.multiLatLonEquipment);
+            preds.add(join.get(MultiLatLonEquipment_.id).in(ids));
+        }
     }
 }

@@ -48,142 +48,138 @@ public class Event {
 
     }
 
-
-
     public String getId() {
         return id;
     }
 
-    public Event setId(String id) {
+    public <T extends Event> T setId(String id) {
         this.id = id;
-        return this;
+        return (T) this;
     }
 
     public Date getEventDate() {
         return eventDate;
     }
 
-    public Event setEventDate(Date eventDate) {
+    public <T extends Event> T setEventDate(Date eventDate) {
         this.eventDate = eventDate;
-        return this;
+        return (T) this;
     }
 
     public String getHumanReadableText() {
         return humanReadableText;
     }
 
-    public Event setHumanReadableText(String humanReadableText) {
+    public <T extends Event> T setHumanReadableText(String humanReadableText) {
         this.humanReadableText = humanReadableText;
-        return this;
+        return (T) this;
     }
-
 
     public String getEventType() {
         return eventType;
     }
 
-    public Event setEventType(String eventType) {
+    public <T extends Event> T setEventType(String eventType) {
         this.eventType = eventType;
-        return this;
+        return (T) this;
     }
 
     public String getBaseclassId() {
         return baseclassId;
     }
 
-    public Event setBaseclassId(String baseclassId) {
+    public <T extends Event> T setBaseclassId(String baseclassId) {
         this.baseclassId = baseclassId;
-        return this;
-    }
-
-    public String getClazzName() {
-        return clazzName;
-    }
-
-    public Event setClazzName(String clazzName) {
-        this.clazzName = clazzName;
-        return this;
+        return (T) this;
     }
 
     public String getBaseclassName() {
         return baseclassName;
     }
 
-    public Event setBaseclassName(String baseclassName) {
+    public <T extends Event> T setBaseclassName(String baseclassName) {
         this.baseclassName = baseclassName;
-        return this;
+        return (T) this;
+    }
+
+    public String getClazzName() {
+        return clazzName;
+    }
+
+    public <T extends Event> T setClazzName(String clazzName) {
+        this.clazzName = clazzName;
+        return (T) this;
     }
 
     public String getBaseclassTenantId() {
         return baseclassTenantId;
     }
 
-    public Event setBaseclassTenantId(String baseclassTenantId) {
+    public <T extends Event> T setBaseclassTenantId(String baseclassTenantId) {
         this.baseclassTenantId = baseclassTenantId;
-        return this;
+        return (T) this;
     }
 
     public String getEventSubType() {
         return eventSubType;
     }
 
-    public Event setEventSubType(String eventSubType) {
+    public <T extends Event> T setEventSubType(String eventSubType) {
         this.eventSubType = eventSubType;
-        return this;
+        return (T) this;
     }
 
     public Set<String> getEquipmentGroupIds() {
         return equipmentGroupIds;
     }
 
-    public Event setEquipmentGroupIds(Set<String> equipmentGroupIds) {
+    public <T extends Event> T setEquipmentGroupIds(Set<String> equipmentGroupIds) {
         this.equipmentGroupIds = equipmentGroupIds;
-        return this;
+        return (T) this;
     }
 
     public String getCommunicationGatewayId() {
         return communicationGatewayId;
     }
 
-    public Event setCommunicationGatewayId(String communicationGatewayId) {
+    public <T extends Event> T setCommunicationGatewayId(String communicationGatewayId) {
         this.communicationGatewayId = communicationGatewayId;
-        return this;
+        return (T) this;
     }
 
     public Set<String> getStatusIds() {
         return statusIds;
     }
 
-    public Event setStatusIds(Set<String> statusIds) {
+    public <T extends Event> T setStatusIds(Set<String> statusIds) {
         this.statusIds = statusIds;
-        return this;
+        return (T) this;
     }
 
     public Double getBaseclassLat() {
         return baseclassLat;
     }
 
-    public Event setBaseclassLat(Double baseclassLat) {
+    public <T extends Event> T setBaseclassLat(Double baseclassLat) {
         this.baseclassLat = baseclassLat;
-        return this;
+        return (T) this;
     }
 
     public Double getBaseclassLon() {
         return baseclassLon;
     }
 
-    public Event setBaseclassLon(Double baseclassLon) {
+    public <T extends Event> T setBaseclassLon(Double baseclassLon) {
         this.baseclassLon = baseclassLon;
-        return this;
+        return (T) this;
     }
-
 
     public String getProductTypeId() {
         return productTypeId;
     }
 
-    public Event setProductTypeId(String productTypeId) {
+    public <T extends Event> T setProductTypeId(String productTypeId) {
         this.productTypeId = productTypeId;
-        return this;
+        return (T) this;
     }
 }

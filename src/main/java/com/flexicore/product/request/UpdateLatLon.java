@@ -6,6 +6,7 @@ import com.flexicore.product.model.LatLon;
 public class UpdateLatLon extends CreateLatLon{
 
     private String id;
+    private boolean manualUpdateOrdinal;
     @JsonIgnore
     private LatLon latLon;
 
@@ -25,6 +26,15 @@ public class UpdateLatLon extends CreateLatLon{
 
     public <T extends UpdateLatLon> T setLatLon(LatLon latLon) {
         this.latLon = latLon;
+        return (T) this;
+    }
+
+    public boolean isManualUpdateOrdinal() {
+        return manualUpdateOrdinal;
+    }
+
+    public <T extends UpdateLatLon> T setManualUpdateOrdinal(boolean manualUpdateOrdinal) {
+        this.manualUpdateOrdinal = manualUpdateOrdinal;
         return (T) this;
     }
 }

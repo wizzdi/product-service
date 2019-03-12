@@ -5,6 +5,8 @@ import com.flexicore.product.model.MultiLatLonEquipment;
 
 public class CreateLatLon {
 
+    private Integer ordinal;
+    private String contextString;
     private Double lat;
     private Double lon;
     private String multiLatLonEquipmentId;
@@ -45,6 +47,24 @@ public class CreateLatLon {
 
     public <T extends CreateLatLon> T setMultiLatLonEquipment(MultiLatLonEquipment multiLatLonEquipment) {
         this.multiLatLonEquipment = multiLatLonEquipment;
+        return (T) this;
+    }
+
+    public Integer getOrdinal() {
+        return ordinal;
+    }
+
+    public <T extends CreateLatLon> T setOrdinal(Integer ordinal) {
+        this.ordinal = ordinal;
+        return (T) this;
+    }
+
+    public String getContextString() {
+        return contextString;
+    }
+
+    public <T extends CreateLatLon> T setContextString(String contextString) {
+        this.contextString = contextString;
         return (T) this;
     }
 }

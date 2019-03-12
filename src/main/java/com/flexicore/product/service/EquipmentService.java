@@ -23,6 +23,7 @@ import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.CreateLatLon;
 import com.flexicore.product.request.CreateMultiLatLonEquipment;
+import com.flexicore.product.request.LatLonFilter;
 import com.flexicore.product.request.UpdateLatLon;
 import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
@@ -238,7 +239,7 @@ public class EquipmentService implements IEquipmentService {
             update = true;
         }
 
-        if (equipmentCreate.getPort()!=null&&equipmentCreate.getPort() != equipment.getPort()) {
+        if (equipmentCreate.getPort() != null && equipmentCreate.getPort() != equipment.getPort()) {
             equipment.setPort(equipmentCreate.getPort());
             update = true;
         }
@@ -320,7 +321,6 @@ public class EquipmentService implements IEquipmentService {
         equipmentCreate.setAddress(address);
 
     }
-
 
 
     public void validateCreate(FlexiCoreGatewayCreate equipmentCreate, SecurityContext securityContext) {
@@ -447,19 +447,23 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public void generateGeoHash(Equipment equipment) {
-        for (int i = 1; i < 13; i++) {
-            String setterName = "setGeoHash" + i;
-            try {
-                String geoHash = GeoHash.geoHashStringWithCharacterPrecision(equipment.getLat(), equipment.getLon(), i);
-                Method method = setterCache.computeIfAbsent(setterName, f -> getSetterOrNull(f));
-                if (method != null) {
-                    method.invoke(equipment, geoHash);
+        try {
+            for (int i = 1; i < 13; i++) {
+                String setterName = "setGeoHash" + i;
+                try {
+                    String geoHash = GeoHash.geoHashStringWithCharacterPrecision(equipment.getLat(), equipment.getLon(), i);
+                    Method method = setterCache.computeIfAbsent(setterName, f -> getSetterOrNull(f));
+                    if (method != null) {
+                        method.invoke(equipment, geoHash);
 
+                    }
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    logger.log(Level.SEVERE, "could not set property " + setterName + " via setter");
                 }
-            } catch (InvocationTargetException | IllegalAccessException e) {
-                logger.log(Level.SEVERE, "could not set property " + setterName + " via setter");
-            }
 
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "unable to generate geo hash for equipment " + equipment.getId() + " (" + equipment.getExternalId() + ")");
         }
     }
 
@@ -523,7 +527,7 @@ public class EquipmentService implements IEquipmentService {
     }
 
     private String getProductTypeToStatusId(ProductTypeToProductStatus productTypeToProductStatus) {
-        return Baseclass.generateUUIDFromString("ProductTypeToProductStatus-"+productTypeToProductStatus.getLeftside().getId()+"-"+productTypeToProductStatus.getRightside().getId());
+        return Baseclass.generateUUIDFromString("ProductTypeToProductStatus-" + productTypeToProductStatus.getLeftside().getId() + "-" + productTypeToProductStatus.getRightside().getId());
     }
 
     @Override
@@ -556,7 +560,7 @@ public class EquipmentService implements IEquipmentService {
     }
 
     private String getProductToStatusId(ProductToStatus productToStatus) {
-        return Baseclass.generateUUIDFromString("ProductToStatus-"+productToStatus.getLeftside().getId() +"-"+productToStatus.getRightside().getId());
+        return Baseclass.generateUUIDFromString("ProductToStatus-" + productToStatus.getLeftside().getId() + "-" + productToStatus.getRightside().getId());
     }
 
     @Override
@@ -576,7 +580,7 @@ public class EquipmentService implements IEquipmentService {
     }
 
     private String getProductStatusId(String name) {
-        return Baseclass.generateUUIDFromString("ProductStatus-"+name);
+        return Baseclass.generateUUIDFromString("ProductStatus-" + name);
     }
 
     public SecurityContext getAdminSecurityContext() {
@@ -607,7 +611,7 @@ public class EquipmentService implements IEquipmentService {
     }
 
     private String getProductTypeId(String name) {
-        return Baseclass.generateUUIDFromString("ProductType-"+name);
+        return Baseclass.generateUUIDFromString("ProductType-" + name);
     }
 
     @Override
@@ -718,61 +722,110 @@ public class EquipmentService implements IEquipmentService {
     }
 
     @Override
-    public boolean updateMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, MultiLatLonEquipment multiLatLonEquipment){
-        return updateEquipmentNoMerge(createMultiLatLonEquipment,multiLatLonEquipment);
+    public boolean updateMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, MultiLatLonEquipment multiLatLonEquipment) {
+        return updateEquipmentNoMerge(createMultiLatLonEquipment, multiLatLonEquipment);
     }
 
     @Override
-    public MultiLatLonEquipment createMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, SecurityContext securityContext){
-        MultiLatLonEquipment multiLatLonEquipment=MultiLatLonEquipment.s().CreateUnchecked(createMultiLatLonEquipment.getName(),securityContext);
+    public MultiLatLonEquipment createMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, SecurityContext securityContext) {
+        MultiLatLonEquipment multiLatLonEquipment = MultiLatLonEquipment.s().CreateUnchecked(createMultiLatLonEquipment.getName(), securityContext);
         multiLatLonEquipment.Init();
-        updateMultiLatLonEquipmentNoMerge(createMultiLatLonEquipment,multiLatLonEquipment);
+        updateMultiLatLonEquipmentNoMerge(createMultiLatLonEquipment, multiLatLonEquipment);
         return multiLatLonEquipment;
     }
 
-    public void validateLatLon(CreateLatLon createLatLon,SecurityContext securityContext){
-        MultiLatLonEquipment multiLatLonEquipment=equipmentRepository.getByIdOrNull(createLatLon.getMultiLatLonEquipmentId(),MultiLatLonEquipment.class,null,securityContext);
-        if(multiLatLonEquipment==null&&createLatLon.getMultiLatLonEquipmentId()!=null){
-            throw new BadRequestException("No MultiLatLon Equipment with id "+createLatLon.getMultiLatLonEquipmentId());
+    public void validateLatLon(CreateLatLon createLatLon, SecurityContext securityContext) {
+        MultiLatLonEquipment multiLatLonEquipment = equipmentRepository.getByIdOrNull(createLatLon.getMultiLatLonEquipmentId(), MultiLatLonEquipment.class, null, securityContext);
+        if (multiLatLonEquipment == null && createLatLon.getMultiLatLonEquipmentId() != null) {
+            throw new BadRequestException("No MultiLatLon Equipment with id " + createLatLon.getMultiLatLonEquipmentId());
         }
         createLatLon.setMultiLatLonEquipment(multiLatLonEquipment);
 
     }
 
+    public void validateLatLon(LatLonFilter latLonFilter, SecurityContext securityContext) {
+        Set<String> equipmentIds=latLonFilter.getMultiLatLonEquipmentIds();
+        Map<String,MultiLatLonEquipment> map=equipmentIds.isEmpty()?new HashMap<>():equipmentRepository.listByIds(MultiLatLonEquipment.class,equipmentIds,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
+        equipmentIds.removeAll(map.keySet());
+        if(!equipmentIds.isEmpty()){
+            throw new BadRequestException("No MultiLatLon Equipment with id "+equipmentIds);
+        }
+        latLonFilter.setMultiLatLonEquipments(new ArrayList<>(map.values()));
+
+
+    }
+
     public LatLon updateLatLon(UpdateLatLon updateLatLon, SecurityContext securityContext) {
-        LatLon latLon=updateLatLon.getLatLon();
-        if(updateLatLonNoMerge(updateLatLon,latLon)){
-            equipmentRepository.merge(latLon);
+        LatLon latLon = updateLatLon.getLatLon();
+        int ordinalBefore = latLon.getOrdinal();
+        if (updateLatLonNoMerge(updateLatLon, latLon)) {
+            List<Object> toMerge = new ArrayList<>();
+            toMerge.add(latLon);
+            int ordinalAfter = latLon.getOrdinal();
+            if (!updateLatLon.isManualUpdateOrdinal() && ordinalBefore != ordinalAfter) {
+                MultiLatLonEquipment multiLatLonEquipment = latLon.getMultiLatLonEquipment();
+                if (multiLatLonEquipment != null) {
+                    List<LatLon> latLons = equipmentRepository.getAllLatLons(new LatLonFilter().setMultiLatLonEquipmentIds(Collections.singleton(multiLatLonEquipment.getId())), securityContext);
+                    for (LatLon lon : latLons) {
+                        if (lon.getId().equals(latLon.getId())) {
+                            continue;
+                        }
+                        if (lon.getOrdinal() < ordinalBefore && lon.getOrdinal() >= ordinalAfter) {
+                            lon.setOrdinal(lon.getOrdinal() + 1);
+                            toMerge.add(lon);
+                        }
+                    }
+                }
+
+            }
+            equipmentRepository.massMerge(toMerge);
+
         }
         return latLon;
     }
 
+    public PaginationResponse<LatLon> getAllLatLons(LatLonFilter latLonFilter, SecurityContext securityContext) {
+        List<LatLon> list = equipmentRepository.getAllLatLons(latLonFilter, securityContext);
+        long count = equipmentRepository.countAllLatLons(latLonFilter, securityContext);
+        return new PaginationResponse<>(list, latLonFilter, count);
+    }
+
     public LatLon createLatLon(CreateLatLon createLatLon, SecurityContext securityContext) {
-        LatLon latLon=createLatLonNoMerge(createLatLon,securityContext);
+        LatLon latLon = createLatLonNoMerge(createLatLon, securityContext);
         equipmentRepository.merge(latLon);
         return latLon;
     }
 
-    public LatLon createLatLonNoMerge(CreateLatLon createLatLon, SecurityContext securityContext){
-        LatLon latLon=LatLon.s().CreateUnchecked("LatLon",securityContext);
+    public LatLon createLatLonNoMerge(CreateLatLon createLatLon, SecurityContext securityContext) {
+        LatLon latLon = LatLon.s().CreateUnchecked("LatLon", securityContext);
         latLon.Init();
-        updateLatLonNoMerge(createLatLon,latLon);
+        updateLatLonNoMerge(createLatLon, latLon);
         return latLon;
     }
 
     private boolean updateLatLonNoMerge(CreateLatLon createLatLon, LatLon latLon) {
-        boolean update=false;
-        if(createLatLon.getMultiLatLonEquipment()!=null && (latLon.getMultiLatLonEquipment()==null||createLatLon.getMultiLatLonEquipment().getId().equals(latLon.getMultiLatLonEquipment().getId()))){
+        boolean update = false;
+
+        if (createLatLon.getContextString() != null && !createLatLon.getContextString().equals(latLon.getContextString())) {
+            latLon.setContextString(createLatLon.getContextString());
+            update = true;
+        }
+
+        if (createLatLon.getMultiLatLonEquipment() != null && (latLon.getMultiLatLonEquipment() == null || createLatLon.getMultiLatLonEquipment().getId().equals(latLon.getMultiLatLonEquipment().getId()))) {
             latLon.setMultiLatLonEquipment(createLatLon.getMultiLatLonEquipment());
-            update=true;
+            update = true;
         }
-        if(createLatLon.getLat()!=null && createLatLon.getLat()!=latLon.getLat()){
+        if (createLatLon.getLat() != null && createLatLon.getLat() != latLon.getLat()) {
             latLon.setLat(createLatLon.getLat());
-            update=true;
+            update = true;
         }
-        if(createLatLon.getLon()!=null && createLatLon.getLon()!=latLon.getLon()){
+        if (createLatLon.getLon() != null && createLatLon.getLon() != latLon.getLon()) {
             latLon.setLon(createLatLon.getLon());
-            update=true;
+            update = true;
+        }
+        if (createLatLon.getOrdinal() != null && createLatLon.getOrdinal() != latLon.getOrdinal()) {
+            latLon.setOrdinal(createLatLon.getOrdinal());
+            update = true;
         }
         return update;
     }
@@ -959,7 +1012,7 @@ public class EquipmentService implements IEquipmentService {
             throw new BadRequestException("No FlexiCoreGateway with Id " + gatewayCreate.getId());
         }
         gatewayCreate.setFlexiCoreGateway(flexiCoreGateway);
-        validateCreate(gatewayCreate,securityContext);
+        validateCreate(gatewayCreate, securityContext);
     }
 
     public FlexiCoreGateway updateFlexiCoreGateway(FlexiCoreGatewayUpdate gatewayCreate, SecurityContext securityContext) {
@@ -971,11 +1024,11 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndTenant(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
-        return equipmentRepository.getProductGroupedByStatusAndTenant(c,equipmentFiltering,securityContext);
+        return equipmentRepository.getProductGroupedByStatusAndTenant(c, equipmentFiltering, securityContext);
     }
 
     public <T extends Equipment> List<EquipmentSpecificTypeGroup> getProductGroupedBySpecificType(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
-        return equipmentRepository.getProductGroupedBySpecificType(c,equipmentFiltering,securityContext);
+        return equipmentRepository.getProductGroupedBySpecificType(c, equipmentFiltering, securityContext);
     }
 
 }

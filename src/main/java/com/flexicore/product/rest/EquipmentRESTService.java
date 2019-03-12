@@ -14,6 +14,7 @@ import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.CreateLatLon;
+import com.flexicore.product.request.LatLonFilter;
 import com.flexicore.product.request.UpdateLatLon;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
@@ -322,6 +323,18 @@ public class EquipmentRESTService implements RestServicePlugin {
             throw new BadRequestException("No Lat Lon with id "+updateLatLon.getId());
         }
         return service.updateLatLon(updateLatLon, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "getAllLatLons", description = "return lat lons")
+    @Path("getAllLatLons")
+    public PaginationResponse<LatLon> getAllLatLons(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            LatLonFilter latLonFilter,
+            @Context SecurityContext securityContext) {
+      service.validateLatLon(latLonFilter,securityContext);
+      return service.getAllLatLons(latLonFilter,securityContext);
     }
 
 
