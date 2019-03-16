@@ -15,6 +15,7 @@ import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.CreateLatLon;
 import com.flexicore.product.request.LatLonFilter;
+import com.flexicore.product.request.MassUpsertLatLonRequest;
 import com.flexicore.product.request.UpdateLatLon;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
@@ -292,6 +293,20 @@ public class EquipmentRESTService implements RestServicePlugin {
         service.validateCreate(equipmentCreate, securityContext);
 
         return service.createFlexiCoreGateway(equipmentCreate, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "massUpsertLatLons", description = "upsert latlon")
+    @Path("massUpsertLatLons")
+    public List<LatLon> massUpsertLatLons(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            MassUpsertLatLonRequest massUpsertLatLonRequest,
+            @Context SecurityContext securityContext) {
+
+        service.validate(massUpsertLatLonRequest,securityContext);
+
+        return service. massUpsertLatLons(massUpsertLatLonRequest, securityContext);
     }
 
 

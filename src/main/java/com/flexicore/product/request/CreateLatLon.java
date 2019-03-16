@@ -12,6 +12,7 @@ public class CreateLatLon {
     private String multiLatLonEquipmentId;
     @JsonIgnore
     private MultiLatLonEquipment multiLatLonEquipment;
+    private Boolean softDelete;
 
     public Double getLat() {
         return lat;
@@ -65,6 +66,15 @@ public class CreateLatLon {
 
     public <T extends CreateLatLon> T setContextString(String contextString) {
         this.contextString = contextString;
+        return (T) this;
+    }
+
+    public Boolean getSoftDelete() {
+        return softDelete;
+    }
+
+    public <T extends CreateLatLon> T setSoftDelete(Boolean softDelete) {
+        this.softDelete = softDelete;
         return (T) this;
     }
 }
