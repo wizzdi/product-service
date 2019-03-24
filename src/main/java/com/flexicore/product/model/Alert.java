@@ -86,4 +86,5 @@ public class Alert extends Event{
         this.streetName = streetName;
         return (T) this;
     }
+
 }

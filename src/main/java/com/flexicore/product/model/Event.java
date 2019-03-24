@@ -26,6 +26,8 @@ public class Event {
     private Double baseclassLat;
     private Double baseclassLon;
     private String productTypeId;
+    private String userAcked;
+
 
 
     public Event() {
@@ -180,6 +182,15 @@ public class Event {
 
     public <T extends Event> T setProductTypeId(String productTypeId) {
         this.productTypeId = productTypeId;
+        return (T) this;
+    }
+
+    public String getUserAcked() {
+        return userAcked;
+    }
+
+    public <T extends Event> T setUserAcked(String userAcked) {
+        this.userAcked = userAcked;
         return (T) this;
     }
 }

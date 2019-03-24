@@ -12,6 +12,7 @@ public class MassUpsertLatLonRequest {
     private MultiLatLonEquipment multiLatLonEquipment;
 
     private List<LatLonContainer> list;
+    private String contextString;
 
     public List<LatLonContainer> getList() {
         return list;
@@ -38,6 +39,15 @@ public class MassUpsertLatLonRequest {
 
     public <T extends MassUpsertLatLonRequest> T setMultiLatLonEquipment(MultiLatLonEquipment multiLatLonEquipment) {
         this.multiLatLonEquipment = multiLatLonEquipment;
+        return (T) this;
+    }
+
+    public String getContextString() {
+        return contextString;
+    }
+
+    public <T extends MassUpsertLatLonRequest> T setContextString(String contextString) {
+        this.contextString = contextString;
         return (T) this;
     }
 }

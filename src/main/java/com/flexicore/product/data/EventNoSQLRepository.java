@@ -10,6 +10,8 @@ import com.flexicore.product.interfaces.IEventNoSqlRepository;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.Alert;
 import com.flexicore.product.model.Event;
+import com.flexicore.product.request.AckEventsRequest;
+import com.flexicore.security.SecurityContext;
 import com.flexicore.service.MongoConnectionService;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
@@ -18,6 +20,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.*;
+import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -32,9 +35,10 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import static com.mongodb.client.model.Updates.set;
 
 import static com.flexicore.service.MongoConnectionService.MONGO_DB;
-import static com.mongodb.client.model.Filters.lte;
+import static com.mongodb.client.model.Filters.*;
 import static com.mongodb.client.model.Sorts.descending;
 import static com.mongodb.client.model.Sorts.orderBy;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -58,6 +62,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
     public static CodecRegistry getPojoCodecRegistry() {
         return pojoCodecRegistry;
     }
+
     @Inject
     private MongoClient mongoClient;
 
@@ -83,7 +88,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
     public List<AggregationReportEntry> generateReport(CreateAggregatedReport createAggregatedReport, LocalDateTime endTime) {
         createAggregatedReport = new CreateAggregatedReport(createAggregatedReport);
         createAggregatedReport.setToDate(endTime);
-        MongoDatabase db =mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Document> collection = db.getCollection(EVENTS_COLLECTION_NAME);
         Bson pred = IEventNoSqlRepository.getEventsPredicate(createAggregatedReport);
         List<Bson> aggregatePipeline = new ArrayList<>(Arrays.asList(
@@ -94,7 +99,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
                 Aggregates.group("$baseclassId",
                         Accumulators.first("statusIds", "$statusIds"),
                         Accumulators.first("productTypeId", "$productTypeId"),
-                        Accumulators.first("baseclassTenantId","$baseclassTenantId")), //group by baseclassId(related equipment) , keep the value of the first status Ids array per group
+                        Accumulators.first("baseclassTenantId", "$baseclassTenantId")), //group by baseclassId(related equipment) , keep the value of the first status Ids array per group
                 Aggregates.unwind("$statusIds") // unwind status ids array so we have multiple entries one per status
 
         ));
@@ -110,14 +115,14 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
                 new BasicDBObject()
                         .append("statusId", "$statusIds")
                         .append("productTypeId", "$productTypeId")
-                        .append("baseclassTenantId","$baseclassTenantId")
+                        .append("baseclassTenantId", "$baseclassTenantId")
                 , Accumulators.sum("count", 1))); // finally group by status Id - count the group size
 
         AggregateIterable<Document> documents = collection.aggregate(aggregatePipeline);
         List<AggregationReportEntry> toRet = new ArrayList<>();
         for (Document document : documents) {
-            Document id = document.get("_id",Document.class);
-            toRet.add(new AggregationReportEntry(id.getString("statusId"), id.getString("productTypeId"),id.getString("baseclassTenantId"),document.getInteger("count")));
+            Document id = document.get("_id", Document.class);
+            toRet.add(new AggregationReportEntry(id.getString("statusId"), id.getString("productTypeId"), id.getString("baseclassTenantId"), document.getInteger("count")));
             System.out.println(document);
         }
         return toRet;
@@ -136,18 +141,20 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
     }
 
+
     @Override
     public void massMergeEvents(List<? extends Event> o) {
-        MongoDatabase db =mongoClient.getDatabase(mongoDBName);
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName);
         MongoCollection<Event> collection = db.getCollection(EVENTS_COLLECTION_NAME, Event.class).withCodecRegistry(pojoCodecRegistry);
         collection.insertMany(o);
 
 
     }
 
+
     @Override
     public long countAllEvents(EventFiltering eventFiltering) {
-        MongoDatabase db =mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
         MongoCollection<Event> collection = db.getCollection(EVENTS_COLLECTION_NAME, Event.class).withCodecRegistry(pojoCodecRegistry);
 
         Bson pred = IEventNoSqlRepository.getEventsPredicate(eventFiltering);
@@ -206,4 +213,13 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
         return alerts;
     }
 
+    public long ackEvents(AckEventsRequest ackEventsRequest, SecurityContext securityContext) {
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
+        MongoCollection<Event> collection = db.getCollection(EVENTS_COLLECTION_NAME, Event.class).withCodecRegistry(pojoCodecRegistry);
+        Bson filter=in(ID,ackEventsRequest.getEventIds());
+
+        Bson query=set(USER_ACKED,securityContext.getUser().getId());
+        UpdateResult updateResult=collection.updateMany(filter,query);
+        return updateResult.getModifiedCount();
+    }
 }

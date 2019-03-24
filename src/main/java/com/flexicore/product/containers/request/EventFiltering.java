@@ -25,6 +25,7 @@ public class EventFiltering extends FilteringInformationHolder {
 
     private LocationArea locationArea;
     private String baseclassNameLike;
+    private Boolean acked;
 
     public EventFiltering(EventFiltering other) {
         this.humanReadableTextLike = other.humanReadableTextLike;
@@ -36,6 +37,7 @@ public class EventFiltering extends FilteringInformationHolder {
         this.clazz = other.clazz;
         this.locationArea = other.locationArea;
         this.baseclassNameLike = other.baseclassNameLike;
+        this.acked=other.acked;
     }
 
     public EventFiltering() {
@@ -129,5 +131,14 @@ public class EventFiltering extends FilteringInformationHolder {
     @Override
     public FilteringInformationHolder setTenantIds(List<TenantIdFiltering> tenantIds) {
         return super.setTenantIds(tenantIds);
+    }
+
+    public Boolean getAcked() {
+        return acked;
+    }
+
+    public <T extends EventFiltering> T setAcked(Boolean acked) {
+        this.acked = acked;
+        return (T) this;
     }
 }

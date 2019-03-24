@@ -10,6 +10,8 @@ import com.flexicore.product.containers.request.CreateAggregatedReport;
 import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.containers.response.AggregationReport;
 import com.flexicore.product.model.Event;
+import com.flexicore.product.request.AckEventsRequest;
+import com.flexicore.product.response.AckEventsResponse;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
 import com.flexicore.security.SecurityContext;
@@ -20,6 +22,7 @@ import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
@@ -60,6 +63,19 @@ public class EventRESTService implements RestServicePlugin {
             @Context SecurityContext securityContext) {
         service.validateFiltering(eventFiltering, securityContext);
         return service.getAllEvents(eventFiltering,Event.class);
+
+    }
+
+
+    @PUT
+    @Produces("application/json")
+    @Operation(summary = "ackEvents", description = "ack events")
+    @Path("ackEvents")
+    public AckEventsResponse ackEvents(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            AckEventsRequest eventFiltering,
+            @Context SecurityContext securityContext) {
+        return service.ackEvents(eventFiltering,securityContext);
 
     }
 

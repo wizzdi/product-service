@@ -1,12 +1,13 @@
 package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.product.containers.request.AlertFiltering;
 import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.model.Alert;
 import com.flexicore.product.model.Event;
+import com.flexicore.product.request.AckEventsRequest;
+import com.flexicore.product.response.AckEventsResponse;
 import com.flexicore.security.SecurityContext;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -39,4 +40,5 @@ public interface IEventService extends ServicePlugin {
 
     void validateFiltering(EventFiltering eventFiltering, SecurityContext securityContext);
 
+    AckEventsResponse ackEvents(AckEventsRequest ackEventsRequest, SecurityContext securityContext);
 }

@@ -1,9 +1,11 @@
 package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
+import com.flexicore.data.jsoncontainers.CreatePermissionGroupRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.PermissionGroup;
 import com.flexicore.product.containers.request.GroupCreate;
 import com.flexicore.product.containers.request.GroupUpdate;
 import com.flexicore.product.data.EquipmentGroupRepository;
@@ -13,6 +15,7 @@ import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.EquipmentToGroup;
 import com.flexicore.product.model.GroupFiltering;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.PermissionGroupService;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -27,6 +30,10 @@ public class GroupService implements IGroupService {
     @Inject
     @PluginInfo(version = 1)
     private EquipmentGroupRepository equipmentRepository;
+
+    @Inject
+    private PermissionGroupService permissionGroupService;
+
 
 
     public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContext securityContext) {
@@ -56,12 +63,19 @@ public class GroupService implements IGroupService {
         return equipmentRepository.getRootEquipmentGroup(securityContext);
     }
 
+
     public EquipmentGroup createGroup(GroupCreate groupCreate, SecurityContext securityContext) {
+        List<Object> toMerge=new ArrayList<>();
         EquipmentGroup equipmentGroup=EquipmentGroup.s().CreateUnchecked(groupCreate.getName(),securityContext);
+
         equipmentGroup.Init();
         equipmentGroup.setDescription(groupCreate.getDescription());
         equipmentGroup.setParent(groupCreate.getParent());
-        equipmentRepository.merge(equipmentGroup);
+        PermissionGroup permissionGroup=permissionGroupService.createPermissionGroupNoMerge(new CreatePermissionGroupRequest().setDescription(groupCreate.getDescription()).setName(groupCreate.getName()),securityContext);
+        equipmentGroup.setRelatedPermissionGroup(permissionGroup);
+        toMerge.add(permissionGroup);
+        toMerge.add(equipmentGroup);
+        equipmentRepository.massMerge(toMerge);
         return equipmentGroup;
     }
 

@@ -4,12 +4,10 @@ import ch.hsr.geohash.GeoHash;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
 import com.flexicore.constants.Constants;
+import com.flexicore.data.jsoncontainers.CreatePermissionGroupLinkRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.iot.ExternalServer;
-import com.flexicore.model.Baseclass;
-import com.flexicore.model.FlexiCoreServer;
-import com.flexicore.model.QueryInformationHolder;
-import com.flexicore.model.User;
+import com.flexicore.model.*;
 import com.flexicore.model.territories.Address;
 import com.flexicore.model.territories.Neighbourhood;
 import com.flexicore.model.territories.Street;
@@ -69,6 +67,8 @@ public class EquipmentService implements IEquipmentService {
     @Inject
     private Logger logger;
 
+    @Inject
+    private PermissionGroupService permissionGroupService;
 
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
     private static AtomicBoolean init = new AtomicBoolean(false);
@@ -287,7 +287,12 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext) {
-        return baselinkService.linkEntities(linkToGroup.getEquipment(), linkToGroup.getEquipmentGroup(), EquipmentToGroup.class);
+        EquipmentToGroup equipmentToGroup = baselinkService.linkEntities(linkToGroup.getEquipment(), linkToGroup.getEquipmentGroup(), EquipmentToGroup.class);
+        PermissionGroup relatedPermissionGroup = linkToGroup.getEquipmentGroup().getRelatedPermissionGroup();
+        if(relatedPermissionGroup !=null){
+            permissionGroupService.connectPermissionGroupsToBaseclasses(new CreatePermissionGroupLinkRequest().setBaseclasses(Collections.singletonList(linkToGroup.getEquipment())).setPermissionGroups(Collections.singletonList(relatedPermissionGroup)),securityContext);
+        }
+        return equipmentToGroup;
 
     }
 
@@ -1076,6 +1081,10 @@ public class EquipmentService implements IEquipmentService {
         for (LatLon latLon : toDel) {
             latLon.setSoftDelete(true);
             toMerge.add(latLon);
+        }
+        if(massUpsertLatLonRequest.getContextString()!=null && !massUpsertLatLonRequest.getContextString().equals(multiLatLonEquipment.getContextString())){
+            multiLatLonEquipment.setContextString(massUpsertLatLonRequest.getContextString());
+            toMerge.add(multiLatLonEquipment);
         }
         equipmentRepository.massMerge(toMerge);
         return new ArrayList<>(afterUpdate.values());

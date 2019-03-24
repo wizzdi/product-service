@@ -3,7 +3,6 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.Baseclass;
-import com.flexicore.model.Tenant;
 import com.flexicore.product.containers.request.AlertFiltering;
 import com.flexicore.product.containers.request.CreateAggregatedReport;
 import com.flexicore.product.containers.request.EventFiltering;
@@ -14,6 +13,8 @@ import com.flexicore.product.interfaces.AlertSeverity;
 import com.flexicore.product.interfaces.AlertType;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.*;
+import com.flexicore.product.request.AckEventsRequest;
+import com.flexicore.product.response.AckEventsResponse;
 import com.flexicore.request.TenantFilter;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassService;
@@ -21,7 +22,6 @@ import com.flexicore.service.TenantService;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -120,5 +120,11 @@ public class EventService implements IEventService {
             }
 
         }
+    }
+
+    @Override
+    public AckEventsResponse ackEvents(AckEventsRequest ackEventsRequest, SecurityContext securityContext) {
+        long updated = repository.ackEvents(ackEventsRequest, securityContext);
+        return new AckEventsResponse().setUpdated(updated);
     }
 }

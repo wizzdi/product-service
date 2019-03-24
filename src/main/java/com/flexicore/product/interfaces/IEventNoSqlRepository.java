@@ -33,6 +33,9 @@ public interface IEventNoSqlRepository extends PluginRepository {
     String HUMAN_READABLE_TEXT = "humanReadableText";
     String BASECLASS_LAT = "baseclassLat";
     String BASECLASS_LON = "baseclassLon";
+    String ID = "id";
+    String USER_ACKED = "userAcked";
+
 
     static Bson getAlertsPredicate(AlertFiltering eventFiltering) {
         Bson pred = getEventsPredicate(eventFiltering);
@@ -114,6 +117,11 @@ public interface IEventNoSqlRepository extends PluginRepository {
 
             Bson eq = Filters.eq(HUMAN_READABLE_TEXT, eventFiltering.getHumanReadableTextLike());
             pred = pred == null ? eq : and(pred, eq);
+        }
+        if(eventFiltering.getAcked()!=null){
+            Bson ack=Filters.ne(USER_ACKED,null);
+            pred = pred == null ? ack : and(pred, ack);
+
         }
         return pred;
     }
