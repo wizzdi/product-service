@@ -5,12 +5,15 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.dynamic.InvokerInfo;
 import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
+import com.flexicore.product.containers.request.EquipmentUpdate;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentFiltering;
 import com.flexicore.product.model.EquipmentGroup;
+import com.flexicore.product.request.UpdateEquipmentParameters;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 
 @PluginInfo(version = 1)
 @InvokerInfo(displayName = "Equipment Invoker", description = "Invoker for Equipments")
@@ -27,6 +30,20 @@ public class EquipmentInvoker implements ListingInvoker<Equipment,EquipmentFilte
     public PaginationResponse<Equipment> listAll(EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
         equipmentService.validateFiltering(equipmentFiltering,securityContext);
         return equipmentService.getAllEquipments(Equipment.class,equipmentFiltering,securityContext);
+    }
+
+    @InvokerMethodInfo(displayName = "updateEquipment",description = "update equipment",relatedClasses = {Equipment.class})
+
+    public Equipment update(UpdateEquipmentParameters updateEquipmentParameters) {
+        EquipmentUpdate equipmentUpdate=updateEquipmentParameters.getEquipmentUpdate();
+        SecurityContext securityContext=updateEquipmentParameters.getSecurityContext();
+        Equipment equipment=equipmentService.getByIdOrNull(equipmentUpdate.getId(),Equipment.class,null,securityContext);
+        if(equipment==null){
+            throw new BadRequestException("No Equipment wit hid "+equipmentUpdate.getId());
+        }
+        equipmentUpdate.setEquipment(equipment);
+        equipmentService.validateEquipmentCreate(equipmentUpdate,securityContext);
+        return equipmentService.updateEquipment(equipmentUpdate,securityContext);
     }
 
     @Override

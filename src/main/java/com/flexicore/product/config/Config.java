@@ -10,6 +10,7 @@ import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.FlexiCoreGatewayCreateParameters;
+import com.flexicore.product.request.UpdateEquipmentParameters;
 import com.flexicore.service.BaseclassService;
 
 import javax.inject.Inject;
@@ -45,6 +46,7 @@ public class Config implements InitPlugin {
 
             CrossLoaderResolver.registerClass(InspectEquipmentRequest.class);
             CrossLoaderResolver.registerClass(FlexiCoreGatewayCreateParameters.class);
+            CrossLoaderResolver.registerClass(UpdateEquipmentParameters.class);
             BaseclassService.registerFilterClass(EquipmentFiltering.class,Equipment.class);
             BaseclassService.registerFilterClass(EquipmentFiltering.class,EquipmentShort.class);
             BaseclassService.registerFilterClass(GatewayFiltering.class,Gateway.class);
