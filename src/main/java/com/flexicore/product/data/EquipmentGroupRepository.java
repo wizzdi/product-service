@@ -5,6 +5,7 @@ import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.Baselink_;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.product.model.*;
+import com.flexicore.product.request.EquipmentToGroupFiltering;
 import com.flexicore.security.SecurityContext;
 
 import javax.persistence.TypedQuery;
@@ -70,13 +71,41 @@ public class EquipmentGroupRepository extends AbstractRepositoryPlugin {
 
     }
 
-    public List<EquipmentToGroup> getEquipmentToGroup(Set<String> equipmentIds) {
+    public List<EquipmentToGroup> getEquipmentToGroup(EquipmentToGroupFiltering equipmentToGroupFiltering, SecurityContext securityContext) {
         CriteriaBuilder cb=em.getCriteriaBuilder();
         CriteriaQuery<EquipmentToGroup> q=cb.createQuery(EquipmentToGroup.class);
         Root<EquipmentToGroup> r=q.from(EquipmentToGroup.class);
-        Join<EquipmentToGroup,Equipment> join=cb.treat(r.join(Baselink_.leftside),Equipment.class);
-        q.select(r).where(cb.and(join.get(Equipment_.id).in(equipmentIds),cb.not(cb.isTrue(r.get(Baselink_.softDelete)))));
-        TypedQuery<EquipmentToGroup> query=em.createQuery(q);
-        return query.getResultList();
+        List<Predicate> preds=new ArrayList<>();
+        addEquipmentToGroupPredicates(preds,equipmentToGroupFiltering,r,cb);
+       QueryInformationHolder<EquipmentToGroup> queryInformationHolder=new QueryInformationHolder<>(equipmentToGroupFiltering,EquipmentToGroup.class,securityContext);
+       return getAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
+
+    private void addEquipmentToGroupPredicates(List<Predicate> preds, EquipmentToGroupFiltering equipmentToGroupFiltering, Root<EquipmentToGroup> r, CriteriaBuilder cb) {
+        if(!equipmentToGroupFiltering.isRaw()&&equipmentToGroupFiltering.getEquipments()!=null && ! equipmentToGroupFiltering.getEquipments().isEmpty()){
+            Set<String> ids=equipmentToGroupFiltering.getEquipments().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<EquipmentToGroup,Equipment> join=cb.treat(r.join(Baselink_.leftside),Equipment.class);
+            preds.add(join.get(Equipment_.id).in(ids));
+        }
+        if(!equipmentToGroupFiltering.isRaw()&&equipmentToGroupFiltering.getGroups()!=null && ! equipmentToGroupFiltering.getGroups().isEmpty()){
+            Set<String> ids=equipmentToGroupFiltering.getGroups().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<EquipmentToGroup,EquipmentGroup> join=cb.treat(r.join(Baselink_.rightside),EquipmentGroup.class);
+            preds.add(join.get(EquipmentGroup_.id).in(ids));
+        }
+
+        if(equipmentToGroupFiltering.isRaw()&&equipmentToGroupFiltering.getEquipmentIds()!=null && ! equipmentToGroupFiltering.getEquipmentIds().isEmpty()){
+            Set<String> ids=equipmentToGroupFiltering.getEquipmentIds();
+            Join<EquipmentToGroup,Equipment> join=cb.treat(r.join(Baselink_.leftside),Equipment.class);
+            preds.add(join.get(Equipment_.id).in(ids));
+        }
+        if(equipmentToGroupFiltering.isRaw()&&equipmentToGroupFiltering.getGroupIds()!=null && ! equipmentToGroupFiltering.getGroupIds().isEmpty()){
+            Set<String> ids=equipmentToGroupFiltering.getGroupIds();
+            Join<EquipmentToGroup,EquipmentGroup> join=cb.treat(r.join(Baselink_.rightside),EquipmentGroup.class);
+            preds.add(join.get(EquipmentGroup_.id).in(ids));
+        }
+
+
+    }
+
+
 }

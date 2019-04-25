@@ -14,6 +14,7 @@ import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.EquipmentToGroup;
 import com.flexicore.product.model.GroupFiltering;
+import com.flexicore.product.request.EquipmentToGroupFiltering;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.PermissionGroupService;
 
@@ -47,17 +48,30 @@ public class GroupService implements IGroupService {
 
     @Override
     public PaginationResponse<EquipmentGroup> getAllEquipmentGroups(GroupFiltering filtering, SecurityContext securityContext) {
-        List<EquipmentGroup> list= equipmentRepository.getAllEquipmentGroups(filtering,securityContext);
+        List<EquipmentGroup> list= listAllEquipmentGroups(filtering, securityContext);
         long count=equipmentRepository.countAllEquipmentGroups(filtering,securityContext);
         return new PaginationResponse<>(list,filtering,count);
+    }
+
+    @Override
+    public List<EquipmentGroup> listAllEquipmentGroups(GroupFiltering filtering, SecurityContext securityContext) {
+        return equipmentRepository.getAllEquipmentGroups(filtering,securityContext);
     }
 
 
     @Override
     public List<EquipmentToGroup> getEquipmentToGroup(Set<String> equipmentIds) {
-        return equipmentRepository.getEquipmentToGroup(equipmentIds);
+        return equipmentRepository.getEquipmentToGroup(new EquipmentToGroupFiltering().setEquipmentIds(equipmentIds).setRaw(true),null);
 
     }
+
+    @Override
+    public List<EquipmentToGroup> listAllEquipmentToGroup(EquipmentToGroupFiltering equipmentToGroupFiltering, SecurityContext securityContext) {
+        return equipmentRepository.getEquipmentToGroup(equipmentToGroupFiltering,securityContext);
+
+    }
+
+
 
     public EquipmentGroup getRootEquipmentGroup(SecurityContext securityContext) {
         return equipmentRepository.getRootEquipmentGroup(securityContext);

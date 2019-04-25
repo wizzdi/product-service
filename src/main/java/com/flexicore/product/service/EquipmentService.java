@@ -773,7 +773,7 @@ public class EquipmentService implements IEquipmentService {
             if (!updateLatLon.isManualUpdateOrdinal() && ordinalBefore != ordinalAfter) {
                 MultiLatLonEquipment multiLatLonEquipment = latLon.getMultiLatLonEquipment();
                 if (multiLatLonEquipment != null) {
-                    List<LatLon> latLons = equipmentRepository.getAllLatLons(new LatLonFilter().setMultiLatLonEquipments(Collections.singletonList(multiLatLonEquipment)), securityContext);
+                    List<LatLon> latLons = listAllLatLons(new LatLonFilter().setMultiLatLonEquipments(Collections.singletonList(multiLatLonEquipment)), securityContext);
                     for (LatLon lon : latLons) {
                         if (lon.getId().equals(latLon.getId())) {
                             continue;
@@ -793,9 +793,14 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public PaginationResponse<LatLon> getAllLatLons(LatLonFilter latLonFilter, SecurityContext securityContext) {
-        List<LatLon> list = equipmentRepository.getAllLatLons(latLonFilter, securityContext);
+        List<LatLon> list = listAllLatLons(latLonFilter, securityContext);
         long count = equipmentRepository.countAllLatLons(latLonFilter, securityContext);
         return new PaginationResponse<>(list, latLonFilter, count);
+    }
+
+    @Override
+    public List<LatLon> listAllLatLons(LatLonFilter latLonFilter, SecurityContext securityContext) {
+        return equipmentRepository.getAllLatLons(latLonFilter, securityContext);
     }
 
     public LatLon createLatLon(CreateLatLon createLatLon, SecurityContext securityContext) {
@@ -1055,8 +1060,7 @@ public class EquipmentService implements IEquipmentService {
         LatLonFilter latLonFilter = new LatLonFilter()
                 .setMultiLatLonEquipments(Collections.singletonList(multiLatLonEquipment))
                 .setFetchSoftDelete(true);
-        List<LatLon> existing=equipmentRepository.getAllLatLons(
-                latLonFilter,securityContext).parallelStream().sorted(Comparator.comparing(f->f.getOrdinal())).collect(Collectors.toList());
+        List<LatLon> existing= listAllLatLons(latLonFilter, securityContext).parallelStream().sorted(Comparator.comparing(f->f.getOrdinal())).collect(Collectors.toList());
         int i=0;
         List<Object> toMerge=new ArrayList<>();
         Map<String,LatLon> afterUpdate=new HashMap<>();

@@ -1,19 +1,22 @@
 package com.flexicore.product.model;
 
 import com.flexicore.model.Baseclass;
+import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import java.time.Instant;
 import java.util.Date;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+@BsonDiscriminator
 public class Event {
 
     @BsonId
     private String id;
     private Date eventDate;
     private String humanReadableText;
+    @BsonProperty(useDiscriminator = true)
     private String eventType;
     private String baseclassId;
     private String baseclassName;

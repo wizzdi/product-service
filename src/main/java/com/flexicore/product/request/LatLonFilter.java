@@ -12,7 +12,7 @@ public class LatLonFilter extends FilteringInformationHolder {
 
   private Set<String> multiLatLonEquipmentIds =new HashSet<>();
   @JsonIgnore
-  private List<MultiLatLonEquipment> multiLatLonEquipments;
+  private List<? extends MultiLatLonEquipment> multiLatLonEquipments;
 
 
     public Set<String> getMultiLatLonEquipmentIds() {
@@ -25,11 +25,11 @@ public class LatLonFilter extends FilteringInformationHolder {
     }
 
     @JsonIgnore
-    public List<MultiLatLonEquipment> getMultiLatLonEquipments() {
+    public List<? extends MultiLatLonEquipment> getMultiLatLonEquipments() {
         return multiLatLonEquipments;
     }
 
-    public <T extends LatLonFilter> T setMultiLatLonEquipments(List<MultiLatLonEquipment> multiLatLonEquipments) {
+    public <T extends LatLonFilter> T setMultiLatLonEquipments(List<? extends MultiLatLonEquipment> multiLatLonEquipments) {
         this.multiLatLonEquipments = multiLatLonEquipments;
         return (T) this;
     }
