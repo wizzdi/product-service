@@ -9,6 +9,7 @@ import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.product.containers.request.CreateAggregatedReport;
 import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.containers.response.AggregationReport;
+import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.Event;
 import com.flexicore.product.request.AckEventsRequest;
 import com.flexicore.product.response.AckEventsResponse;
@@ -37,7 +38,7 @@ import java.util.logging.Logger;
 
 @Tag(name = "Events")
 
-public class EventRESTService implements RestServicePlugin {
+public class EventRESTService implements IEventRESTService {
 
     @Inject
     @PluginInfo(version = 1)
@@ -53,20 +54,26 @@ public class EventRESTService implements RestServicePlugin {
 
 
 
+    @Override
     @POST
     @Produces("application/json")
     @Operation(summary = "getAllEvents", description = "return Events Filtered")
     @Path("getAllEvents")
-    public PaginationResponse<Event> getAllEvents(
+    public  <T extends Event> PaginationResponse<T> getAllEvents(
             @HeaderParam("authenticationKey") String authenticationKey,
             EventFiltering eventFiltering,
             @Context SecurityContext securityContext) {
         service.validateFiltering(eventFiltering, securityContext);
-        return service.getAllEvents(eventFiltering,Event.class);
+        Class<T> c= (Class<T>) Event.class;
+        if(eventFiltering.getEventType()!=null){
+            c= (Class<T>) IEventService.getClazzToRegisterMap().getOrDefault(eventFiltering.getEventType(),Event.class);
+        }
+        return service.getAllEvents(eventFiltering,c);
 
     }
 
 
+    @Override
     @PUT
     @Produces("application/json")
     @Operation(summary = "ackEvents", description = "ack events")
@@ -81,6 +88,7 @@ public class EventRESTService implements RestServicePlugin {
 
     private static AtomicBoolean usersUsingReport=new AtomicBoolean(false);
 
+    @Override
     @POST
     @Produces("application/json")
     @Operation(summary = "generateReport", description = "Generates report")

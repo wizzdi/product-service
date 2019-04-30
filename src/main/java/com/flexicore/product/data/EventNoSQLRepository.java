@@ -74,8 +74,8 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
     private void postConstruct() {
         if (pojoTime != IEventService.lastListUpdateTime.get() || init.compareAndSet(false, true)) {
             PojoCodecProvider.Builder builder = PojoCodecProvider.builder();
-            Pair<Long, Set<Class<? extends Event>>> alertClazzToRegister = IEventService.getAlertClazzToRegister();
-            for (Class<? extends Event> aClass : alertClazzToRegister.getValue()) {
+            Pair<Long, Set<Class<?>>> alertClazzToRegister = IEventService.getAlertClazzToRegister();
+            for (Class<?> aClass : alertClazzToRegister.getValue()) {
                 builder = builder.register(aClass);
             }
             pojoCodecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(),
