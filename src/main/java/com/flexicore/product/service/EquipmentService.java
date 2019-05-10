@@ -72,11 +72,11 @@ public class EquipmentService implements IEquipmentService {
 
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
     private static AtomicBoolean init = new AtomicBoolean(false);
-    private ProductType gatewayProductType;
-    private ProductType fcGatewayType;
-    private ProductStatus onProductStatus;
-    private ProductStatus offProductStatus;
-    private ProductStatus commErrorProductStatus;
+    private static ProductType gatewayProductType;
+    private static ProductType fcGatewayType;
+    private static ProductStatus onProductStatus;
+    private static ProductStatus offProductStatus;
+    private static ProductStatus commErrorProductStatus;
 
     @Override
     public void init() {
@@ -405,6 +405,15 @@ public class EquipmentService implements IEquipmentService {
 
         if (equipmentCreate.getEnable() != null && equipmentCreate.getEnable() != equipment.isEnable()) {
             equipment.setEnable(equipmentCreate.getEnable());
+            update = true;
+        }
+
+        if (equipmentCreate.getX() != null && equipmentCreate.getX() != equipment.getX()) {
+            equipment.setX(equipmentCreate.getX());
+            update = true;
+        }
+        if (equipmentCreate.getY() != null && equipmentCreate.getY() != equipment.getY()) {
+            equipment.setY(equipmentCreate.getY());
             update = true;
         }
 
@@ -1096,5 +1105,36 @@ public class EquipmentService implements IEquipmentService {
 
     private CreateLatLon getCreateLatLon(LatLonContainer latLonContainer,int ordinal) {
         return new CreateLatLon().setLat(latLonContainer.getLat()).setLon(latLonContainer.getLon()).setOrdinal(ordinal);
+    }
+
+    public void validate(ProductTypeToProductStatusFilter filtering, SecurityContext securityContext) {
+
+        Set<String> statusIds = filtering.getStatusIds();
+        Map<String, ProductStatus> statusMap = statusIds.isEmpty() ? new HashMap<>() : equipmentRepository.listByIds(ProductStatus.class, statusIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+        statusIds.removeAll(statusMap.keySet());
+        if (!statusIds.isEmpty()) {
+            throw new BadRequestException("No ProductStatus ids " + statusIds);
+        }
+        filtering.setStatus(new ArrayList<>(statusMap.values()));
+
+
+        Set<String> productTypeIds = filtering.getProductTypeIds();
+        Map<String, ProductType> productTypeMap = productTypeIds.isEmpty() ? new HashMap<>() : equipmentRepository.listByIds(ProductType.class, productTypeIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
+        productTypeIds.removeAll(productTypeMap.keySet());
+        if (!productTypeIds.isEmpty()) {
+            throw new BadRequestException("No ProductType ids " + productTypeIds);
+        }
+        filtering.setProductTypes(new ArrayList<>(productTypeMap.values()));
+    }
+
+    public PaginationResponse<ProductTypeToProductStatus> getAllProductTypeToProductStatus(ProductTypeToProductStatusFilter filter, SecurityContext securityContext) {
+        List<ProductTypeToProductStatus> list=listAllProductTypeToProductStatus(filter,securityContext);
+        long count=equipmentRepository.countAllProductTypeToProductStatus(filter,securityContext);
+        return new PaginationResponse<>(list,filter,count);
+    }
+
+    private List<ProductTypeToProductStatus> listAllProductTypeToProductStatus(ProductTypeToProductStatusFilter filter, SecurityContext securityContext) {
+        return equipmentRepository.listAllProductTypeToProductStatus(filter,securityContext);
+
     }
 }

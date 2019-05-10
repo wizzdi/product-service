@@ -11,6 +11,7 @@ import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.LatLonFilter;
+import com.flexicore.product.request.ProductTypeToProductStatusFilter;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
@@ -336,5 +337,39 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
             Join<LatLon,MultiLatLonEquipment> join=r.join(LatLon_.multiLatLonEquipment);
             preds.add(join.get(MultiLatLonEquipment_.id).in(ids));
         }
+    }
+
+    public List<ProductTypeToProductStatus> listAllProductTypeToProductStatus(ProductTypeToProductStatusFilter filter, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ProductTypeToProductStatus> q = cb.createQuery(ProductTypeToProductStatus.class);
+        Root<ProductTypeToProductStatus> r = q.from(ProductTypeToProductStatus.class);
+        List<Predicate> preds = new ArrayList<>();
+        addProductTypeToProductStatusPredicates(filter,preds,cb,r);
+        QueryInformationHolder<ProductTypeToProductStatus> queryInformationHolder = new QueryInformationHolder<>(filter, ProductTypeToProductStatus.class, securityContext);
+        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
+    }
+
+    private void addProductTypeToProductStatusPredicates(ProductTypeToProductStatusFilter filter, List<Predicate> preds, CriteriaBuilder cb, Root<ProductTypeToProductStatus> r) {
+        if(filter.getProductTypes()!=null && !filter.getProductTypes().isEmpty()){
+            Set<String> ids=filter.getProductTypes().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<ProductTypeToProductStatus,ProductType> join=cb.treat(r.join(Baselink_.leftside),ProductType.class);
+            preds.add(join.get(ProductType_.id).in(ids));
+        }
+
+        if(filter.getStatus()!=null && !filter.getStatus().isEmpty()){
+            Set<String> ids=filter.getStatus().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Join<ProductTypeToProductStatus,ProductStatus> join=cb.treat(r.join(Baselink_.rightside),ProductStatus.class);
+            preds.add(join.get(ProductStatus_.id).in(ids));
+        }
+    }
+
+    public long countAllProductTypeToProductStatus(ProductTypeToProductStatusFilter filter, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> q = cb.createQuery(Long.class);
+        Root<ProductTypeToProductStatus> r = q.from(ProductTypeToProductStatus.class);
+        List<Predicate> preds = new ArrayList<>();
+        addProductTypeToProductStatusPredicates(filter,preds,cb,r);
+        QueryInformationHolder<ProductTypeToProductStatus> queryInformationHolder = new QueryInformationHolder<>(filter, ProductTypeToProductStatus.class, securityContext);
+        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
 }

@@ -13,10 +13,7 @@ import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
-import com.flexicore.product.request.CreateLatLon;
-import com.flexicore.product.request.LatLonFilter;
-import com.flexicore.product.request.MassUpsertLatLonRequest;
-import com.flexicore.product.request.UpdateLatLon;
+import com.flexicore.product.request.*;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
 import com.flexicore.product.service.GroupService;
@@ -472,6 +469,22 @@ public class EquipmentRESTService implements RestServicePlugin {
 
 
         return service.updateProductStatusToType(updateProductStatus, securityContext);
+
+    }
+
+
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "getAllProductTypeToProductStatus", description = "return status links ")
+    @Path("getAllProductTypeToProductStatus")
+    public PaginationResponse<ProductTypeToProductStatus> getAllProductTypeToProductStatus(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            ProductTypeToProductStatusFilter filter,
+            @Context SecurityContext securityContext) {
+        service.validate(filter,securityContext);
+
+
+        return service.getAllProductTypeToProductStatus(filter, securityContext);
 
     }
 

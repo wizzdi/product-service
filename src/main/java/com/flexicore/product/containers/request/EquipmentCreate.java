@@ -21,6 +21,14 @@ public class EquipmentCreate extends ProductCreate{
 
     private Double lon;
 
+
+    @FieldInfo(displayName = "x",description = "x latitude")
+
+    private Double x;
+    @FieldInfo(displayName = "y",description = "y longitude")
+
+    private Double y;
+
     @FieldInfo(description = "warranty Expiration")
 
     private LocalDateTime warrantyExpiration;
@@ -153,5 +161,23 @@ public class EquipmentCreate extends ProductCreate{
     public <T extends EquipmentCreate> T setAddressId(String addressId) {
         this.addressId = addressId;
         return (T) this;
+    }
+
+    public Double getX() {
+        return x;
+    }
+
+    public EquipmentCreate setX(Double x) {
+        this.x = x;
+        return this;
+    }
+
+    public Double getY() {
+        return y;
+    }
+
+    public EquipmentCreate setY(Double y) {
+        this.y = y;
+        return this;
     }
 }
