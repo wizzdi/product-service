@@ -7,6 +7,7 @@ import com.flexicore.model.FileResource;
 import com.flexicore.model.FlexiCoreServer;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
+import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.CreateMultiLatLonEquipment;
 import com.flexicore.product.request.LatLonFilter;
@@ -92,6 +93,8 @@ public interface IEquipmentService extends ServicePlugin,InitPlugin {
     ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext);
 
     <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext);
+
+    <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext);
 
     boolean updateMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, MultiLatLonEquipment multiLatLonEquipment);
 

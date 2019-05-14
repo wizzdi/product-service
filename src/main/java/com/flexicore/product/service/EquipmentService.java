@@ -746,6 +746,7 @@ public class EquipmentService implements IEquipmentService {
     }
 
 
+    @Override
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
         return equipmentRepository.getProductGroupedByStatus(c, equipmentFiltering, securityContext);
     }
