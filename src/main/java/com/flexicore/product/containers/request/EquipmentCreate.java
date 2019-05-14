@@ -5,6 +5,7 @@ import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.model.territories.Address;
+import com.flexicore.product.model.BuildingFloor;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.Gateway;
 import com.flexicore.product.model.ProductType;
@@ -53,6 +54,12 @@ public class EquipmentCreate extends ProductCreate{
     @JsonIgnore
     private Address address;
     private String addressId;
+
+    @IdRefFieldInfo(refType = BuildingFloor.class,list = false)
+
+    private String buildingFloorId;
+    @JsonIgnore
+    private BuildingFloor buildingFloor;
 
     public String getExternalServerId() {
         return externalServerId;
@@ -178,6 +185,25 @@ public class EquipmentCreate extends ProductCreate{
 
     public EquipmentCreate setY(Double y) {
         this.y = y;
+        return this;
+    }
+
+    public String getBuildingFloorId() {
+        return buildingFloorId;
+    }
+
+    public EquipmentCreate setBuildingFloorId(String buildingFloorId) {
+        this.buildingFloorId = buildingFloorId;
+        return this;
+    }
+
+    @JsonIgnore
+    public BuildingFloor getBuildingFloor() {
+        return buildingFloor;
+    }
+
+    public EquipmentCreate setBuildingFloor(BuildingFloor buildingFloor) {
+        this.buildingFloor = buildingFloor;
         return this;
     }
 }

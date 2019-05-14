@@ -30,6 +30,8 @@ public class Event {
     private Double baseclassLon;
     private String productTypeId;
     private String userAcked;
+    private String ackNotes;
+    private String targetBaseclassId;
 
 
 
@@ -195,5 +197,23 @@ public class Event {
     public <T extends Event> T setUserAcked(String userAcked) {
         this.userAcked = userAcked;
         return (T) this;
+    }
+
+    public String getAckNotes() {
+        return ackNotes;
+    }
+
+    public Event setAckNotes(String ackNotes) {
+        this.ackNotes = ackNotes;
+        return this;
+    }
+
+    public String getTargetBaseclassId() {
+        return targetBaseclassId;
+    }
+
+    public Event setTargetBaseclassId(String targetBaseclassId) {
+        this.targetBaseclassId = targetBaseclassId;
+        return this;
     }
 }

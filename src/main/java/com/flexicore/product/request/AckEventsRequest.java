@@ -5,6 +5,7 @@ import java.util.Set;
 
 public class AckEventsRequest {
     private Set<String> eventIds =new HashSet<>();
+    private String ackNotes;
 
     public Set<String> getEventIds() {
         return eventIds;
@@ -15,5 +16,12 @@ public class AckEventsRequest {
         return (T) this;
     }
 
+    public String getAckNotes() {
+        return ackNotes;
+    }
 
+    public AckEventsRequest setAckNotes(String ackNotes) {
+        this.ackNotes = ackNotes;
+        return this;
+    }
 }

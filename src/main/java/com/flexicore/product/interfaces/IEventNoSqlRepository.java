@@ -35,6 +35,9 @@ public interface IEventNoSqlRepository extends PluginRepository {
     String BASECLASS_LON = "baseclassLon";
     String ID = "id";
     String USER_ACKED = "userAcked";
+    String ACK_NOTES = "ackNotes";
+
+
 
 
     static Bson getAlertsPredicate(AlertFiltering eventFiltering) {

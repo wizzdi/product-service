@@ -218,7 +218,10 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
         MongoCollection<Event> collection = db.getCollection(EVENTS_COLLECTION_NAME, Event.class).withCodecRegistry(pojoCodecRegistry);
         Bson filter=in(ID,ackEventsRequest.getEventIds());
 
-        Bson query=set(USER_ACKED,securityContext.getUser().getId());
+        Bson query=Updates.combine(
+                set(USER_ACKED,securityContext.getUser().getId()),
+                set(ACK_NOTES,ackEventsRequest.getAckNotes())
+        );
         UpdateResult updateResult=collection.updateMany(filter,query);
         return updateResult.getModifiedCount();
     }

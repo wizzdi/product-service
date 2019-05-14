@@ -299,28 +299,41 @@ public class EquipmentService implements IEquipmentService {
     @Override
     public void validateEquipmentCreate(EquipmentCreate equipmentCreate, SecurityContext securityContext) {
 
-        ProductType productType = equipmentCreate.getProductTypeId() != null ? getByIdOrNull(equipmentCreate.getProductTypeId(), ProductType.class, null, securityContext) : null;
-        if (productType == null && equipmentCreate.getProductTypeId() != null) {
-            throw new BadRequestException("No Product type with Id " + equipmentCreate.getProductTypeId());
-        }
-        equipmentCreate.setProductType(productType);
+        validateProductCreate(equipmentCreate, securityContext);
         Gateway gateway = equipmentCreate.getCommunicationGatewayId() != null ? getByIdOrNull(equipmentCreate.getCommunicationGatewayId(), Gateway.class, null, securityContext) : null;
         if (gateway == null && equipmentCreate.getCommunicationGatewayId() != null) {
             throw new BadRequestException("No Gateway with Id " + equipmentCreate.getCommunicationGatewayId());
         }
         equipmentCreate.setGateway(gateway);
 
-        Model model = equipmentCreate.getModelId() != null ? getByIdOrNull(equipmentCreate.getModelId(), Model.class, null, securityContext) : null;
-        if (model == null && equipmentCreate.getModelId() != null) {
-            throw new BadRequestException("No model with Id " + equipmentCreate.getProductTypeId());
-        }
-        equipmentCreate.setModel(model);
-
         Address address = equipmentCreate.getAddressId() != null ? getByIdOrNull(equipmentCreate.getAddressId(), Address.class, null, securityContext) : null;
         if (address == null && equipmentCreate.getAddressId() != null) {
             throw new BadRequestException("No address with Id " + equipmentCreate.getAddressId());
         }
         equipmentCreate.setAddress(address);
+
+        BuildingFloor buildingFloor = equipmentCreate.getBuildingFloorId() != null ? getByIdOrNull(equipmentCreate.getBuildingFloorId(), BuildingFloor.class, null, securityContext) : null;
+        if (buildingFloor == null && equipmentCreate.getAddressId() != null) {
+            throw new BadRequestException("No BuildingFloor with Id " + equipmentCreate.getBuildingFloorId());
+        }
+        equipmentCreate.setBuildingFloor(buildingFloor);
+
+    }
+
+    @Override
+    public void validateProductCreate(ProductCreate equipmentCreate, SecurityContext securityContext) {
+        ProductType productType = equipmentCreate.getProductTypeId() != null ? getByIdOrNull(equipmentCreate.getProductTypeId(), ProductType.class, null, securityContext) : null;
+        if (productType == null && equipmentCreate.getProductTypeId() != null) {
+            throw new BadRequestException("No Product type with Id " + equipmentCreate.getProductTypeId());
+        }
+        equipmentCreate.setProductType(productType);
+
+
+        Model model = equipmentCreate.getModelId() != null ? getByIdOrNull(equipmentCreate.getModelId(), Model.class, null, securityContext) : null;
+        if (model == null && equipmentCreate.getModelId() != null) {
+            throw new BadRequestException("No model with Id " + equipmentCreate.getProductTypeId());
+        }
+        equipmentCreate.setModel(model);
 
     }
 
@@ -423,6 +436,11 @@ public class EquipmentService implements IEquipmentService {
         }
         if (equipmentCreate.getAddress() != null && (equipment.getAddress() == null || !equipment.getAddress().getId().equals(equipmentCreate.getAddress().getId()))) {
             equipment.setAddress(equipmentCreate.getAddress());
+            update = true;
+        }
+
+        if (equipmentCreate.getBuildingFloor() != null && (equipment.getBuildingFloor() == null || !equipment.getBuildingFloor().getId().equals(equipmentCreate.getBuildingFloor().getId()))) {
+            equipment.setBuildingFloor(equipmentCreate.getBuildingFloor());
             update = true;
         }
         if (equipmentCreate.getSku() != null && !equipmentCreate.getSku().equals(equipment.getSku())) {
