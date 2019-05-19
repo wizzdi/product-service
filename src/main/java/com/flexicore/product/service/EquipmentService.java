@@ -20,6 +20,7 @@ import com.flexicore.product.data.EquipmentRepository;
 import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.*;
+import com.flexicore.product.response.ProductStatusEntry;
 import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
@@ -1155,5 +1156,21 @@ public class EquipmentService implements IEquipmentService {
     private List<ProductTypeToProductStatus> listAllProductTypeToProductStatus(ProductTypeToProductStatusFilter filter, SecurityContext securityContext) {
         return equipmentRepository.listAllProductTypeToProductStatus(filter,securityContext);
 
+    }
+
+    public void validate(ProductStatusToProductFilter productTypeFiltering, SecurityContext securityContext) {
+        Set<String> ids = productTypeFiltering.getProductIds();
+        Map<String,Product> products= ids.isEmpty()?new HashMap<>():listByIds(Product.class,ids,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
+        ids.removeAll(products.keySet());
+        if(!ids.isEmpty()){
+            throw new BadRequestException("No Product ids "+ids);
+        }
+        productTypeFiltering.setProducts(new ArrayList<>(products.values()));
+    }
+
+    public PaginationResponse<ProductStatusEntry> getProductStatusForProducts(ProductStatusToProductFilter productTypeFiltering, SecurityContext securityContext) {
+        List<ProductToStatus> links=equipmentRepository.getStatusLinks(productTypeFiltering.getProducts().parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+        List<ProductStatusEntry> collect = links.parallelStream().map(f -> new ProductStatusEntry(f)).collect(Collectors.toList());
+        return new PaginationResponse<>(collect,productTypeFiltering,collect.size());
     }
 }

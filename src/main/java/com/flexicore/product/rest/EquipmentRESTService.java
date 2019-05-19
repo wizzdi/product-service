@@ -14,6 +14,7 @@ import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.*;
+import com.flexicore.product.response.ProductStatusEntry;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
 import com.flexicore.product.service.GroupService;
@@ -200,6 +201,19 @@ public class EquipmentRESTService implements RestServicePlugin {
         service.validateProductStatusFiltering(productTypeFiltering, securityContext);
 
         return service.getAllProductStatus(productTypeFiltering, securityContext);
+    }
+
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "getProductStatusForProducts", description = "lists all Equipment status")
+    @Path("getProductStatusForProducts")
+    public PaginationResponse<ProductStatusEntry> getProductStatusForProducts(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            ProductStatusToProductFilter productTypeFiltering,
+            @Context SecurityContext securityContext) {
+        service.validate(productTypeFiltering, securityContext);
+
+        return service.getProductStatusForProducts(productTypeFiltering, securityContext);
     }
 
 
