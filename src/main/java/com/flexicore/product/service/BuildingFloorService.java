@@ -121,7 +121,7 @@ public class BuildingFloorService implements IBuildingFloorService {
         }
 
         if (buildingFloorCreate.getDiagram() != null && (buildingFloor.getDiagram()==null||!buildingFloorCreate.getDiagram().getId().equals(buildingFloor.getDiagram().getId())) ){
-            buildingFloor.setDescription(buildingFloorCreate.getDescription());
+            buildingFloor.setDiagram(buildingFloorCreate.getDiagram());
             update = true;
         }
 
