@@ -32,6 +32,7 @@ public class Event {
     private String userAcked;
     private String ackNotes;
     private String targetBaseclassId;
+    private boolean falseAlarm;
 
 
 
@@ -214,6 +215,15 @@ public class Event {
 
     public Event setTargetBaseclassId(String targetBaseclassId) {
         this.targetBaseclassId = targetBaseclassId;
+        return this;
+    }
+
+    public boolean isFalseAlarm() {
+        return falseAlarm;
+    }
+
+    public Event setFalseAlarm(boolean falseAlarm) {
+        this.falseAlarm = falseAlarm;
         return this;
     }
 }

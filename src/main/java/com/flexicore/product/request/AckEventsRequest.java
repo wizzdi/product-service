@@ -6,6 +6,7 @@ import java.util.Set;
 public class AckEventsRequest {
     private Set<String> eventIds =new HashSet<>();
     private String ackNotes;
+    private boolean falseAlarm;
 
     public Set<String> getEventIds() {
         return eventIds;
@@ -22,6 +23,15 @@ public class AckEventsRequest {
 
     public AckEventsRequest setAckNotes(String ackNotes) {
         this.ackNotes = ackNotes;
+        return this;
+    }
+
+    public boolean isFalseAlarm() {
+        return falseAlarm;
+    }
+
+    public AckEventsRequest setFalseAlarm(boolean falseAlarm) {
+        this.falseAlarm = falseAlarm;
         return this;
     }
 }

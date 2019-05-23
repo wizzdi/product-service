@@ -36,6 +36,8 @@ public interface IEventNoSqlRepository extends PluginRepository {
     String ID = "id";
     String USER_ACKED = "userAcked";
     String ACK_NOTES = "ackNotes";
+    String FALSE_ALARM = "falseAlarm";
+
 
 
 

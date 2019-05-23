@@ -220,7 +220,9 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
         Bson query=Updates.combine(
                 set(USER_ACKED,securityContext.getUser().getId()),
-                set(ACK_NOTES,ackEventsRequest.getAckNotes())
+                set(ACK_NOTES,ackEventsRequest.getAckNotes()),
+                set(FALSE_ALARM,ackEventsRequest.isFalseAlarm())
+
         );
         UpdateResult updateResult=collection.updateMany(filter,query);
         return updateResult.getModifiedCount();
