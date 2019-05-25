@@ -1,6 +1,8 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.interfaces.dynamic.FieldInfo;
+import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
 import com.flexicore.model.*;
 import com.flexicore.product.model.Event;
 import com.flexicore.product.model.LocationArea;
@@ -12,10 +14,13 @@ import java.util.Set;
 public class EventFiltering extends FilteringInformationHolder {
 
 
+    @FieldInfo(displayName = "Search Readable Text")
     private String humanReadableTextLike;
 
     private String eventType;
+    @FieldInfo(displayName = "Event Sub Type")
     private String eventSubType;
+    @IdRefFieldInfo(displayName = "Source",refType = Baseclass.class)
     private Set<String> baseclassIds=new HashSet<>();
     @JsonIgnore
     private List<Baseclass> baseclass;
@@ -23,9 +28,21 @@ public class EventFiltering extends FilteringInformationHolder {
     @JsonIgnore
     private Clazz clazz;
 
+    @FieldInfo(displayName = "Location")
     private LocationArea locationArea;
+    @FieldInfo(displayName = "Source name")
     private String baseclassNameLike;
+    @FieldInfo(displayName = "acknowledged")
     private Boolean acked;
+    @IdRefFieldInfo(refType = User.class)
+    private Set<String> ackedUsersIds =new HashSet<>();
+    @JsonIgnore
+    private List<User> ackedUsers;
+
+    @IdRefFieldInfo(displayName = "Target",refType = Baseclass.class)
+    private Set<String> targetBaseclassIds=new HashSet<>();
+    @JsonIgnore
+    private List<Baseclass> targetBaseclass;
 
     public EventFiltering(EventFiltering other) {
         this.humanReadableTextLike = other.humanReadableTextLike;
@@ -38,6 +55,10 @@ public class EventFiltering extends FilteringInformationHolder {
         this.locationArea = other.locationArea;
         this.baseclassNameLike = other.baseclassNameLike;
         this.acked=other.acked;
+        this.ackedUsers=other.ackedUsers;
+        this.ackedUsersIds=other.ackedUsersIds;
+        this.targetBaseclass=other.targetBaseclass;
+        this.targetBaseclassIds=other.targetBaseclassIds;
     }
 
     public EventFiltering() {
@@ -139,6 +160,44 @@ public class EventFiltering extends FilteringInformationHolder {
 
     public <T extends EventFiltering> T setAcked(Boolean acked) {
         this.acked = acked;
+        return (T) this;
+    }
+
+    public Set<String> getAckedUsersIds() {
+        return ackedUsersIds;
+    }
+
+    public <T extends EventFiltering> T setAckedUsersIds(Set<String> ackedUsersIds) {
+        this.ackedUsersIds = ackedUsersIds;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public List<User> getAckedUsers() {
+        return ackedUsers;
+    }
+
+    public <T extends EventFiltering> T setAckedUsers(List<User> ackedUsers) {
+        this.ackedUsers = ackedUsers;
+        return (T) this;
+    }
+
+    public Set<String> getTargetBaseclassIds() {
+        return targetBaseclassIds;
+    }
+
+    public <T extends EventFiltering> T setTargetBaseclassIds(Set<String> targetBaseclassIds) {
+        this.targetBaseclassIds = targetBaseclassIds;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public List<Baseclass> getTargetBaseclass() {
+        return targetBaseclass;
+    }
+
+    public <T extends EventFiltering> T setTargetBaseclass(List<Baseclass> targetBaseclass) {
+        this.targetBaseclass = targetBaseclass;
         return (T) this;
     }
 }

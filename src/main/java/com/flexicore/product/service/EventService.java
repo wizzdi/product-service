@@ -3,6 +3,7 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.Baseclass;
+import com.flexicore.model.User;
 import com.flexicore.product.containers.request.AlertFiltering;
 import com.flexicore.product.containers.request.CreateAggregatedReport;
 import com.flexicore.product.containers.request.EventFiltering;
@@ -106,10 +107,11 @@ public class EventService implements IEventService {
 
     @Override
     public void validateFiltering(EventFiltering eventFiltering, SecurityContext securityContext) {
-        List<Baseclass> baseclasses = eventFiltering.getBaseclassIds().isEmpty() ? new ArrayList<>() : baseclassService.listByIds(Baseclass.class, eventFiltering.getBaseclassIds(), securityContext);
-        eventFiltering.getBaseclassIds().removeAll(baseclasses.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
-        if (!eventFiltering.getBaseclassIds().isEmpty()) {
-            throw new BadRequestException(" no baseclass with ids " + eventFiltering.getBaseclassIds().parallelStream().collect(Collectors.joining(",")));
+        Set<String> sourceBaseclassIds = eventFiltering.getBaseclassIds();
+        List<Baseclass> baseclasses = sourceBaseclassIds.isEmpty() ? new ArrayList<>() : baseclassService.listByIds(Baseclass.class, sourceBaseclassIds, securityContext);
+        sourceBaseclassIds.removeAll(baseclasses.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+        if (!sourceBaseclassIds.isEmpty()) {
+            throw new BadRequestException(" no baseclass with ids " + sourceBaseclassIds.parallelStream().collect(Collectors.joining(",")));
         }
         eventFiltering.setBaseclass(baseclasses);
 
@@ -118,8 +120,23 @@ public class EventService implements IEventService {
             if (eventFiltering.getClazz() == null) {
                 throw new BadRequestException("No Clazz by name " + eventFiltering.getClazzName());
             }
-
         }
+        Set<String> userIds=eventFiltering.getAckedUsersIds();
+        Map<String, User> userMap=userIds.isEmpty()?new HashMap<>():baseclassService.listByIds(User.class,userIds,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
+        userIds.removeAll(userMap.keySet());
+        if(!userIds.isEmpty()){
+            throw new BadRequestException("No Users with ids "+userIds);
+        }
+        eventFiltering.setAckedUsers(new ArrayList<>(userMap.values()));
+
+        Set<String> targetBaseclassIds = eventFiltering.getTargetBaseclassIds();
+        List<Baseclass> targetBaseclasses = targetBaseclassIds.isEmpty() ? new ArrayList<>() : baseclassService.listByIds(Baseclass.class, targetBaseclassIds, securityContext);
+        targetBaseclassIds.removeAll(targetBaseclasses.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+        if (!targetBaseclassIds.isEmpty()) {
+            throw new BadRequestException(" no baseclass with ids " + targetBaseclassIds.parallelStream().collect(Collectors.joining(",")));
+        }
+        eventFiltering.setTargetBaseclass(targetBaseclasses);
+
     }
 
     @Override

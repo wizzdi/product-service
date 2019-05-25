@@ -37,6 +37,7 @@ public interface IEventNoSqlRepository extends PluginRepository {
     String USER_ACKED = "userAcked";
     String ACK_NOTES = "ackNotes";
     String FALSE_ALARM = "falseAlarm";
+    String TARGET_BASECLASS_ID="targetBaseclassId";
 
 
 
@@ -74,6 +75,17 @@ public interface IEventNoSqlRepository extends PluginRepository {
         if (eventFiltering.getBaseclass()!=null&&!eventFiltering.getBaseclass().isEmpty()) {
             Set<String> baseclasIds = eventFiltering.getBaseclass().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
             Bson in = in(BASECLASS_ID, baseclasIds);
+            pred = pred == null ? in : and(pred, in);
+        }
+
+        if (eventFiltering.getTargetBaseclass()!=null&&!eventFiltering.getTargetBaseclass().isEmpty()) {
+            Set<String> baseclasIds = eventFiltering.getTargetBaseclass().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            Bson in = in(TARGET_BASECLASS_ID, baseclasIds);
+            pred = pred == null ? in : and(pred, in);
+        }
+        if (eventFiltering.getAckedUsers()!=null&&!eventFiltering.getAckedUsers().isEmpty()) {
+            Set<String> userIds = eventFiltering.getAckedUsers().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            Bson in = in(USER_ACKED, userIds);
             pred = pred == null ? in : and(pred, in);
         }
 
