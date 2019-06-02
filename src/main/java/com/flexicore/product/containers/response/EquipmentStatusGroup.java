@@ -8,6 +8,8 @@ public class EquipmentStatusGroup {
     private String statusId;
     private String tenantId;
     private String tenantName;
+    private String productTypeId;
+    private String productTypeName;
 
 
     public EquipmentStatusGroup( String statusId,String statusName, String statusDescription, Long count) {
@@ -24,6 +26,12 @@ public class EquipmentStatusGroup {
         this.statusId = statusId;
         this.tenantId=tenantId;
         this.tenantName=tenantName;
+    }
+
+    public EquipmentStatusGroup( Long count,String statusId,String statusName, String statusDescription,String prodcutTypeId,String productTypeName ) {
+       this(statusId,statusName,statusDescription,count);
+       this.productTypeId=prodcutTypeId;
+       this.productTypeName=productTypeName;
     }
 
     public Long getCount() {
@@ -77,6 +85,24 @@ public class EquipmentStatusGroup {
 
     public <T extends EquipmentStatusGroup> T setTenantName(String tenantName) {
         this.tenantName = tenantName;
+        return (T) this;
+    }
+
+    public String getProductTypeId() {
+        return productTypeId;
+    }
+
+    public <T extends EquipmentStatusGroup> T setProductTypeId(String productTypeId) {
+        this.productTypeId = productTypeId;
+        return (T) this;
+    }
+
+    public String getProductTypeName() {
+        return productTypeName;
+    }
+
+    public <T extends EquipmentStatusGroup> T setProductTypeName(String productTypeName) {
+        this.productTypeName = productTypeName;
         return (T) this;
     }
 }

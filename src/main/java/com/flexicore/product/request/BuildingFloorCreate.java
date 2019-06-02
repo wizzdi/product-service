@@ -9,7 +9,7 @@ public class BuildingFloorCreate {
     private String name;
     private String description;
     private Integer floorNumber;
-    private String diagramFileResourceId;
+    private String diagramId;
     @JsonIgnore
     private FileResource diagram;
     private String buildingId;
@@ -43,12 +43,12 @@ public class BuildingFloorCreate {
         return this;
     }
 
-    public String getDiagramFileResourceId() {
-        return diagramFileResourceId;
+    public String getDiagramId() {
+        return diagramId;
     }
 
-    public BuildingFloorCreate setDiagramFileResourceId(String diagramFileResourceId) {
-        this.diagramFileResourceId = diagramFileResourceId;
+    public BuildingFloorCreate setDiagramId(String diagramId) {
+        this.diagramId = diagramId;
         return this;
     }
 

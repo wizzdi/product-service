@@ -71,6 +71,10 @@ public class EquipmentService implements IEquipmentService {
     @Inject
     private PermissionGroupService permissionGroupService;
 
+    @Inject
+    @PluginInfo(version = 1)
+    private StatusLinkToImageService statusLinkToImageService;
+
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
     private static AtomicBoolean init = new AtomicBoolean(false);
     private static ProductType gatewayProductType;
@@ -887,20 +891,17 @@ public class EquipmentService implements IEquipmentService {
     public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
         List<ProductToStatus> statusLinks = getCurrentStatusLinks(list.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+        StatusLinksToImageFilter statusLinksToImageFilter=new StatusLinksToImageFilter();
+        statusLinksToImageFilter.setNameLike("%map%");
         Map<String, List<ProductStatus>> statusLinksMap = statusLinks.parallelStream().collect(Collectors.groupingBy(f -> f.getLeftside().getId(), ConcurrentHashMap::new, Collectors.mapping(f -> f.getRightside(), Collectors.toList())));
 
+        Map<String,Map<String,String>> statusLinkToImages=statusLinkToImageService.listAllStatusLinksToImage(statusLinksToImageFilter,null).parallelStream().collect(Collectors.groupingBy(f->f.getStatusLink().getLeftside().getId(),Collectors.toMap(f->f.getStatusLink().getRightside().getId(),f->f.getImage().getId(),(a,b)->a)));
 
-        Map<String, Map<String, String>> typeToStatusToIconMap = getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
-                .parallelStream().filter(f -> f.getImage() != null).collect(Collectors.groupingBy(f -> f.getLeftside().getId(), Collectors.toMap(f -> f.getRightside().getId(), f -> f.getImage().getId(), (a, b) -> a)));
-
-//        Map<String,Map<String,String>> typeToStatusToIconMap = getAllProductTypeToStatusLinks(statusLinks.parallelStream().map(f -> f.getRightside().getId()).collect(Collectors.toSet()))
-//                .parallelStream().filter(f->f.getImage()!=null).collect(Collectors.groupingBy(f->f.getLeftside().getId(),Collectors.toMap(f->f.getRightside().getId(),f->f.getImage().getId())));
-
-        long total = countAllEquipments(c, filtering, securityContext);
+     long total = countAllEquipments(c, filtering, securityContext);
 
 
         return new PaginationResponse<>(list.parallelStream()
-                .map(f -> new EquipmentShort(f, statusLinksMap.get(f.getId()), buildSpecificStatusIconMap(f.getProductType() != null ? typeToStatusToIconMap.get(f.getProductType().getId()) : null, statusLinksMap.get(f.getId()))))
+                .map(f -> new EquipmentShort(f, statusLinksMap.get(f.getId()), buildSpecificStatusIconMap(f.getProductType() != null ? statusLinkToImages.get(f.getProductType().getId()) : null, statusLinksMap.get(f.getId()))))
                 .collect(Collectors.toList()), filtering, total);
     }
 
@@ -1078,6 +1079,10 @@ public class EquipmentService implements IEquipmentService {
 
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndTenant(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
         return equipmentRepository.getProductGroupedByStatusAndTenant(c, equipmentFiltering, securityContext);
+    }
+
+    public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndType(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
+        return equipmentRepository.getProductGroupedByStatusAndType(c, equipmentFiltering, securityContext);
     }
 
     public <T extends Equipment> List<EquipmentSpecificTypeGroup> getProductGroupedBySpecificType(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {

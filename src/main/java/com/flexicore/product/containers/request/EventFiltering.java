@@ -44,6 +44,9 @@ public class EventFiltering extends FilteringInformationHolder {
     @JsonIgnore
     private List<Baseclass> targetBaseclass;
 
+    @FieldInfo
+    private Boolean falseAlarm;
+
     public EventFiltering(EventFiltering other) {
         this.humanReadableTextLike = other.humanReadableTextLike;
         this.eventType = other.eventType;
@@ -59,6 +62,7 @@ public class EventFiltering extends FilteringInformationHolder {
         this.ackedUsersIds=other.ackedUsersIds;
         this.targetBaseclass=other.targetBaseclass;
         this.targetBaseclassIds=other.targetBaseclassIds;
+        this.falseAlarm=other.falseAlarm;
     }
 
     public EventFiltering() {
@@ -198,6 +202,15 @@ public class EventFiltering extends FilteringInformationHolder {
 
     public <T extends EventFiltering> T setTargetBaseclass(List<Baseclass> targetBaseclass) {
         this.targetBaseclass = targetBaseclass;
+        return (T) this;
+    }
+
+    public Boolean getFalseAlarm() {
+        return falseAlarm;
+    }
+
+    public <T extends EventFiltering> T setFalseAlarm(Boolean falseAlarm) {
+        this.falseAlarm = falseAlarm;
         return (T) this;
     }
 }

@@ -372,4 +372,28 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         QueryInformationHolder<ProductTypeToProductStatus> queryInformationHolder = new QueryInformationHolder<>(filter, ProductTypeToProductStatus.class, securityContext);
         return countAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
+
+    public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndType(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<EquipmentStatusGroup> q = cb.createQuery(EquipmentStatusGroup.class);
+        Root<T> r = q.from(c);
+        Join<T,ProductToStatus> join=r.join(Equipment_.productToStatusList);
+        Join<ProductToStatus,ProductStatus> statusJoin=cb.treat(join.join(Baselink_.rightside),ProductStatus.class);
+        Join<T,ProductType> productTypeJoin=r.join(Equipment_.productType);
+
+        List<Predicate> preds = new ArrayList<>();
+        Predicate enabledOnly = cb.isTrue(join.get(ProductToStatus_.enabled));
+        preds.add(enabledOnly);
+        IEquipmentRepository.addEquipmentFiltering(equipmentFiltering, cb, r, preds);
+        QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(equipmentFiltering, c, securityContext);
+        prepareQuery(queryInformationHolder, preds, cb, q, r);
+        Predicate[] predsArray = new Predicate[preds.size()];
+        predsArray =preds.toArray(predsArray);
+        CompoundSelection<EquipmentStatusGroup> construct = cb.construct(EquipmentStatusGroup.class,cb.countDistinct(r.get(Equipment_.id)),statusJoin.get(ProductStatus_.id),statusJoin.get(ProductStatus_.name),statusJoin.get(ProductStatus_.description),productTypeJoin.get(ProductType_.id),productTypeJoin.get(ProductType_.name));
+        q.select(construct).where(predsArray).groupBy(statusJoin.get(ProductStatus_.id),statusJoin.get(ProductStatus_.name),statusJoin.get(ProductStatus_.description),productTypeJoin.get(ProductType_.id),productTypeJoin.get(ProductType_.name)).distinct(true);
+
+        q.orderBy(cb.asc( statusJoin.get(ProductStatus_.id)));
+        TypedQuery<EquipmentStatusGroup> query = em.createQuery(q);
+        return query.getResultList();
+    }
 }

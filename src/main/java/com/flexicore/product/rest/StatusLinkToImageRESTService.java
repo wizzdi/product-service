@@ -14,6 +14,7 @@ import com.flexicore.product.model.StatusLinkToImage;
 import com.flexicore.product.request.StatusLinksToImageCreate;
 import com.flexicore.product.request.StatusLinksToImageFilter;
 import com.flexicore.product.request.StatusLinksToImageUpdate;
+import com.flexicore.product.response.StatusLinkToImageContainer;
 import com.flexicore.product.service.GroupService;
 import com.flexicore.product.service.StatusLinkToImageService;
 import com.flexicore.security.SecurityContext;
@@ -25,6 +26,7 @@ import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Created by Asaf on 04/06/2017.
@@ -51,12 +53,13 @@ public class StatusLinkToImageRESTService implements RestServicePlugin {
     @Produces("application/json")
     @Operation(summary = "getAllStatusLinksToImage", description = "Gets All StatusLinkToImage Filtered")
     @Path("getAllStatusLinksToImage")
-    public PaginationResponse<StatusLinkToImage> getAllStatusLinksToImage(
+    public PaginationResponse<StatusLinkToImageContainer> getAllStatusLinksToImage(
             @HeaderParam("authenticationKey") String authenticationKey,
             StatusLinksToImageFilter filtering,
             @Context SecurityContext securityContext) {
         service.validate(filtering, securityContext);
-        return service.getAllStatusLinksToImage(filtering,securityContext);
+        PaginationResponse<StatusLinkToImage> paginationResponse = service.getAllStatusLinksToImage(filtering, securityContext);
+        return new PaginationResponse<>(paginationResponse.getList().parallelStream().map(f->new StatusLinkToImageContainer(f)).collect(Collectors.toList()), filtering,paginationResponse.getTotalRecords());
 
     }
 

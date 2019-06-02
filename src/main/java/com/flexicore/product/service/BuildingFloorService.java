@@ -61,7 +61,7 @@ public class BuildingFloorService implements IBuildingFloorService {
     }
 
     private void populate(BuildingFloorCreate buildingFloorCreate, SecurityContext securityContext) {
-        String diagramId=buildingFloorCreate.getDiagramFileResourceId();
+        String diagramId=buildingFloorCreate.getDiagramId();
         FileResource diagram=diagramId!=null?getByIdOrNull(diagramId,FileResource.class,null,securityContext):null;
         if(diagram==null&&diagramId!=null){
             throw new BadRequestException("No FileResource with id "+diagramId);

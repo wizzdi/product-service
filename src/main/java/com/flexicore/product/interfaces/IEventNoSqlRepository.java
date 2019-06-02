@@ -33,7 +33,7 @@ public interface IEventNoSqlRepository extends PluginRepository {
     String HUMAN_READABLE_TEXT = "humanReadableText";
     String BASECLASS_LAT = "baseclassLat";
     String BASECLASS_LON = "baseclassLon";
-    String ID = "id";
+    String ID = "_id";
     String USER_ACKED = "userAcked";
     String ACK_NOTES = "ackNotes";
     String FALSE_ALARM = "falseAlarm";
@@ -136,7 +136,13 @@ public interface IEventNoSqlRepository extends PluginRepository {
             pred = pred == null ? eq : and(pred, eq);
         }
         if(eventFiltering.getAcked()!=null){
-            Bson ack=Filters.ne(USER_ACKED,null);
+            Bson ack=Filters.eq(USER_ACKED,eventFiltering.getAcked());
+            pred = pred == null ? ack : and(pred, ack);
+
+        }
+
+        if(eventFiltering.getFalseAlarm()!=null){
+            Bson ack=Filters.eq(FALSE_ALARM,eventFiltering.getFalseAlarm());
             pred = pred == null ? ack : and(pred, ack);
 
         }

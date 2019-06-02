@@ -115,4 +115,6 @@ public interface IEquipmentService extends ServicePlugin,InitPlugin {
     void massMerge(List<?> toMerge);
 
     FlexiCoreGateway createFlexiCoreGateway(FlexiCoreGatewayCreate gatewayCreate, SecurityContext securityContext);
+
+    <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndType(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext);
 }

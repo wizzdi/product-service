@@ -58,6 +58,7 @@ public class Config implements InitPlugin {
             BaseclassService.registerFilterClass(NeighbourhoodFiltering.class, Neighbourhood.class);
             BaseclassService.registerFilterClass(StreetFiltering.class, Street.class);
             BaseclassService.registerFilterClass(EventFiltering.class,Event.class);
+            CrossLoaderResolver.registerClass(EventFiltering.class);
 
 
 
