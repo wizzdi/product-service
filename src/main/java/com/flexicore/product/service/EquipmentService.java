@@ -715,6 +715,16 @@ public class EquipmentService implements IEquipmentService {
             }
             filtering.setStreets(streets);
         }
+
+        if (filtering.getBuildingFloorIds() != null && !filtering.getBuildingFloorIds().isEmpty()) {
+            Set<String> ids = filtering.getBuildingFloorIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+            List<BuildingFloor> buildingFloors = listByIds(BuildingFloor.class,ids,securityContext);
+            ids.removeAll(buildingFloors.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
+            if (!ids.isEmpty()) {
+                throw new BadRequestException("No buildingFloors with ids " + ids);
+            }
+            filtering.setBuildingFloors(buildingFloors);
+        }
         if (filtering.getGatewayIds() != null && !filtering.getGatewayIds().isEmpty()) {
             Set<String> ids = filtering.getGatewayIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
             List<Gateway> gateways = getGateways(ids, securityContext);
