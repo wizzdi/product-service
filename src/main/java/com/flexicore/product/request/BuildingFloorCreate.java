@@ -15,6 +15,9 @@ public class BuildingFloorCreate {
     private String buildingId;
     @JsonIgnore
     private Building building;
+    private String diagram3DId;
+    @JsonIgnore
+    private FileResource diagram3D;
 
     public String getName() {
         return name;
@@ -79,5 +82,24 @@ public class BuildingFloorCreate {
     public BuildingFloorCreate setBuilding(Building building) {
         this.building = building;
         return this;
+    }
+
+    public String getDiagram3DId() {
+        return diagram3DId;
+    }
+
+    public <T extends BuildingFloorCreate> T setDiagram3DId(String diagram3DId) {
+        this.diagram3DId = diagram3DId;
+        return (T) this;
+    }
+
+    @JsonIgnore
+    public FileResource getDiagram3D() {
+        return diagram3D;
+    }
+
+    public <T extends BuildingFloorCreate> T setDiagram3D(FileResource diagram3D) {
+        this.diagram3D = diagram3D;
+        return (T) this;
     }
 }

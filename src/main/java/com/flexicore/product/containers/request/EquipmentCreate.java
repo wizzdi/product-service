@@ -61,6 +61,8 @@ public class EquipmentCreate extends ProductCreate{
     @JsonIgnore
     private BuildingFloor buildingFloor;
 
+    private String descriptor3D;
+
     public String getExternalServerId() {
         return externalServerId;
     }
@@ -205,5 +207,14 @@ public class EquipmentCreate extends ProductCreate{
     public EquipmentCreate setBuildingFloor(BuildingFloor buildingFloor) {
         this.buildingFloor = buildingFloor;
         return this;
+    }
+
+    public String getDescriptor3D() {
+        return descriptor3D;
+    }
+
+    public <T extends EquipmentCreate> T setDescriptor3D(String descriptor3D) {
+        this.descriptor3D = descriptor3D;
+        return (T) this;
     }
 }

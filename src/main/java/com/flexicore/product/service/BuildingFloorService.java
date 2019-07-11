@@ -68,6 +68,13 @@ public class BuildingFloorService implements IBuildingFloorService {
         }
         buildingFloorCreate.setDiagram(diagram);
 
+        String diagram3DId=buildingFloorCreate.getDiagram3DId();
+        FileResource diagram3D=diagram3DId!=null?getByIdOrNull(diagram3DId,FileResource.class,null,securityContext):null;
+        if(diagram3D==null&&diagram3DId!=null){
+            throw new BadRequestException("No FileResource with id "+diagram3DId);
+        }
+        buildingFloorCreate.setDiagram3D(diagram3D);
+
         String buildingId=buildingFloorCreate.getBuildingId();
         Building building=buildingId!=null?getByIdOrNull(buildingId,Building.class,null,securityContext):null;
         if(building==null&&buildingId!=null){
@@ -124,6 +131,12 @@ public class BuildingFloorService implements IBuildingFloorService {
             buildingFloor.setDiagram(buildingFloorCreate.getDiagram());
             update = true;
         }
+
+        if (buildingFloorCreate.getDiagram3D() != null && (buildingFloor.getDiagram3D()==null||!buildingFloorCreate.getDiagram3D().getId().equals(buildingFloor.getDiagram3D().getId())) ){
+            buildingFloor.setDiagram3D(buildingFloorCreate.getDiagram3D());
+            update = true;
+        }
+
 
         if (buildingFloorCreate.getBuilding() != null && (buildingFloor.getBuilding()==null||!buildingFloorCreate.getBuilding().getId().equals(buildingFloor.getBuilding().getId())) ){
             buildingFloor.setBuilding(buildingFloorCreate.getBuilding());

@@ -115,6 +115,7 @@ public class EquipmentService implements IEquipmentService {
     }
 
     private void createDefaultProductStatusAndType(SecurityContext securityContext) {
+
         gatewayProductType = getOrCreateProductType(new ProductTypeCreate().setName("Gateway").setDescription("Gateway"), securityContext);
         fcGatewayType = getOrCreateProductType(new ProductTypeCreate().setName("FlexiCore Gateway").setDescription("FlexiCore Gateway"), securityContext);
 
@@ -294,8 +295,8 @@ public class EquipmentService implements IEquipmentService {
     public EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext) {
         EquipmentToGroup equipmentToGroup = baselinkService.linkEntities(linkToGroup.getEquipment(), linkToGroup.getEquipmentGroup(), EquipmentToGroup.class);
         PermissionGroup relatedPermissionGroup = linkToGroup.getEquipmentGroup().getRelatedPermissionGroup();
-        if(relatedPermissionGroup !=null){
-            permissionGroupService.connectPermissionGroupsToBaseclasses(new CreatePermissionGroupLinkRequest().setBaseclasses(Collections.singletonList(linkToGroup.getEquipment())).setPermissionGroups(Collections.singletonList(relatedPermissionGroup)),securityContext);
+        if (relatedPermissionGroup != null) {
+            permissionGroupService.connectPermissionGroupsToBaseclasses(new CreatePermissionGroupLinkRequest().setBaseclasses(Collections.singletonList(linkToGroup.getEquipment())).setPermissionGroups(Collections.singletonList(relatedPermissionGroup)), securityContext);
         }
         return equipmentToGroup;
 
@@ -418,6 +419,11 @@ public class EquipmentService implements IEquipmentService {
 
         if (equipmentCreate.getSerial() != null && !equipmentCreate.getSerial().equals(equipment.getSerial())) {
             equipment.setSerial(equipmentCreate.getSerial());
+            update = true;
+        }
+
+        if (equipmentCreate.getDescriptor3D() != null && !equipmentCreate.getDescriptor3D().equals(equipment.getDescriptor3D())) {
+            equipment.setDescriptor3D(equipmentCreate.getDescriptor3D());
             update = true;
         }
 
@@ -637,10 +643,16 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
+        ProductType productType = createProductTypeNoMerge(productTypeCreate, securityContext);
+        equipmentRepository.merge(productType);
+        return productType;
+    }
+
+    private ProductType createProductTypeNoMerge(ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
         ProductType productType = ProductType.s().CreateUnchecked(productTypeCreate.getName(), securityContext);
         productType.Init();
         productType.setId(getProductTypeId(productTypeCreate.getName()));
-        productType.setDescription(productTypeCreate.getDescription());
+        updateProductTypeNoMerge(productTypeCreate, productType);
         return productType;
     }
 
@@ -718,7 +730,7 @@ public class EquipmentService implements IEquipmentService {
 
         if (filtering.getBuildingFloorIds() != null && !filtering.getBuildingFloorIds().isEmpty()) {
             Set<String> ids = filtering.getBuildingFloorIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-            List<BuildingFloor> buildingFloors = listByIds(BuildingFloor.class,ids,securityContext);
+            List<BuildingFloor> buildingFloors = listByIds(BuildingFloor.class, ids, securityContext);
             ids.removeAll(buildingFloors.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
             if (!ids.isEmpty()) {
                 throw new BadRequestException("No buildingFloors with ids " + ids);
@@ -768,7 +780,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public boolean updateMultiLatLonEquipmentNoMerge(CreateMultiLatLonEquipment createMultiLatLonEquipment, MultiLatLonEquipment multiLatLonEquipment) {
-        boolean update= updateEquipmentNoMerge(createMultiLatLonEquipment, multiLatLonEquipment);
+        boolean update = updateEquipmentNoMerge(createMultiLatLonEquipment, multiLatLonEquipment);
 
         if (createMultiLatLonEquipment.getContextString() != null && !createMultiLatLonEquipment.getContextString().equals(multiLatLonEquipment.getContextString())) {
             multiLatLonEquipment.setContextString(createMultiLatLonEquipment.getContextString());
@@ -795,11 +807,11 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public void validateLatLon(LatLonFilter latLonFilter, SecurityContext securityContext) {
-        Set<String> equipmentIds=latLonFilter.getMultiLatLonEquipmentIds();
-        Map<String,MultiLatLonEquipment> map=equipmentIds.isEmpty()?new HashMap<>():equipmentRepository.listByIds(MultiLatLonEquipment.class,equipmentIds,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
+        Set<String> equipmentIds = latLonFilter.getMultiLatLonEquipmentIds();
+        Map<String, MultiLatLonEquipment> map = equipmentIds.isEmpty() ? new HashMap<>() : equipmentRepository.listByIds(MultiLatLonEquipment.class, equipmentIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
         equipmentIds.removeAll(map.keySet());
-        if(!equipmentIds.isEmpty()){
-            throw new BadRequestException("No MultiLatLon Equipment with id "+equipmentIds);
+        if (!equipmentIds.isEmpty()) {
+            throw new BadRequestException("No MultiLatLon Equipment with id " + equipmentIds);
         }
         latLonFilter.setMultiLatLonEquipments(new ArrayList<>(map.values()));
 
@@ -901,13 +913,13 @@ public class EquipmentService implements IEquipmentService {
     public <T extends Equipment> PaginationResponse<EquipmentShort> getAllEquipmentsShort(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
         List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
         List<ProductToStatus> statusLinks = getCurrentStatusLinks(list.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
-        StatusLinksToImageFilter statusLinksToImageFilter=new StatusLinksToImageFilter();
+        StatusLinksToImageFilter statusLinksToImageFilter = new StatusLinksToImageFilter();
         statusLinksToImageFilter.setNameLike("%map%");
         Map<String, List<ProductStatus>> statusLinksMap = statusLinks.parallelStream().collect(Collectors.groupingBy(f -> f.getLeftside().getId(), ConcurrentHashMap::new, Collectors.mapping(f -> f.getRightside(), Collectors.toList())));
 
-        Map<String,Map<String,String>> statusLinkToImages=statusLinkToImageService.listAllStatusLinksToImage(statusLinksToImageFilter,null).parallelStream().collect(Collectors.groupingBy(f->f.getStatusLink().getLeftside().getId(),Collectors.toMap(f->f.getStatusLink().getRightside().getId(),f->f.getImage().getId(),(a,b)->a)));
+        Map<String, Map<String, String>> statusLinkToImages = statusLinkToImageService.listAllStatusLinksToImage(statusLinksToImageFilter, null).parallelStream().collect(Collectors.groupingBy(f -> f.getStatusLink().getLeftside().getId(), Collectors.toMap(f -> f.getStatusLink().getRightside().getId(), f -> f.getImage().getId(), (a, b) -> a)));
 
-     long total = countAllEquipments(c, filtering, securityContext);
+        long total = countAllEquipments(c, filtering, securityContext);
 
 
         return new PaginationResponse<>(list.parallelStream()
@@ -928,15 +940,14 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public ProductType updateProductType(UpdateProductType updateProductType, SecurityContext securityContext) {
-        if (updateProductTypeNoMerge(updateProductType, securityContext)) {
+        if (updateProductTypeNoMerge(updateProductType, updateProductType.getProductType())) {
             equipmentRepository.merge(updateProductType.getProductType());
         }
         return updateProductType.getProductType();
     }
 
-    public boolean updateProductTypeNoMerge(UpdateProductType updateProductType, SecurityContext securityContext) {
+    public boolean updateProductTypeNoMerge(ProductTypeCreate updateProductType, ProductType productType) {
         boolean update = false;
-        ProductType productType = updateProductType.getProductType();
         if (updateProductType.getName() != null && !updateProductType.getName().equals(productType.getName())) {
             productType.setName(updateProductType.getName());
             update = true;
@@ -951,6 +962,12 @@ public class EquipmentService implements IEquipmentService {
             productType.setImage(updateProductType.getIcon());
             update = true;
         }
+
+        if (updateProductType.getDiagram3D() != null && (productType.getDiagram3D() == null || !productType.getDiagram3D().getId().equals(updateProductType.getDiagram3D().getId()))) {
+            productType.setDiagram3D(updateProductType.getDiagram3D());
+            update = true;
+        }
+
 
         return update;
     }
@@ -1104,33 +1121,32 @@ public class EquipmentService implements IEquipmentService {
         LatLonFilter latLonFilter = new LatLonFilter()
                 .setMultiLatLonEquipments(Collections.singletonList(multiLatLonEquipment))
                 .setFetchSoftDelete(true);
-        List<LatLon> existing= listAllLatLons(latLonFilter, securityContext).parallelStream().sorted(Comparator.comparing(f->f.getOrdinal())).collect(Collectors.toList());
-        int i=0;
-        List<Object> toMerge=new ArrayList<>();
-        Map<String,LatLon> afterUpdate=new HashMap<>();
+        List<LatLon> existing = listAllLatLons(latLonFilter, securityContext).parallelStream().sorted(Comparator.comparing(f -> f.getOrdinal())).collect(Collectors.toList());
+        int i = 0;
+        List<Object> toMerge = new ArrayList<>();
+        Map<String, LatLon> afterUpdate = new HashMap<>();
         for (LatLonContainer latLonContainer : massUpsertLatLonRequest.getList()) {
-            CreateLatLon createLatLon=getCreateLatLon(latLonContainer,i);
+            CreateLatLon createLatLon = getCreateLatLon(latLonContainer, i);
             createLatLon.setMultiLatLonEquipment(multiLatLonEquipment);
             createLatLon.setSoftDelete(false);
-            LatLon latLon=i < existing.size()?existing.get(i):null;
+            LatLon latLon = i < existing.size() ? existing.get(i) : null;
             i++;
-            if(latLon==null){
-                latLon=createLatLonNoMerge(createLatLon,securityContext);
+            if (latLon == null) {
+                latLon = createLatLonNoMerge(createLatLon, securityContext);
                 toMerge.add(latLon);
-            }
-            else{
-                if(updateLatLonNoMerge(createLatLon,latLon)){
+            } else {
+                if (updateLatLonNoMerge(createLatLon, latLon)) {
                     toMerge.add(latLon);
                 }
             }
-            afterUpdate.put(latLon.getId(),latLon);
+            afterUpdate.put(latLon.getId(), latLon);
         }
-        List<LatLon> toDel=existing.parallelStream().filter(f->!afterUpdate.containsKey(f.getId())).collect(Collectors.toList());
+        List<LatLon> toDel = existing.parallelStream().filter(f -> !afterUpdate.containsKey(f.getId())).collect(Collectors.toList());
         for (LatLon latLon : toDel) {
             latLon.setSoftDelete(true);
             toMerge.add(latLon);
         }
-        if(massUpsertLatLonRequest.getContextString()!=null && !massUpsertLatLonRequest.getContextString().equals(multiLatLonEquipment.getContextString())){
+        if (massUpsertLatLonRequest.getContextString() != null && !massUpsertLatLonRequest.getContextString().equals(multiLatLonEquipment.getContextString())) {
             multiLatLonEquipment.setContextString(massUpsertLatLonRequest.getContextString());
             toMerge.add(multiLatLonEquipment);
         }
@@ -1138,7 +1154,7 @@ public class EquipmentService implements IEquipmentService {
         return new ArrayList<>(afterUpdate.values());
     }
 
-    private CreateLatLon getCreateLatLon(LatLonContainer latLonContainer,int ordinal) {
+    private CreateLatLon getCreateLatLon(LatLonContainer latLonContainer, int ordinal) {
         return new CreateLatLon().setLat(latLonContainer.getLat()).setLon(latLonContainer.getLon()).setOrdinal(ordinal);
     }
 
@@ -1163,29 +1179,43 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public PaginationResponse<ProductTypeToProductStatus> getAllProductTypeToProductStatus(ProductTypeToProductStatusFilter filter, SecurityContext securityContext) {
-        List<ProductTypeToProductStatus> list=listAllProductTypeToProductStatus(filter,securityContext);
-        long count=equipmentRepository.countAllProductTypeToProductStatus(filter,securityContext);
-        return new PaginationResponse<>(list,filter,count);
+        List<ProductTypeToProductStatus> list = listAllProductTypeToProductStatus(filter, securityContext);
+        long count = equipmentRepository.countAllProductTypeToProductStatus(filter, securityContext);
+        return new PaginationResponse<>(list, filter, count);
     }
 
     private List<ProductTypeToProductStatus> listAllProductTypeToProductStatus(ProductTypeToProductStatusFilter filter, SecurityContext securityContext) {
-        return equipmentRepository.listAllProductTypeToProductStatus(filter,securityContext);
+        return equipmentRepository.listAllProductTypeToProductStatus(filter, securityContext);
 
     }
 
     public void validate(ProductStatusToProductFilter productTypeFiltering, SecurityContext securityContext) {
         Set<String> ids = productTypeFiltering.getProductIds();
-        Map<String,Product> products= ids.isEmpty()?new HashMap<>():listByIds(Product.class,ids,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
+        Map<String, Product> products = ids.isEmpty() ? new HashMap<>() : listByIds(Product.class, ids, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
         ids.removeAll(products.keySet());
-        if(!ids.isEmpty()){
-            throw new BadRequestException("No Product ids "+ids);
+        if (!ids.isEmpty()) {
+            throw new BadRequestException("No Product ids " + ids);
         }
         productTypeFiltering.setProducts(new ArrayList<>(products.values()));
     }
 
     public PaginationResponse<ProductStatusEntry> getProductStatusForProducts(ProductStatusToProductFilter productTypeFiltering, SecurityContext securityContext) {
-        List<ProductToStatus> links=equipmentRepository.getStatusLinks(productTypeFiltering.getProducts().parallelStream().map(f->f.getId()).collect(Collectors.toSet()));
+        List<ProductToStatus> links = equipmentRepository.getStatusLinks(productTypeFiltering.getProducts().parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         List<ProductStatusEntry> collect = links.parallelStream().map(f -> new ProductStatusEntry(f)).collect(Collectors.toList());
-        return new PaginationResponse<>(collect,productTypeFiltering,collect.size());
+        return new PaginationResponse<>(collect, productTypeFiltering, collect.size());
+    }
+
+    public void validate(ProductTypeCreate updateProductType, SecurityContext securityContext) {
+        FileResource newIcon = updateProductType.getIconId() != null ? getByIdOrNull(updateProductType.getIconId(), FileResource.class, null, securityContext) : null;
+        if (newIcon == null && updateProductType.getIconId() != null) {
+            throw new BadRequestException("no file resource with id " + updateProductType.getIconId());
+        }
+        updateProductType.setIcon(newIcon);
+
+        FileResource diagram3d = updateProductType.getDiagram3DId() != null ? getByIdOrNull(updateProductType.getDiagram3DId(), FileResource.class, null, securityContext) : null;
+        if (diagram3d == null && updateProductType.getIconId() != null) {
+            throw new BadRequestException("no file resource with id " + updateProductType.getDiagram3DId());
+        }
+        updateProductType.setDiagram3D(diagram3d);
     }
 }

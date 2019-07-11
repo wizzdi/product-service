@@ -161,7 +161,7 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             ProductTypeCreate productTypeCreate,
             @Context SecurityContext securityContext) {
-
+        service.validate(productTypeCreate,securityContext);
         return service.createProductType(productTypeCreate, securityContext);
     }
 
@@ -423,21 +423,17 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             UpdateProductType updateProductType,
             @Context SecurityContext securityContext) {
-        ProductType productStatus = updateProductType.getId() != null ? service.getByIdOrNull(updateProductType.getId(), ProductType.class, null, securityContext) : null;
-        if (productStatus == null) {
-            throw new BadRequestException("no productStatus with id " + updateProductType.getId());
+        ProductType productType = updateProductType.getId() != null ? service.getByIdOrNull(updateProductType.getId(), ProductType.class, null, securityContext) : null;
+        if (productType == null) {
+            throw new BadRequestException("no ProductType with id " + updateProductType.getId());
         }
-        updateProductType.setProductType(productStatus);
-        FileResource newIcon = updateProductType.getIconId() != null ? service.getByIdOrNull(updateProductType.getIconId(), FileResource.class, null, securityContext) : null;
-        if (newIcon == null && updateProductType.getIconId() != null) {
-            throw new BadRequestException("no file resource with id " + updateProductType.getIconId());
-        }
-        updateProductType.setIcon(newIcon);
-
-
+        updateProductType.setProductType(productType);
+        service.validate(updateProductType, securityContext);
         return service.updateProductType(updateProductType, securityContext);
 
     }
+
+
 
 
     @PUT
