@@ -6,14 +6,13 @@ import com.flexicore.interfaces.dynamic.InvokerInfo;
 import com.flexicore.interfaces.dynamic.InvokerMethodInfo;
 import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.containers.request.EquipmentUpdate;
-import com.flexicore.product.model.Equipment;
-import com.flexicore.product.model.EquipmentFiltering;
-import com.flexicore.product.model.EquipmentGroup;
+import com.flexicore.product.model.*;
 import com.flexicore.product.request.UpdateEquipmentParameters;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
+import java.util.List;
 
 @PluginInfo(version = 1)
 @InvokerInfo(displayName = "Equipment Invoker", description = "Invoker for Equipments")
@@ -44,6 +43,11 @@ public class EquipmentInvoker implements ListingInvoker<Equipment,EquipmentFilte
         equipmentUpdate.setEquipment(equipment);
         equipmentService.validateEquipmentCreate(equipmentUpdate,securityContext);
         return equipmentService.updateEquipment(equipmentUpdate,securityContext);
+    }
+
+    @InvokerMethodInfo(displayName = "createEquipmentStatusEvent", description = "create Equipment Status Event Aggregation",relatedClasses = {Equipment.class})
+    public List<EquipmentByStatusEvent> createEquipmentStatusEvent(EquipmentStatusRequest executionParametersHolder) throws Exception {
+        return equipmentService.createEquipmentStatusEvent(executionParametersHolder.getEquipmentFiltering(),executionParametersHolder.getSecurityContext());
     }
 
     @Override

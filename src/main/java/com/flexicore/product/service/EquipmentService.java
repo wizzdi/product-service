@@ -17,6 +17,7 @@ import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.data.EquipmentRepository;
+import com.flexicore.product.data.EventNoSQLRepository;
 import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.*;
@@ -25,14 +26,21 @@ import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Context;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,6 +82,10 @@ public class EquipmentService implements IEquipmentService {
     @Inject
     @PluginInfo(version = 1)
     private StatusLinkToImageService statusLinkToImageService;
+
+    @Inject
+    @PluginInfo(version = 1)
+    private EventNoSQLRepository repository;
 
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
     private static AtomicBoolean init = new AtomicBoolean(false);
@@ -1109,7 +1121,26 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndType(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
-        return equipmentRepository.getProductGroupedByStatusAndType(c, equipmentFiltering, securityContext);
+        List<EquipmentStatusGroup> productGroupedByStatusAndTypeList = equipmentRepository.getProductGroupedByStatusAndType(c, equipmentFiltering, securityContext);
+        //add missing product types and statuses
+        Map<String, Map<String, EquipmentStatusGroup>> productGroupedByStatusAndType = productGroupedByStatusAndTypeList
+                .parallelStream().collect(Collectors.groupingBy(f -> f.getProductTypeId(), Collectors.toMap(f -> f.getStatusId(), f -> f)));
+        List<ProductTypeToProductStatus> productToStatusList = equipmentRepository.getAllFiltered(new QueryInformationHolder<>(ProductTypeToProductStatus.class,securityContext));
+        for (ProductTypeToProductStatus productTypeToProductStatus : productToStatusList) {
+            ProductType productType = productTypeToProductStatus.getLeftside();
+            Map<String, EquipmentStatusGroup> statusMap = productGroupedByStatusAndType.computeIfAbsent(productType.getId(), f->new HashMap<>());
+            ProductStatus productStatus = productTypeToProductStatus.getRightside();
+            EquipmentStatusGroup item = statusMap.get(productStatus.getId());
+            if(item==null){
+                item=new EquipmentStatusGroup(0L, productStatus.getId(), productStatus.getName(), productStatus.getDescription(),
+                        productType.getId(),productType.getName());
+                statusMap.put(productStatus.getId(),item);
+                productGroupedByStatusAndTypeList.add(item);
+            }
+
+        }
+
+        return productGroupedByStatusAndTypeList;
     }
 
     public <T extends Equipment> List<EquipmentSpecificTypeGroup> getProductGroupedBySpecificType(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
@@ -1218,4 +1249,26 @@ public class EquipmentService implements IEquipmentService {
         }
         updateProductType.setDiagram3D(diagram3d);
     }
+
+
+
+    public List<EquipmentByStatusEvent> createEquipmentStatusEvent(EquipmentFiltering lightFiltering, SecurityContext securityContext) {
+        List<EquipmentByStatusEvent> events=new ArrayList<>();
+        for (Tenant tenant : securityContext.getTenants()) {
+            EquipmentFiltering filteringInformationHolder = lightFiltering;
+            lightFiltering .setTenantIds(Collections.singletonList(new TenantIdFiltering().setId(tenant.getId())));
+            List<EquipmentStatusGroup> list = getProductGroupedByStatusAndType(Equipment.class, filteringInformationHolder, securityContext);
+            List<EquipmentByStatusEntry> entries = list.parallelStream().map(f -> new EquipmentByStatusEntry(f)).collect(Collectors.toList());
+            EquipmentByStatusEvent lightsByStatusEvent = new EquipmentByStatusEvent()
+                    .setEntries(entries).setEventDate(Date.from(Instant.now()))
+                    .setBaseclassTenantId(tenant.getId());
+            events.add(lightsByStatusEvent);
+        }
+        repository.massMergeEvents(events);
+
+
+        return events;
+    }
+
+
 }

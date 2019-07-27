@@ -274,6 +274,20 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     @POST
     @Produces("application/json")
+    @Operation(summary = "createEquipmentStatusEvent", description = "create Equipment status Event")
+    @Path("createEquipmentStatusEvent")
+    public List<EquipmentByStatusEvent> createEquipmentStatusEvent(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EquipmentFiltering inspectLights,
+            @Context SecurityContext securityContext) {
+
+        return service.createEquipmentStatusEvent(inspectLights,securityContext);
+
+    }
+
+
+    @POST
+    @Produces("application/json")
     @Operation(summary = "disableGateway", description = "disables Gateway")
     @Path("disableGateway")
     public <T extends Equipment> List<EquipmentStatusGroup> disableGateway(

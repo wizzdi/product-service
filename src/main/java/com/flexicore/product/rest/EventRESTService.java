@@ -5,13 +5,14 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interceptors.DynamicResourceInjector;
 import com.flexicore.interceptors.SecurityImposer;
-import com.flexicore.interfaces.RestServicePlugin;
+import com.flexicore.model.FileResource;
 import com.flexicore.product.containers.request.CreateAggregatedReport;
 import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.containers.response.AggregationReport;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.Event;
 import com.flexicore.product.request.AckEventsRequest;
+import com.flexicore.product.request.EquipmentStatusEventFilter;
 import com.flexicore.product.response.AckEventsResponse;
 import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
@@ -23,7 +24,6 @@ import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
@@ -52,6 +52,18 @@ public class EventRESTService implements IEventRESTService {
     private Logger logger;
 
 
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "exportEquipmentStatusEventsToCSV", description = "exportEquipmentStatusEventsToCSV")
+    @Path("exportEquipmentStatusEventsToCSV")
+    public FileResource exportEquipmentStatusEventsToCSV(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EquipmentStatusEventFilter lightStatusEventFilter,
+            @Context SecurityContext securityContext) {
+        service.validate(lightStatusEventFilter,securityContext);
+        return service.exportEquipmentStatusEventsToCSV(lightStatusEventFilter,securityContext);
+
+    }
 
 
     @Override

@@ -9,6 +9,7 @@ import com.flexicore.model.territories.Street;
 import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
+import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.product.request.UpdateEquipmentParameters;
@@ -59,6 +60,9 @@ public class Config implements InitPlugin {
             BaseclassService.registerFilterClass(StreetFiltering.class, Street.class);
             BaseclassService.registerFilterClass(EventFiltering.class,Event.class);
             CrossLoaderResolver.registerClass(EventFiltering.class);
+            BaseclassService.registerClass(EquipmentByStatusEvent.class);
+            IEventService.addClassForMongoCodec(EquipmentByStatusEvent.class);
+            IEventService.addClassForMongoCodec(EquipmentByStatusEntry.class);
 
 
 

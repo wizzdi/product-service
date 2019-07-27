@@ -30,6 +30,7 @@ public class Event {
     private Double baseclassLon;
     private String productTypeId;
     private String userAcked;
+    private String userAckedName;
     private String ackNotes;
     private String targetBaseclassId;
     private boolean falseAlarm;
@@ -225,5 +226,14 @@ public class Event {
     public Event setFalseAlarm(boolean falseAlarm) {
         this.falseAlarm = falseAlarm;
         return this;
+    }
+
+    public String getUserAckedName() {
+        return userAckedName;
+    }
+
+    public <T extends Event> T setUserAckedName(String userAckedName) {
+        this.userAckedName = userAckedName;
+        return (T) this;
     }
 }

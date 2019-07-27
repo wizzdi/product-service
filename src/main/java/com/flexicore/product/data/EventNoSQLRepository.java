@@ -220,6 +220,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
         Bson query=Updates.combine(
                 set(USER_ACKED,securityContext.getUser().getId()),
+                set(USER_ACKED_NAME,securityContext.getUser().getName()),
                 set(ACK_NOTES,ackEventsRequest.getAckNotes()),
                 set(FALSE_ALARM,ackEventsRequest.isFalseAlarm())
 
