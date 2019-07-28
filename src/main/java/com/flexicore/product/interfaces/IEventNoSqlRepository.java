@@ -9,6 +9,7 @@ import com.flexicore.service.BaseclassService;
 import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
@@ -63,13 +64,13 @@ public interface IEventNoSqlRepository extends PluginRepository {
         Bson pred = null;
         if (eventFiltering.getFromDate() != null) {
 
-            Date start = Date.from(eventFiltering.getFromDate().toInstant(ZoneOffset.UTC));
+            Date start = Date.from(eventFiltering.getFromDate().atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toInstant());
             Bson gte = gte(EVENT_DATE, start);
             pred = pred == null ? gte : and(pred, gte);
         }
 
         if (eventFiltering.getToDate() != null) {
-            Date end = Date.from(eventFiltering.getToDate().toInstant(ZoneOffset.UTC));
+            Date end = Date.from(eventFiltering.getToDate().atZone(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC")).toInstant());
             Bson lte = lte(EVENT_DATE, end);
             pred = pred == null ? lte : and(pred, lte);
         }
@@ -137,7 +138,7 @@ public interface IEventNoSqlRepository extends PluginRepository {
             pred = pred == null ? eq : and(pred, eq);
         }
         if(eventFiltering.getAcked()!=null){
-            Bson ack=Filters.eq(USER_ACKED,eventFiltering.getAcked());
+            Bson ack=Filters.exists(USER_ACKED,eventFiltering.getAcked());
             pred = pred == null ? ack : and(pred, ack);
 
         }
