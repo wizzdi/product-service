@@ -57,6 +57,7 @@ public class BuildingService implements IBuildingService {
     @Override
     public void validateCreate(BuildingCreate buildingCreate, SecurityContext securityContext) {
       equipmentService.validateEquipmentCreate(buildingCreate,securityContext);
+      buildingCreate.setProductType(equipmentService.getBuildingProductType());
     }
 
     @Override

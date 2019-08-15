@@ -29,6 +29,11 @@ public interface IEquipmentService extends ServicePlugin,InitPlugin {
 
     ProductStatus getCommErrorProductStatus();
 
+
+    ProductStatus getError();
+
+    ProductType getBuildingProductType();
+
     FlexiCoreServer getFlexiCoreServerToSync(Equipment equipment);
 
 

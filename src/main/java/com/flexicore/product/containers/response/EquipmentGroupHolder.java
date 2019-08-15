@@ -12,6 +12,8 @@ public class EquipmentGroupHolder {
     private Long count;
 
 
+    public EquipmentGroupHolder() {
+    }
 
     public EquipmentGroupHolder(String geoHash, Long count) {
         BoundingBox point = geoHash!=null?GeoHash.fromGeohashString(geoHash).getBoundingBox():null;

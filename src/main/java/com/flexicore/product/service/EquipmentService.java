@@ -94,6 +94,8 @@ public class EquipmentService implements IEquipmentService {
     private static ProductStatus onProductStatus;
     private static ProductStatus offProductStatus;
     private static ProductStatus commErrorProductStatus;
+    private static ProductType buildingProductType;
+    private static ProductStatus error;
 
     @Override
     public void init() {
@@ -126,15 +128,22 @@ public class EquipmentService implements IEquipmentService {
         return commErrorProductStatus;
     }
 
+    @Override
+    public ProductStatus getError() {
+        return error;
+    }
+
     private void createDefaultProductStatusAndType(SecurityContext securityContext) {
 
         gatewayProductType = getOrCreateProductType(new ProductTypeCreate().setName("Gateway").setDescription("Gateway"), securityContext);
         fcGatewayType = getOrCreateProductType(new ProductTypeCreate().setName("FlexiCore Gateway").setDescription("FlexiCore Gateway"), securityContext);
+        buildingProductType = getOrCreateProductType(new ProductTypeCreate().setName("Building").setDescription("Building"), securityContext);
 
 
         onProductStatus = getOrCreateProductStatus(new ProductStatusCreate().setName("ON").setDescription("on"), securityContext);
         offProductStatus = getOrCreateProductStatus(new ProductStatusCreate().setName("OFF").setDescription("off"), securityContext);
         commErrorProductStatus = getOrCreateProductStatus(new ProductStatusCreate().setName("Communication Error").setDescription("Communication Error"), securityContext);
+        error = getOrCreateProductStatus(new ProductStatusCreate().setName("Error").setDescription("Error"), securityContext);
 
         linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(gatewayProductType).setProductStatus(onProductStatus), securityContext);
         linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(gatewayProductType).setProductStatus(offProductStatus), securityContext);
@@ -144,6 +153,11 @@ public class EquipmentService implements IEquipmentService {
         linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(fcGatewayType).setProductStatus(offProductStatus), securityContext);
         linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductType(fcGatewayType).setProductStatus(commErrorProductStatus), securityContext);
 
+    }
+
+    @Override
+    public ProductType getBuildingProductType() {
+        return buildingProductType;
     }
 
     @Override

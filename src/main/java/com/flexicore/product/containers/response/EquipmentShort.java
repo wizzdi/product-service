@@ -22,7 +22,10 @@ public class EquipmentShort {
     private Map<String, String> iconMap;
     private String defaultIcon;
 
-    public EquipmentShort(Equipment other,List<ProductStatus> statuses,Map<String,String> iconMap) {
+    public EquipmentShort() {
+    }
+
+    public EquipmentShort(Equipment other, List<ProductStatus> statuses, Map<String,String> iconMap) {
         this.id = other.getId();
         this.name=other.getName();
         this.lon = other.getLon();

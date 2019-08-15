@@ -12,6 +12,7 @@ import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.FlexiCoreGatewayCreateParameters;
+import com.flexicore.product.request.ProductStatusChanged;
 import com.flexicore.product.request.UpdateEquipmentParameters;
 import com.flexicore.service.BaseclassService;
 
@@ -46,6 +47,8 @@ public class Config implements InitPlugin {
             SYNC_MAX_THREADS_FOR_HANDLERS = Integer.parseInt(properties.getProperty("SYNC_MAX_THREADS_FOR_HANDLERS", SYNC_MAX_THREADS_FOR_HANDLERS + ""));
             keySetFilePath=properties.getProperty("keySetFilePath",keySetFilePath);
 
+            CrossLoaderResolver.registerClass(ProductStatusChanged.class);
+
             CrossLoaderResolver.registerClass(InspectEquipmentRequest.class);
             CrossLoaderResolver.registerClass(FlexiCoreGatewayCreateParameters.class);
             CrossLoaderResolver.registerClass(UpdateEquipmentParameters.class);
@@ -63,6 +66,7 @@ public class Config implements InitPlugin {
             BaseclassService.registerClass(EquipmentByStatusEvent.class);
             IEventService.addClassForMongoCodec(EquipmentByStatusEvent.class);
             IEventService.addClassForMongoCodec(EquipmentByStatusEntry.class);
+            IEventService.addClassForMongoCodec(ProductStatusChanged.class);
 
 
 

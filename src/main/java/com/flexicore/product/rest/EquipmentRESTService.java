@@ -449,6 +449,8 @@ public class EquipmentRESTService implements RestServicePlugin {
 
 
 
+    @Inject
+    private javax.enterprise.event.Event<ProductStatusChanged> productStatusChangedEvent;
 
     @PUT
     @Produces("application/json")
@@ -472,9 +474,11 @@ public class EquipmentRESTService implements RestServicePlugin {
 
 
         if (service.updateProductStatus(updateProductStatus, securityContext)) {
-            Event event = new Event(equipment)
+            ProductStatusChanged event = new ProductStatusChanged(equipment)
                     .setStatusIds(new HashSet<>(Arrays.asList(updateProductStatus.getProductStatus().getId())));
+
             eventService.merge(event);
+            productStatusChangedEvent.fireAsync(event);
 
         }
 
