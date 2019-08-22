@@ -16,12 +16,7 @@ public class EquipmentByStatusEntry {
         this.id= Baseclass.getBase64ID();
     }
 
-    public EquipmentByStatusEntry(EquipmentStatusGroup equipmentStatusGroup) {
-        this();
-        this.productStatus=equipmentStatusGroup.getStatusId();
-        this.productTypeId=equipmentStatusGroup.getProductTypeId();
-        this.total=equipmentStatusGroup.getCount();
-    }
+
 
 
     public String getId() {

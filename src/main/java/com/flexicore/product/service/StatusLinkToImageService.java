@@ -19,6 +19,7 @@ import com.flexicore.security.SecurityContext;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
@@ -27,6 +28,9 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
     @Inject
     @PluginInfo(version = 1)
     private StatusLinkToImageRepository repository;
+
+    @Inject
+    private Logger logger;
 
     public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, List<String> batchString, SecurityContext securityContext) {
         return repository.getByIdOrNull(id, c, batchString, securityContext);
@@ -38,7 +42,9 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
         Map<String, ProductStatus> statusMap = statusIds.isEmpty() ? new HashMap<>() : repository.listByIds(ProductStatus.class, statusIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
         statusIds.removeAll(statusMap.keySet());
         if (!statusIds.isEmpty()) {
-            throw new BadRequestException("No ProductStatus ids " + statusIds);
+            logger.warning("No ProductStatus ids " + statusIds);
+
+            //throw new BadRequestException("No ProductStatus ids " + statusIds);
         }
         filtering.setStatus(new ArrayList<>(statusMap.values()));
 
@@ -46,7 +52,9 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
         Map<String, ProductTypeToProductStatus> productTypeToProductStatusMap = statusLinkIds.isEmpty() ? new HashMap<>() : repository.listByIds(ProductTypeToProductStatus.class, statusLinkIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
         statusLinkIds.removeAll(productTypeToProductStatusMap.keySet());
         if (!statusLinkIds.isEmpty()) {
-            throw new BadRequestException("No ProductTypeToProductStatus ids " + statusLinkIds);
+            logger.warning("No ProductTypeToProductStatus ids " + statusLinkIds);
+
+            //throw new BadRequestException("No ProductTypeToProductStatus ids " + statusLinkIds);
         }
         filtering.setStatusLinks(new ArrayList<>(productTypeToProductStatusMap.values()));
 
@@ -54,7 +62,9 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
         Map<String, ProductType> productTypeMap = productTypeIds.isEmpty() ? new HashMap<>() : repository.listByIds(ProductType.class, productTypeIds, securityContext).parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f));
         productTypeIds.removeAll(productTypeMap.keySet());
         if (!productTypeIds.isEmpty()) {
-            throw new BadRequestException("No ProductType ids " + productTypeIds);
+            logger.warning("No ProductType ids " + statusLinkIds);
+
+            //throw new BadRequestException("No ProductType ids " + productTypeIds);
         }
         filtering.setProductTypes(new ArrayList<>(productTypeMap.values()));
 

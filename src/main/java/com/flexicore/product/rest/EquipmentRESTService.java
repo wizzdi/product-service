@@ -514,6 +514,19 @@ public class EquipmentRESTService implements RestServicePlugin {
 
     }
 
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "getAllDetailedEquipmentStatus", description = "return Detailed Equipment Status ")
+    @Path("getAllDetailedEquipmentStatus")
+    public PaginationResponse<DetailedEquipmentStatus> getAllDetailedEquipmentStatus(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            DetailedEquipmentFilter filter,
+            @Context SecurityContext securityContext) {
+        service.validate(filter);
+        return service.getAllDetailedEquipmentStatus(filter);
+
+    }
+
 
     @POST
     @Produces("application/json")

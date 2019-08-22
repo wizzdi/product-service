@@ -1268,20 +1268,72 @@ public class EquipmentService implements IEquipmentService {
 
     public List<EquipmentByStatusEvent> createEquipmentStatusEvent(EquipmentFiltering lightFiltering, SecurityContext securityContext) {
         List<EquipmentByStatusEvent> events=new ArrayList<>();
+        List<DetailedEquipmentStatus> detailedEquipmentStatuses=new ArrayList<>();
         for (Tenant tenant : securityContext.getTenants()) {
             EquipmentFiltering filteringInformationHolder = lightFiltering;
             lightFiltering .setTenantIds(Collections.singletonList(new TenantIdFiltering().setId(tenant.getId())));
-            List<EquipmentStatusGroup> list = getProductGroupedByStatusAndType(Equipment.class, filteringInformationHolder, securityContext);
-            List<EquipmentByStatusEntry> entries = list.parallelStream().map(f -> new EquipmentByStatusEntry(f)).collect(Collectors.toList());
+            List<Equipment> part;
+            int page=0;
+            Map<String,Map<String,Set<String>>> grouping=new HashMap<>();
+            while(!(part=equipmentRepository.getAllEquipments(Equipment.class,filteringInformationHolder,securityContext)).isEmpty()){
+                Set<String> ids=part.parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+                Map<String,List<ProductToStatus>> statusMap=equipmentRepository.getCurrentStatusLinks(ids).parallelStream().collect(Collectors.groupingBy(f->f.getLeftside().getId()));
+                for (Equipment equipment : part) {
+                    if(equipment.getProductType()!=null){
+                        String productTypeId=equipment.getProductType().getId();
+                        List<ProductToStatus> statuses=statusMap.get(equipment.getId());
+
+                        if(statuses!=null){
+                            for (ProductToStatus status : statuses) {
+                                grouping.computeIfAbsent(productTypeId,f->new HashMap<>()).computeIfAbsent(status.getRightside().getId(),f->new HashSet<>()).add(equipment.getId());
+                            }
+                        }
+                    }
+
+                }
+            }
+            List<EquipmentByStatusEntry> entries=new ArrayList<>();
+
+            for (Map.Entry<String, Map<String, Set<String>>> productTypeEntry : grouping.entrySet()) {
+                for (Map.Entry<String, Set<String>> productStatusEntry : productTypeEntry.getValue().entrySet()) {
+                    EquipmentByStatusEntry equipmentByStatusEntry = new EquipmentByStatusEntry()
+                            .setProductStatus(productStatusEntry.getKey())
+                            .setProductTypeId(productTypeEntry.getKey())
+                            .setTotal(productStatusEntry.getValue().size());
+                    entries.add(equipmentByStatusEntry);
+                    for (String equipmentId : productStatusEntry.getValue()) {
+                        detailedEquipmentStatuses.add(new DetailedEquipmentStatus().setEquipmentId(equipmentId).setEquipmentByStatusEntry(equipmentByStatusEntry.getId()));
+
+                    }
+                }
+            }
+
             EquipmentByStatusEvent lightsByStatusEvent = new EquipmentByStatusEvent()
-                    .setEntries(entries).setEventDate(Date.from(Instant.now()))
+                    .setEntries(entries)
+                    .setEventDate(Date.from(Instant.now()))
                     .setBaseclassTenantId(tenant.getId());
             events.add(lightsByStatusEvent);
         }
         repository.massMergeEvents(events);
+        repository.massMergeDetailedStatus(detailedEquipmentStatuses);
 
 
         return events;
+    }
+
+    public void validate(DetailedEquipmentFilter detailedEquipmentFilter){
+        if(detailedEquipmentFilter.getEquipmentByStatusEntryIds()==null|| detailedEquipmentFilter.getEquipmentByStatusEntryIds().isEmpty()){
+            throw new BadRequestException("EquipmentByStatusEntryIds must be non null and non empty");
+        }
+    }
+    public PaginationResponse<DetailedEquipmentStatus> getAllDetailedEquipmentStatus(DetailedEquipmentFilter detailedEquipmentFilter){
+        List<DetailedEquipmentStatus> list=listAllDetailedEquipmentStatus(detailedEquipmentFilter);
+        long count=repository.countAllDetailedEquipmentStatus(detailedEquipmentFilter);
+        return new PaginationResponse<>(list,detailedEquipmentFilter,count);
+    }
+
+    private List<DetailedEquipmentStatus> listAllDetailedEquipmentStatus(DetailedEquipmentFilter detailedEquipmentFilter) {
+        return repository.listAllDetailedEquipmentStatus(detailedEquipmentFilter);
     }
 
 

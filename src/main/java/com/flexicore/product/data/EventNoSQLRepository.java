@@ -9,8 +9,10 @@ import com.flexicore.product.containers.response.AggregationReportEntry;
 import com.flexicore.product.interfaces.IEventNoSqlRepository;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.Alert;
+import com.flexicore.product.model.DetailedEquipmentStatus;
 import com.flexicore.product.model.Event;
 import com.flexicore.product.request.AckEventsRequest;
+import com.flexicore.product.request.DetailedEquipmentFilter;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.MongoConnectionService;
 import com.mongodb.BasicDBObject;
@@ -35,12 +37,13 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import static com.mongodb.client.model.Sorts.*;
 import static com.mongodb.client.model.Updates.set;
 
 import static com.flexicore.service.MongoConnectionService.MONGO_DB;
 import static com.mongodb.client.model.Filters.*;
-import static com.mongodb.client.model.Sorts.descending;
-import static com.mongodb.client.model.Sorts.orderBy;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
@@ -48,6 +51,8 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 @PluginInfo(version = 1)
 public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implements IEventNoSqlRepository {
 
+    private static final String DETAILED_EQUIPMENT_STATUS_COLLECTION = "DETAILED_EQUIPMENT_STATUS";
+    public static final String EQUIPMENT_BY_STATUS_ENTRY = "equipmentByStatusEntry";
     @Inject
     private Logger logger;
     private static AtomicBoolean init = new AtomicBoolean(false);
@@ -57,6 +62,8 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
     static {
         IEventService.addClassForMongoCodec(Event.class);
         IEventService.addClassForMongoCodec(Alert.class);
+        IEventService.addClassForMongoCodec(DetailedEquipmentStatus.class);
+
     }
 
     public static CodecRegistry getPojoCodecRegistry() {
@@ -151,6 +158,14 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
     }
 
+    public void massMergeDetailedStatus(List<DetailedEquipmentStatus> o) {
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName);
+        MongoCollection<DetailedEquipmentStatus> collection = db.getCollection(DETAILED_EQUIPMENT_STATUS_COLLECTION, DetailedEquipmentStatus.class).withCodecRegistry(pojoCodecRegistry);
+        collection.insertMany(o);
+
+
+    }
+
 
     @Override
     public long countAllEvents(EventFiltering eventFiltering) {
@@ -227,5 +242,45 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
         );
         UpdateResult updateResult=collection.updateMany(filter,query);
         return updateResult.getModifiedCount();
+    }
+
+    public List<DetailedEquipmentStatus> listAllDetailedEquipmentStatus(DetailedEquipmentFilter processErrorsFiltering) {
+
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
+        MongoCollection<DetailedEquipmentStatus> collection = db.getCollection(DETAILED_EQUIPMENT_STATUS_COLLECTION, DetailedEquipmentStatus.class).withCodecRegistry(pojoCodecRegistry);
+
+
+        Bson pred = getProcessErrorsPredicate(processErrorsFiltering);
+
+        FindIterable<DetailedEquipmentStatus> base = pred == null ? collection.find(DetailedEquipmentStatus.class) : collection.find(pred, DetailedEquipmentStatus.class);
+        FindIterable<DetailedEquipmentStatus> iter = base;
+        if (processErrorsFiltering.getCurrentPage() != null && processErrorsFiltering.getPageSize() != null && processErrorsFiltering.getCurrentPage() > -1 && processErrorsFiltering.getPageSize() > 0) {
+            iter.limit(processErrorsFiltering.getPageSize()).skip(processErrorsFiltering.getPageSize() * processErrorsFiltering.getCurrentPage());
+        }
+        List<DetailedEquipmentStatus> alerts = new ArrayList<>();
+        for (DetailedEquipmentStatus alert : iter) {
+            alerts.add(alert);
+        }
+        return alerts;
+    }
+
+    private Bson getProcessErrorsPredicate(DetailedEquipmentFilter processErrorsFiltering) {
+
+        Bson bson=null;
+        if(processErrorsFiltering.getEquipmentByStatusEntryIds()!=null && !processErrorsFiltering.getEquipmentByStatusEntryIds().isEmpty()){
+            Bson pred = in(EQUIPMENT_BY_STATUS_ENTRY, processErrorsFiltering.getEquipmentByStatusEntryIds());
+            bson=bson==null?pred:and(bson, pred);
+        }
+
+        return bson;
+    }
+
+    public long countAllDetailedEquipmentStatus(DetailedEquipmentFilter processErrorsFiltering) {
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
+        MongoCollection<DetailedEquipmentStatus> collection = db.getCollection(DETAILED_EQUIPMENT_STATUS_COLLECTION, DetailedEquipmentStatus.class).withCodecRegistry(pojoCodecRegistry);
+
+        Bson pred = getProcessErrorsPredicate(processErrorsFiltering);
+
+        return pred == null ? collection.count() : collection.count(pred);
     }
 }
