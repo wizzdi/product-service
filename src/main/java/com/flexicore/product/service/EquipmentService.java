@@ -1272,25 +1272,28 @@ public class EquipmentService implements IEquipmentService {
         for (Tenant tenant : securityContext.getTenants()) {
             EquipmentFiltering filteringInformationHolder = lightFiltering;
             lightFiltering .setTenantIds(Collections.singletonList(new TenantIdFiltering().setId(tenant.getId())));
-            List<Equipment> part;
-            int page=0;
+            List<EquipmentAndType> part;
             Map<String,Map<String,Set<String>>> grouping=new HashMap<>();
-            while(!(part=equipmentRepository.getAllEquipments(Equipment.class,filteringInformationHolder,securityContext)).isEmpty()){
+            filteringInformationHolder.setPageSize(200);
+            filteringInformationHolder.setCurrentPage(0);
+            while(!(part=equipmentRepository.getEquipmentAndType(Equipment.class,filteringInformationHolder,securityContext)).isEmpty()){
                 Set<String> ids=part.parallelStream().map(f->f.getId()).collect(Collectors.toSet());
-                Map<String,List<ProductToStatus>> statusMap=equipmentRepository.getCurrentStatusLinks(ids).parallelStream().collect(Collectors.groupingBy(f->f.getLeftside().getId()));
-                for (Equipment equipment : part) {
+                Map<String,List<ProductStatusNoProductContainer>> statusMap=equipmentRepository.getCurrentStatusLinksContainers(ids).parallelStream().collect(Collectors.groupingBy(f->f.getProductId()));
+                for (EquipmentAndType equipment : part) {
                     if(equipment.getProductType()!=null){
                         String productTypeId=equipment.getProductType().getId();
-                        List<ProductToStatus> statuses=statusMap.get(equipment.getId());
+                        List<ProductStatusNoProductContainer> statuses=statusMap.get(equipment.getId());
 
                         if(statuses!=null){
-                            for (ProductToStatus status : statuses) {
-                                grouping.computeIfAbsent(productTypeId,f->new HashMap<>()).computeIfAbsent(status.getRightside().getId(),f->new HashSet<>()).add(equipment.getId());
+                            for (ProductStatusNoProductContainer status : statuses) {
+                                grouping.computeIfAbsent(productTypeId,f->new HashMap<>()).computeIfAbsent(status.getStatus().getId(),f->new HashSet<>()).add(equipment.getId());
                             }
                         }
                     }
 
                 }
+                filteringInformationHolder.setCurrentPage(filteringInformationHolder.getCurrentPage()+1);
+
             }
             List<EquipmentByStatusEntry> entries=new ArrayList<>();
 

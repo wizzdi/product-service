@@ -10,7 +10,9 @@ import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
 import com.flexicore.product.model.*;
+import com.flexicore.product.request.EquipmentAndType;
 import com.flexicore.product.request.LatLonFilter;
+import com.flexicore.product.request.ProductStatusNoProductContainer;
 import com.flexicore.product.request.ProductTypeToProductStatusFilter;
 import com.flexicore.security.SecurityContext;
 
@@ -40,6 +42,31 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
         return getAllFiltered(queryInformationHolder, preds, cb, q, r);
+    }
+
+    public <T extends Equipment> List<EquipmentAndType> getEquipmentAndType(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<EquipmentAndType> q = cb.createQuery(EquipmentAndType.class);
+        Root<T> r = q.from(c);
+
+        List<Predicate> preds = new ArrayList<>();
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+
+
+        QueryInformationHolder<T> queryInformationHolder = new QueryInformationHolder<>(filtering, c, securityContext);
+
+        prepareQuery(queryInformationHolder, preds, cb, q, r);
+
+        Predicate[] predsArray = new Predicate[preds.size()];
+        predsArray =preds.toArray(predsArray);
+
+        q.select(cb.construct(EquipmentAndType.class,r.get(Equipment_.id),r.get(Equipment_.productType))).where(predsArray).orderBy(cb.desc(r.get(Equipment_.id)));
+        TypedQuery<EquipmentAndType> query = em.createQuery(q);
+        if(filtering.getPageSize()!=null && filtering.getPageSize() > 0 && filtering.getCurrentPage()!=null && filtering.getPageSize() > -1){
+            setPageQuery(filtering.getPageSize(), filtering.getCurrentPage(),query);
+
+        }
+        return query.getResultList();
     }
 
     @Override
@@ -247,6 +274,19 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
 
         q.select(r).where(pred);
         TypedQuery<ProductToStatus> query = em.createQuery(q);
+        return query.getResultList();
+    }
+
+    public List<ProductStatusNoProductContainer> getCurrentStatusLinksContainers(Set<String> equipmentIds) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ProductStatusNoProductContainer> q = cb.createQuery(ProductStatusNoProductContainer.class);
+        Root<ProductToStatus> r = q.from(ProductToStatus.class);
+        Join<ProductToStatus,Product> join=cb.treat(r.join(Baselink_.leftside),Product.class);
+        Predicate pred = cb.and(join.get(Product_.id).in(equipmentIds),cb.isTrue(r.get(ProductToStatus_.enabled)));
+
+
+        q.select(cb.construct(ProductStatusNoProductContainer.class,r.get(ProductToStatus_.id),join.get(Product_.id),cb.treat(r.get(Baselink_.rightside),ProductStatus.class))).where(pred);
+        TypedQuery<ProductStatusNoProductContainer> query = em.createQuery(q);
         return query.getResultList();
     }
 
