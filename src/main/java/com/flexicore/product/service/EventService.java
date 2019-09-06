@@ -105,9 +105,10 @@ public class EventService implements IEventService {
         Map<String, String> statusMap = equipmentService.getAllProductStatus(new ProductStatusFiltering(), null).getList().parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f.getName(), (a, b) -> a));
         File file = new File(MediaService.generateNewPathForFileResource("EquipmentStatusReport", securityContext.getUser()) + ".csv");
         CSVFormat format = CSVFormat.DEFAULT.withHeader("Entry Date", "Status", "Count");
+        Map<String,List<EquipmentByStatusEntry>> map=repository.listAllEquipmentByStatusEntry(new EquipmentByStatusEntryFiltering().setEquipmentByStatusEventIdFilterings(events.parallelStream().map(f->new EquipmentByStatusEventIdFiltering().setId(f.getId())).collect(Collectors.toSet()))).parallelStream().collect(Collectors.groupingBy(f->f.getEquipmentByStatusEventId()));
         try (CSVPrinter csvPrinter = new CSVPrinter(new BufferedWriter(new FileWriter(file)), format)) {
             for (EquipmentByStatusEvent lightsByStatusEvent : events) {
-                for (EquipmentByStatusEntry entry : lightsByStatusEvent.getEntries()) {
+                for (EquipmentByStatusEntry entry : map.getOrDefault(lightsByStatusEvent.getId(),new ArrayList<>())) {
                     String date = lightsByStatusEvent.getEventDate().toInstant().atZone(ZoneId.systemDefault()).format(dateTimeFormatter);
                     String name = statusMap.get(entry.getProductStatus());
                     long count = entry.getTotal();

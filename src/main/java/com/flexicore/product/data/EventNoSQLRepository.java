@@ -8,9 +8,7 @@ import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.containers.response.AggregationReportEntry;
 import com.flexicore.product.interfaces.IEventNoSqlRepository;
 import com.flexicore.product.interfaces.IEventService;
-import com.flexicore.product.model.Alert;
-import com.flexicore.product.model.DetailedEquipmentStatus;
-import com.flexicore.product.model.Event;
+import com.flexicore.product.model.*;
 import com.flexicore.product.request.AckEventsRequest;
 import com.flexicore.product.request.DetailedEquipmentFilter;
 import com.flexicore.security.SecurityContext;
@@ -38,6 +36,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Sorts.*;
 import static com.mongodb.client.model.Updates.set;
@@ -53,6 +52,8 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
 
     private static final String DETAILED_EQUIPMENT_STATUS_COLLECTION = "DETAILED_EQUIPMENT_STATUS";
     public static final String EQUIPMENT_BY_STATUS_ENTRY = "equipmentByStatusEntry";
+    private static final String EQUIPMENT_BY_STATUS_COLLECTION = "EQUIPMENT_BY_STATUS_COLLECTION";
+    public static final String EQUIPMENT_BY_STATUS_EVENT_ID = "equipmentByStatusEventId";
     @Inject
     private Logger logger;
     private static AtomicBoolean init = new AtomicBoolean(false);
@@ -63,6 +64,8 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
         IEventService.addClassForMongoCodec(Event.class);
         IEventService.addClassForMongoCodec(Alert.class);
         IEventService.addClassForMongoCodec(DetailedEquipmentStatus.class);
+        IEventService.addClassForMongoCodec(EquipmentByStatusEntry.class);
+
 
     }
 
@@ -280,6 +283,63 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin implemen
         MongoCollection<DetailedEquipmentStatus> collection = db.getCollection(DETAILED_EQUIPMENT_STATUS_COLLECTION, DetailedEquipmentStatus.class).withCodecRegistry(pojoCodecRegistry);
 
         Bson pred = getProcessErrorsPredicate(processErrorsFiltering);
+
+        return pred == null ? collection.count() : collection.count(pred);
+    }
+
+    public void massMergeEntries(List<EquipmentByStatusEntry> entries) {
+
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName);
+        MongoCollection<EquipmentByStatusEntry> collection = db.getCollection(EQUIPMENT_BY_STATUS_COLLECTION, EquipmentByStatusEntry.class).withCodecRegistry(pojoCodecRegistry);
+        collection.insertMany(entries);
+
+    }
+
+
+    public List<EquipmentByStatusEntry> listAllEquipmentByStatusEntry(EquipmentByStatusEntryFiltering processErrorsFiltering) {
+
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
+        MongoCollection<EquipmentByStatusEntry> collection = db.getCollection(EQUIPMENT_BY_STATUS_COLLECTION, EquipmentByStatusEntry.class).withCodecRegistry(pojoCodecRegistry);
+
+
+        Bson pred = getEquipmentByStatusPredicate(processErrorsFiltering);
+
+        FindIterable<EquipmentByStatusEntry> base = pred == null ? collection.find(EquipmentByStatusEntry.class) : collection.find(pred, EquipmentByStatusEntry.class);
+        FindIterable<EquipmentByStatusEntry> iter = base;
+        if (processErrorsFiltering.getCurrentPage() != null && processErrorsFiltering.getPageSize() != null && processErrorsFiltering.getCurrentPage() > -1 && processErrorsFiltering.getPageSize() > 0) {
+            iter.limit(processErrorsFiltering.getPageSize()).skip(processErrorsFiltering.getPageSize() * processErrorsFiltering.getCurrentPage());
+        }
+        List<EquipmentByStatusEntry> alerts = new ArrayList<>();
+        for (EquipmentByStatusEntry alert : iter) {
+            alerts.add(alert);
+        }
+        return alerts;
+    }
+
+    private Bson getEquipmentByStatusPredicate(EquipmentByStatusEntryFiltering processErrorsFiltering) {
+
+        Bson bson=null;
+        if(processErrorsFiltering.getEquipmentByStatusEventIdFilterings()!=null && !processErrorsFiltering.getEquipmentByStatusEventIdFilterings().isEmpty()){
+            Set<String> ids= processErrorsFiltering.getEquipmentByStatusEventIdFilterings().parallelStream().map(f->f.getId()).collect(Collectors.toSet());
+            Bson pred = in(EQUIPMENT_BY_STATUS_EVENT_ID,ids);
+            bson=bson==null?pred:and(bson, pred);
+        }
+
+        if (processErrorsFiltering.getNameLike() != null) {
+
+            Bson eq = Filters.eq(BASECLASS_NAME, processErrorsFiltering.getNameLike());
+            bson = bson == null ? eq : and(bson, eq);
+        }
+
+
+        return bson;
+    }
+
+    public long countAllEquipmentByStatusEntry(EquipmentByStatusEntryFiltering processErrorsFiltering) {
+        MongoDatabase db = mongoClient.getDatabase(mongoDBName).withCodecRegistry(pojoCodecRegistry);
+        MongoCollection<EquipmentByStatusEntry> collection = db.getCollection(EQUIPMENT_BY_STATUS_COLLECTION, EquipmentByStatusEntry.class).withCodecRegistry(pojoCodecRegistry);
+
+        Bson pred = getEquipmentByStatusPredicate(processErrorsFiltering);
 
         return pred == null ? collection.count() : collection.count(pred);
     }

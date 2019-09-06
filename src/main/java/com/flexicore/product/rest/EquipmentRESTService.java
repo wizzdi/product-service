@@ -259,6 +259,18 @@ public class EquipmentRESTService implements RestServicePlugin {
     }
 
 
+    @PUT
+    @Produces("application/json")
+    @Operation(summary = "setProductToStatusLinksName", description = "returns product stats grouped by status")
+    @Path("setProductToStatusLinksName")
+    public void setProductToStatusLinksName(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            @Context SecurityContext securityContext) {
+
+        service.setProductToStatusLinksName();
+    }
+
+
     @POST
     @Produces("application/json")
     @Operation(summary = "getProductGroupedByStatusAndType", description = "returns product stats grouped by status")
@@ -524,6 +536,18 @@ public class EquipmentRESTService implements RestServicePlugin {
             @Context SecurityContext securityContext) {
         service.validate(filter);
         return service.getAllDetailedEquipmentStatus(filter);
+
+    }
+
+    @POST
+    @Produces("application/json")
+    @Operation(summary = "getAllEquipmentByStatusEntry", description = "return getAllEquipmentByStatusEntry ")
+    @Path("getAllEquipmentByStatusEntry")
+    public PaginationResponse<EquipmentByStatusEntry> getAllEquipmentByStatusEntry(
+            @HeaderParam("authenticationKey") String authenticationKey,
+            EquipmentByStatusEntryFiltering filter,
+            @Context SecurityContext securityContext) {
+        return service.getAllEquipmentByStatusEntries(filter);
 
     }
 
