@@ -26,22 +26,15 @@ import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.*;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Context;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -202,9 +195,14 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
-        List<T> list = equipmentRepository.getAllEquipments(c, filtering, securityContext);
+        List<T> list = listAllEquipments(c, filtering, securityContext);
         long total = countAllEquipments(c, filtering, securityContext);
         return new PaginationResponse<>(list, filtering, total);
+    }
+
+    @Override
+    public <T extends Equipment> List<T> listAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
+        return equipmentRepository.getAllEquipments(c, filtering, securityContext);
     }
 
     public PaginationResponse<Gateway> getAllGateways(GatewayFiltering filtering, SecurityContext securityContext) {
