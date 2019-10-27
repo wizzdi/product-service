@@ -25,7 +25,7 @@ public class ProductTypeInvoker implements ListingInvoker<ProductType,ProductTyp
     @InvokerMethodInfo(displayName = "listAllProductTypes",description = "lists all Product types",relatedClasses = {ProductType.class})
 
     public PaginationResponse<ProductType> listAll(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
-        return equipmentService.getAllProductTypes(productTypeFiltering, null);
+        return equipmentService.getAllProductTypes(productTypeFiltering, securityContext);
     }
 
     @Override

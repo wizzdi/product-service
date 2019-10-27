@@ -1,6 +1,5 @@
 package com.flexicore.product.data;
 
-import com.flexicore.annotations.InjectProperties;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.*;
@@ -153,28 +152,34 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<ProductStatus> q = cb.createQuery(ProductStatus.class);
         Root<ProductStatus> r = q.from(ProductStatus.class);
-
         List<Predicate> preds = new ArrayList<>();
-        if(productStatusFiltering.getProductType()!=null){
-            Join<ProductStatus,ProductTypeToProductStatus> join=r.join(ProductStatus_.productTypeToProductStatusList);
-            preds.add(cb.equal(join.get(Baselink_.leftside),productStatusFiltering.getProductType()));
-
-        }
+        addProductStatusPredicates(productStatusFiltering,q, cb, r, preds,securityContext);
         QueryInformationHolder<ProductStatus> queryInformationHolder = new QueryInformationHolder<>(productStatusFiltering, ProductStatus.class, securityContext);
         return getAllFiltered(queryInformationHolder,preds,cb,q,r);
+    }
+
+    public void addProductStatusPredicates(ProductStatusFiltering productStatusFiltering,CriteriaQuery<?> q, CriteriaBuilder cb, Root<ProductStatus> r, List<Predicate> preds,SecurityContext securityContext) {
+        if (productStatusFiltering.getProductType() != null) {
+            Join<ProductStatus, ProductTypeToProductStatus> join = r.join(ProductStatus_.productTypeToProductStatusList);
+            preds.add(cb.equal(join.get(Baselink_.leftside), productStatusFiltering.getProductType()));
+
+        }
+
+        if(productStatusFiltering.getEquipmentFiltering()!=null){
+            Subquery<String> subquery= getUsedProductsSubQuery(productStatusFiltering.getEquipmentFiltering(), q, cb, securityContext);
+            Join<ProductStatus,ProductToStatus> productLinkJoin=r.join(ProductStatus_.productToStatusList);
+            Join<ProductToStatus,Product> productJoin=cb.treat(productLinkJoin.join(Baselink_.leftside),Product.class);
+
+            preds.add(cb.and(productJoin.get(Product_.id).in(subquery),cb.isTrue(productLinkJoin.get(ProductToStatus_.enabled))));
+        }
     }
 
     public long countAllProductStatus(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
         CriteriaQuery<Long> q = cb.createQuery(Long.class);
         Root<ProductStatus> r = q.from(ProductStatus.class);
-
         List<Predicate> preds = new ArrayList<>();
-        if(productStatusFiltering.getProductType()!=null){
-            Join<ProductStatus,ProductTypeToProductStatus> join=r.join(ProductStatus_.productTypeToProductStatusList);
-            preds.add(cb.equal(join.get(Baselink_.leftside),productStatusFiltering.getProductType()));
-
-        }
+        addProductStatusPredicates(productStatusFiltering,q, cb, r, preds,securityContext);
         QueryInformationHolder<ProductStatus> queryInformationHolder = new QueryInformationHolder<>(productStatusFiltering, ProductStatus.class, securityContext);
         return countAllFiltered(queryInformationHolder,preds,cb,q,r);
     }
@@ -436,4 +441,47 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         TypedQuery<EquipmentStatusGroup> query = em.createQuery(q);
         return query.getResultList();
     }
+
+    public Long countAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Long> q = cb.createQuery(Long.class);
+        Root<ProductType> r = q.from(ProductType.class);
+        List<Predicate> preds = new ArrayList<>();
+        addProductTypePredicates(productTypeFiltering,preds,q,cb,r,securityContext);
+        QueryInformationHolder<ProductType> queryInformationHolder = new QueryInformationHolder<>(productTypeFiltering, ProductType.class, securityContext);
+        return countAllFiltered(queryInformationHolder,preds,cb,q,r);
+    }
+
+    public List<ProductType> listAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<ProductType> q = cb.createQuery(ProductType.class);
+        Root<ProductType> r = q.from(ProductType.class);
+        List<Predicate> preds = new ArrayList<>();
+        addProductTypePredicates(productTypeFiltering,preds,q,cb,r,securityContext);
+        QueryInformationHolder<ProductType> queryInformationHolder = new QueryInformationHolder<>(productTypeFiltering, ProductType.class, securityContext);
+        return getAllFiltered(queryInformationHolder,preds,cb,q,r);
+    }
+
+    private void addProductTypePredicates(ProductTypeFiltering productTypeFiltering, List<Predicate> preds, CriteriaQuery<?> q, CriteriaBuilder cb, Root<ProductType> r,SecurityContext securityContext) {
+        if(productTypeFiltering.getEquipmentFiltering()!=null ){
+            Subquery<String> subquery= getUsedProductsSubQuery(productTypeFiltering.getEquipmentFiltering(),q, cb, securityContext);
+            Join<ProductType,Product> productJoin=r.join(ProductType_.products);
+            preds.add(productJoin.get(Product_.id).in(subquery));
+        }
+    }
+
+    private Subquery<String> getUsedProductsSubQuery(EquipmentFiltering equipmentFiltering, CriteriaQuery<?> q, CriteriaBuilder cb, SecurityContext securityContext) {
+        Subquery<String> subquery=q.subquery(String.class);
+        Root<Equipment> sr=subquery.from(Equipment.class);
+        List<Predicate> subPreds=new ArrayList<>();
+        IEquipmentRepository.addEquipmentFiltering(equipmentFiltering,cb,sr,subPreds);
+        QueryInformationHolder<Equipment> queryInformationHolder=new QueryInformationHolder<>(equipmentFiltering,Equipment.class,securityContext);
+        prepareQuery(queryInformationHolder,subPreds,cb,subquery,sr);
+        Predicate[] subPredsArr=new Predicate[subPreds.size()];
+        subPreds.toArray(subPredsArr);
+        subquery.select(sr.get(Equipment_.id)).where(subPredsArr);
+        return subquery;
+    }
+
+
 }

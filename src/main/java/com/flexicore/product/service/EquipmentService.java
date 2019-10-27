@@ -543,10 +543,14 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public PaginationResponse<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
-        QueryInformationHolder<ProductType> queryInformationHolder = new QueryInformationHolder<>(productTypeFiltering, ProductType.class, securityContext);
-        List<ProductType> list = equipmentRepository.getAllFiltered(queryInformationHolder);
-        long count = equipmentRepository.countAllFiltered(queryInformationHolder);
+        List<ProductType> list = listAllProductTypes(productTypeFiltering,securityContext);
+        long count = equipmentRepository.countAllProductTypes(productTypeFiltering,securityContext);
         return new PaginationResponse<>(list, productTypeFiltering, count);
+    }
+
+    @Override
+    public List<ProductType> listAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
+        return equipmentRepository.listAllProductTypes(productTypeFiltering,securityContext);
     }
 
     @Override

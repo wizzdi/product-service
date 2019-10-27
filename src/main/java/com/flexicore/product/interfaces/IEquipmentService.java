@@ -73,6 +73,8 @@ public interface IEquipmentService extends ServicePlugin,InitPlugin {
 
     PaginationResponse<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext);
 
+    List<ProductType> listAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext);
+
     PaginationResponse<ProductStatus> getAllProductStatus(ProductStatusFiltering productTypeFiltering, SecurityContext securityContext);
 
     ProductType getOrCreateProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext);
