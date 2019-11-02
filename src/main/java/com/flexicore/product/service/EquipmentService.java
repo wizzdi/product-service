@@ -192,6 +192,9 @@ public class EquipmentService implements IEquipmentService {
         return equipmentRepository.getByIdOrNull(id, c, batchString, securityContext);
     }
 
+    public <T> T findByIdOrNull(Class<T> type, String id) {
+        return equipmentRepository.findByIdOrNull(type, id);
+    }
 
     @Override
     public <T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c, EquipmentFiltering filtering, SecurityContext securityContext) {
@@ -243,7 +246,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public <T extends Equipment> T createEquipmentNoMerge(Class<T> c, EquipmentCreate equipmentCreate, SecurityContext securityContext) {
-        T equipment = Baseclass.createUnckehcked(c, equipmentCreate.getName(), securityContext);
+        T equipment = Baseclass.createUnchecked(c, equipmentCreate.getName(), securityContext);
         equipment.Init();
         updateEquipmentNoMerge(equipmentCreate, equipment);
         return equipment;
@@ -543,14 +546,14 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public PaginationResponse<ProductType> getAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
-        List<ProductType> list = listAllProductTypes(productTypeFiltering,securityContext);
-        long count = equipmentRepository.countAllProductTypes(productTypeFiltering,securityContext);
+        List<ProductType> list = listAllProductTypes(productTypeFiltering, securityContext);
+        long count = equipmentRepository.countAllProductTypes(productTypeFiltering, securityContext);
         return new PaginationResponse<>(list, productTypeFiltering, count);
     }
 
     @Override
     public List<ProductType> listAllProductTypes(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
-        return equipmentRepository.listAllProductTypes(productTypeFiltering,securityContext);
+        return equipmentRepository.listAllProductTypes(productTypeFiltering, securityContext);
     }
 
     @Override
@@ -691,7 +694,7 @@ public class EquipmentService implements IEquipmentService {
     }
 
     @Override
-    public <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext) {
+    public <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, SecurityContext securityContext) {
         Class<T> c = (Class<T>) Equipment.class;
         if (filtering.getResultType() != null && !filtering.getResultType().isEmpty()) {
             try {
@@ -789,7 +792,7 @@ public class EquipmentService implements IEquipmentService {
 
         if (filtering.getEquipmentByStatusEntryIds() != null && !filtering.getEquipmentByStatusEntryIds().isEmpty()) {
             Set<String> ids = filtering.getEquipmentByStatusEntryIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-            Set<EquipmentIdFiltering> equipmentIds=listAllDetailedEquipmentStatus(new DetailedEquipmentFilter().setEquipmentByStatusEntryIds(ids)).parallelStream().map(f->new EquipmentIdFiltering().setId(f.getEquipmentId())).collect(Collectors.toSet());
+            Set<EquipmentIdFiltering> equipmentIds = listAllDetailedEquipmentStatus(new DetailedEquipmentFilter().setEquipmentByStatusEntryIds(ids)).parallelStream().map(f -> new EquipmentIdFiltering().setId(f.getEquipmentId())).collect(Collectors.toSet());
             filtering.setEquipmentIds(equipmentIds);
         }
 
@@ -1040,12 +1043,16 @@ public class EquipmentService implements IEquipmentService {
         return update;
     }
 
-    public void validateProductStatusFiltering(ProductStatusFiltering productTypeFiltering, SecurityContext securityContext) {
-        ProductType productType = productTypeFiltering.getProductTypeId() != null ? getByIdOrNull(productTypeFiltering.getProductTypeId().getId(), ProductType.class, null, securityContext) : null;
-        if (productType == null && productTypeFiltering.getProductTypeId() != null) {
-            throw new BadRequestException("No Product Type with id " + productTypeFiltering.getProductTypeId().getId());
+    public void validateProductStatusFiltering(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
+        ProductType productType = productStatusFiltering.getProductTypeId() != null ? getByIdOrNull(productStatusFiltering.getProductTypeId().getId(), ProductType.class, null, securityContext) : null;
+        if (productType == null && productStatusFiltering.getProductTypeId() != null) {
+            throw new BadRequestException("No Product Type with id " + productStatusFiltering.getProductTypeId().getId());
         }
-        productTypeFiltering.setProductType(productType);
+        productStatusFiltering.setProductType(productType);
+        EquipmentFiltering equipmentFiltering = productStatusFiltering.getEquipmentFiltering();
+        if (equipmentFiltering != null) {
+            validateFiltering(equipmentFiltering, securityContext);
+        }
     }
 
     public PaginationResponse<Neighbourhood> getAllNeighbourhoods(NeighbourhoodFiltering neighbourhoodFiltering, SecurityContext securityContext) {
@@ -1149,16 +1156,16 @@ public class EquipmentService implements IEquipmentService {
         //add missing product types and statuses
         Map<String, Map<String, EquipmentStatusGroup>> productGroupedByStatusAndType = productGroupedByStatusAndTypeList
                 .parallelStream().collect(Collectors.groupingBy(f -> f.getProductTypeId(), Collectors.toMap(f -> f.getStatusId(), f -> f)));
-        List<ProductTypeToProductStatus> productToStatusList = equipmentRepository.getAllFiltered(new QueryInformationHolder<>(ProductTypeToProductStatus.class,securityContext));
+        List<ProductTypeToProductStatus> productToStatusList = equipmentRepository.getAllFiltered(new QueryInformationHolder<>(ProductTypeToProductStatus.class, securityContext));
         for (ProductTypeToProductStatus productTypeToProductStatus : productToStatusList) {
             ProductType productType = productTypeToProductStatus.getLeftside();
-            Map<String, EquipmentStatusGroup> statusMap = productGroupedByStatusAndType.computeIfAbsent(productType.getId(), f->new HashMap<>());
+            Map<String, EquipmentStatusGroup> statusMap = productGroupedByStatusAndType.computeIfAbsent(productType.getId(), f -> new HashMap<>());
             ProductStatus productStatus = productTypeToProductStatus.getRightside();
             EquipmentStatusGroup item = statusMap.get(productStatus.getId());
-            if(item==null){
-                item=new EquipmentStatusGroup(0L, productStatus.getId(), productStatus.getName(), productStatus.getDescription(),
-                        productType.getId(),productType.getName());
-                statusMap.put(productStatus.getId(),item);
+            if (item == null) {
+                item = new EquipmentStatusGroup(0L, productStatus.getId(), productStatus.getName(), productStatus.getDescription(),
+                        productType.getId(), productType.getName());
+                statusMap.put(productStatus.getId(), item);
                 productGroupedByStatusAndTypeList.add(item);
             }
 
@@ -1275,44 +1282,43 @@ public class EquipmentService implements IEquipmentService {
     }
 
 
-
     public List<EquipmentByStatusEvent> createEquipmentStatusEvent(EquipmentFiltering lightFiltering, SecurityContext securityContext) {
-        List<EquipmentByStatusEvent> events=new ArrayList<>();
-        List<DetailedEquipmentStatus> detailedEquipmentStatuses=new ArrayList<>();
-        List<EquipmentByStatusEntry> entries=new ArrayList<>();
+        List<EquipmentByStatusEvent> events = new ArrayList<>();
+        List<DetailedEquipmentStatus> detailedEquipmentStatuses = new ArrayList<>();
+        List<EquipmentByStatusEntry> entries = new ArrayList<>();
 
-        Map<String,String> productTypeToName=new HashMap<>();
-        Map<String,String> productStatusToName=new HashMap<>();
+        Map<String, String> productTypeToName = new HashMap<>();
+        Map<String, String> productStatusToName = new HashMap<>();
         for (Tenant tenant : securityContext.getTenants()) {
             EquipmentFiltering filteringInformationHolder = lightFiltering;
-            lightFiltering .setTenantIds(Collections.singletonList(new TenantIdFiltering().setId(tenant.getId())));
+            lightFiltering.setTenantIds(Collections.singletonList(new TenantIdFiltering().setId(tenant.getId())));
             List<EquipmentAndType> part;
-            Map<String,Map<String,Set<String>>> grouping=new HashMap<>();
+            Map<String, Map<String, Set<String>>> grouping = new HashMap<>();
             filteringInformationHolder.setPageSize(200);
             filteringInformationHolder.setCurrentPage(0);
-            while(!(part=equipmentRepository.getEquipmentAndType(Equipment.class,filteringInformationHolder,securityContext)).isEmpty()){
-                Set<String> ids=part.parallelStream().map(f->f.getId()).collect(Collectors.toSet());
-                Map<String,List<ProductStatusNoProductContainer>> statusMap=equipmentRepository.getCurrentStatusLinksContainers(ids).parallelStream().collect(Collectors.groupingBy(f->f.getProductId()));
+            while (!(part = equipmentRepository.getEquipmentAndType(Equipment.class, filteringInformationHolder, securityContext)).isEmpty()) {
+                Set<String> ids = part.parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+                Map<String, List<ProductStatusNoProductContainer>> statusMap = equipmentRepository.getCurrentStatusLinksContainers(ids).parallelStream().collect(Collectors.groupingBy(f -> f.getProductId()));
                 for (EquipmentAndType equipment : part) {
-                    if(equipment.getProductType()!=null){
-                        String productTypeId=equipment.getProductType().getId();
-                        productTypeToName.putIfAbsent(productTypeId,equipment.getProductType().getName());
-                        List<ProductStatusNoProductContainer> statuses=statusMap.get(equipment.getId());
+                    if (equipment.getProductType() != null) {
+                        String productTypeId = equipment.getProductType().getId();
+                        productTypeToName.putIfAbsent(productTypeId, equipment.getProductType().getName());
+                        List<ProductStatusNoProductContainer> statuses = statusMap.get(equipment.getId());
 
-                        if(statuses!=null){
+                        if (statuses != null) {
                             for (ProductStatusNoProductContainer status : statuses) {
-                                grouping.computeIfAbsent(productTypeId,f->new HashMap<>()).computeIfAbsent(status.getStatus().getId(),f->new HashSet<>()).add(equipment.getId());
-                                productStatusToName.putIfAbsent(status.getId(),status.getStatus().getName());
+                                grouping.computeIfAbsent(productTypeId, f -> new HashMap<>()).computeIfAbsent(status.getStatus().getId(), f -> new HashSet<>()).add(equipment.getId());
+                                productStatusToName.putIfAbsent(status.getId(), status.getStatus().getName());
                             }
                         }
                     }
 
                 }
-                filteringInformationHolder.setCurrentPage(filteringInformationHolder.getCurrentPage()+1);
+                filteringInformationHolder.setCurrentPage(filteringInformationHolder.getCurrentPage() + 1);
 
             }
             Instant now = Instant.now();
-            String dateString=now.toString();
+            String dateString = now.toString();
             Date date = Date.from(now);
 
             EquipmentByStatusEvent lightsByStatusEvent = new EquipmentByStatusEvent()
@@ -1326,7 +1332,7 @@ public class EquipmentService implements IEquipmentService {
                             .setProductStatus(productStatusEntry.getKey())
                             .setProductTypeId(productTypeEntry.getKey())
                             .setTotal(productStatusEntry.getValue().size())
-                            .setName(dateString+" "+productTypeToName.get(productTypeEntry.getKey()) +" "+ productStatusToName.get(productStatusEntry.getKey()));
+                            .setName(dateString + " " + productTypeToName.get(productTypeEntry.getKey()) + " " + productStatusToName.get(productStatusEntry.getKey()));
                     entries.add(equipmentByStatusEntry);
                     for (String equipmentId : productStatusEntry.getValue()) {
                         detailedEquipmentStatuses.add(new DetailedEquipmentStatus().setEquipmentId(equipmentId).setEquipmentByStatusEntry(equipmentByStatusEntry.getId()));
@@ -1345,15 +1351,16 @@ public class EquipmentService implements IEquipmentService {
         return events;
     }
 
-    public void validate(DetailedEquipmentFilter detailedEquipmentFilter){
-        if(detailedEquipmentFilter.getEquipmentByStatusEntryIds()==null|| detailedEquipmentFilter.getEquipmentByStatusEntryIds().isEmpty()){
+    public void validate(DetailedEquipmentFilter detailedEquipmentFilter) {
+        if (detailedEquipmentFilter.getEquipmentByStatusEntryIds() == null || detailedEquipmentFilter.getEquipmentByStatusEntryIds().isEmpty()) {
             throw new BadRequestException("EquipmentByStatusEntryIds must be non null and non empty");
         }
     }
-    public PaginationResponse<DetailedEquipmentStatus> getAllDetailedEquipmentStatus(DetailedEquipmentFilter detailedEquipmentFilter){
-        List<DetailedEquipmentStatus> list=listAllDetailedEquipmentStatus(detailedEquipmentFilter);
-        long count=repository.countAllDetailedEquipmentStatus(detailedEquipmentFilter);
-        return new PaginationResponse<>(list,detailedEquipmentFilter,count);
+
+    public PaginationResponse<DetailedEquipmentStatus> getAllDetailedEquipmentStatus(DetailedEquipmentFilter detailedEquipmentFilter) {
+        List<DetailedEquipmentStatus> list = listAllDetailedEquipmentStatus(detailedEquipmentFilter);
+        long count = repository.countAllDetailedEquipmentStatus(detailedEquipmentFilter);
+        return new PaginationResponse<>(list, detailedEquipmentFilter, count);
     }
 
     private List<DetailedEquipmentStatus> listAllDetailedEquipmentStatus(DetailedEquipmentFilter detailedEquipmentFilter) {
@@ -1362,20 +1369,40 @@ public class EquipmentService implements IEquipmentService {
 
 
     public PaginationResponse<EquipmentByStatusEntry> getAllEquipmentByStatusEntries(EquipmentByStatusEntryFiltering equipmentByStatusEntryFiltering) {
-        List<EquipmentByStatusEntry> list=repository.listAllEquipmentByStatusEntry(equipmentByStatusEntryFiltering);
-        long count=repository.countAllEquipmentByStatusEntry(equipmentByStatusEntryFiltering);
-        return new PaginationResponse<>(list,equipmentByStatusEntryFiltering,count);
+        List<EquipmentByStatusEntry> list = repository.listAllEquipmentByStatusEntry(equipmentByStatusEntryFiltering);
+        long count = repository.countAllEquipmentByStatusEntry(equipmentByStatusEntryFiltering);
+        return new PaginationResponse<>(list, equipmentByStatusEntryFiltering, count);
     }
 
     public void setProductToStatusLinksName() {
-        List<ProductTypeToProductStatus> productToStatusList = equipmentRepository.getAllFiltered(new QueryInformationHolder<>(ProductTypeToProductStatus.class,null));
-        List<Object> toMerge=new ArrayList<>();
+        List<ProductTypeToProductStatus> productToStatusList = equipmentRepository.getAllFiltered(new QueryInformationHolder<>(ProductTypeToProductStatus.class, null));
+        List<Object> toMerge = new ArrayList<>();
         for (ProductTypeToProductStatus productTypeToProductStatus : productToStatusList) {
-            if(productTypeToProductStatus.getLeftside()!=null && productTypeToProductStatus.getRightside()!=null){
-                productTypeToProductStatus.setName(productTypeToProductStatus.getLeftside().getName() +"-"+productTypeToProductStatus.getRightside().getName());
+            if (productTypeToProductStatus.getLeftside() != null && productTypeToProductStatus.getRightside() != null) {
+                productTypeToProductStatus.setName(productTypeToProductStatus.getLeftside().getName() + "-" + productTypeToProductStatus.getRightside().getName());
                 toMerge.add(productTypeToProductStatus);
             }
         }
         equipmentRepository.massMerge(toMerge);
+    }
+
+    public void validate(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
+        EquipmentFiltering equipmentFiltering = productTypeFiltering.getEquipmentFiltering();
+        if (equipmentFiltering != null) {
+            validateFiltering(equipmentFiltering, securityContext);
+        }
+    }
+
+    public PaginationResponse<EquipmentFiltering> getAllEquipmentFiltering(FilteringInformationHolder equipmentFilteringFiltering, SecurityContext securityContext) {
+        List<EquipmentFiltering> list = equipmentRepository.getAll(EquipmentFiltering.class, equipmentFilteringFiltering.getPageSize(), equipmentFilteringFiltering.getCurrentPage());
+        long count = equipmentRepository.countAll(EquipmentFiltering.class);
+        return new PaginationResponse<>(list, equipmentFilteringFiltering, count);
+    }
+
+    public EquipmentFiltering createEquipmentFiltering(EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
+        validateFiltering(equipmentFiltering, securityContext);
+        equipmentFiltering.prepareForSave();
+        equipmentRepository.merge(equipmentFiltering);
+        return equipmentFiltering;
     }
 }

@@ -4,6 +4,7 @@ import com.flexicore.annotations.InjectProperties;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
 import com.flexicore.interfaces.InitPlugin;
+import com.flexicore.model.FilteringInformationHolder;
 import com.flexicore.model.territories.Neighbourhood;
 import com.flexicore.model.territories.Street;
 import com.flexicore.product.containers.request.EventFiltering;
@@ -62,6 +63,8 @@ public class Config implements InitPlugin {
             BaseclassService.registerFilterClass(NeighbourhoodFiltering.class, Neighbourhood.class);
             BaseclassService.registerFilterClass(StreetFiltering.class, Street.class);
             BaseclassService.registerFilterClass(EventFiltering.class,Event.class);
+            BaseclassService.registerFilterClass(FilteringInformationHolder.class,EquipmentFiltering.class);
+
             CrossLoaderResolver.registerClass(EventFiltering.class);
             BaseclassService.registerClass(EquipmentByStatusEvent.class);
             IEventService.addClassForMongoCodec(EquipmentByStatusEvent.class);

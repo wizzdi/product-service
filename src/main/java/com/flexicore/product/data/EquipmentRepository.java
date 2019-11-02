@@ -483,5 +483,4 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         return subquery;
     }
 
-
 }

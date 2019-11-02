@@ -57,10 +57,6 @@ public class AlertFiltering extends EventFiltering {
         return  (AlertFiltering)super.setClazzName(clazzName);
     }
 
-    @Override
-    public FilteringInformationHolder setTenantIds(List<TenantIdFiltering> tenantIds) {
-        return super.setTenantIds(tenantIds);
-    }
 
     @Override
     public AlertFiltering setBaseclassNameLike(String baseclassNameLike) {

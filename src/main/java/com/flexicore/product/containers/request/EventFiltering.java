@@ -153,10 +153,7 @@ public class EventFiltering extends FilteringInformationHolder {
         return this;
     }
 
-    @Override
-    public FilteringInformationHolder setTenantIds(List<TenantIdFiltering> tenantIds) {
-        return super.setTenantIds(tenantIds);
-    }
+
 
     public Boolean getAcked() {
         return acked;

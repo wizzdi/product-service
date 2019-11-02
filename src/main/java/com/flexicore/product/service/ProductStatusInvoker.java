@@ -26,7 +26,7 @@ public class ProductStatusInvoker implements ListingInvoker<ProductStatus,Produc
 
     public PaginationResponse<ProductStatus> listAll(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
         equipmentService.validateProductStatusFiltering(productStatusFiltering,securityContext);
-        return equipmentService.getAllProductStatus(productStatusFiltering, securityContext);
+        return equipmentService.getAllProductStatus(productStatusFiltering, null);
     }
 
     @Override
