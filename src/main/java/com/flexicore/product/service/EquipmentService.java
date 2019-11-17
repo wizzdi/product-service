@@ -1110,12 +1110,37 @@ public class EquipmentService implements IEquipmentService {
         return update;
     }
 
+    public void validate(UpdateProductStatus updateProductStatus, SecurityContext securityContext) {
+        ProductStatus productStatus = updateProductStatus.getStatusId() != null ? getByIdOrNull(updateProductStatus.getStatusId(), ProductStatus.class, null, securityContext) : null;
+        if (productStatus == null) {
+            throw new BadRequestException("no productStatus with id " + updateProductStatus.getStatusId());
+        }
+        updateProductStatus.setProductStatus(productStatus);
+
+        Equipment equipment = updateProductStatus.getEquipmentId() != null ? getByIdOrNull(updateProductStatus.getEquipmentId(), Equipment.class, null, securityContext) : null;
+        if (equipment == null) {
+            throw new BadRequestException("no Equipment with id " + updateProductStatus.getEquipmentId());
+        }
+        updateProductStatus.setEquipment(equipment);
+    }
+    @Inject
+    private javax.enterprise.event.Event<ProductStatusChanged> productStatusChangedEvent;
+
     public boolean updateProductStatus(UpdateProductStatus updateProductStatus, SecurityContext securityContext) {
         List<Object> toMerge = new ArrayList<>();
         List<ProductToStatus> links = getStatusLinks(new HashSet<>(Collections.singletonList(updateProductStatus.getEquipment().getId())));
         updateProductStatus(updateProductStatus.getEquipment(), links, securityContext, toMerge, updateProductStatus.getProductStatus());
         equipmentRepository.massMerge(toMerge);
-        return !toMerge.isEmpty();
+        boolean updated = !toMerge.isEmpty();
+        if(updated){
+            ProductStatusChanged event = new ProductStatusChanged(updateProductStatus.getEquipment())
+                    .setStatusIds(new HashSet<>(Arrays.asList(updateProductStatus.getProductStatus().getId())));
+
+            repository.merge(event);
+            productStatusChangedEvent.fireAsync(event);
+        }
+        updateProductStatus.getEquipment();
+        return updated;
     }
 
 

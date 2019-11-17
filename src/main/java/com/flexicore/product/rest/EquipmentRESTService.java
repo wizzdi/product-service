@@ -461,40 +461,22 @@ public class EquipmentRESTService implements RestServicePlugin {
 
 
 
-    @Inject
-    private javax.enterprise.event.Event<ProductStatusChanged> productStatusChangedEvent;
+
 
     @PUT
     @Produces("application/json")
     @Operation(summary = "updateProductStatus", description = "Updates product status")
     @Path("updateProductStatus")
-    public void updateProductStatus(
+    public boolean updateProductStatus(
             @HeaderParam("authenticationKey") String authenticationKey,
             UpdateProductStatus updateProductStatus,
             @Context SecurityContext securityContext) {
-        ProductStatus productStatus = updateProductStatus.getStatusId() != null ? service.getByIdOrNull(updateProductStatus.getStatusId(), ProductStatus.class, null, securityContext) : null;
-        if (productStatus == null) {
-            throw new BadRequestException("no productStatus with id " + updateProductStatus.getStatusId());
-        }
-        updateProductStatus.setProductStatus(productStatus);
-
-        Equipment equipment = updateProductStatus.getEquipmentId() != null ? service.getByIdOrNull(updateProductStatus.getEquipmentId(), Equipment.class, null, securityContext) : null;
-        if (equipment == null) {
-            throw new BadRequestException("no Equipment with id " + updateProductStatus.getEquipmentId());
-        }
-        updateProductStatus.setEquipment(equipment);
-
-
-        if (service.updateProductStatus(updateProductStatus, securityContext)) {
-            ProductStatusChanged event = new ProductStatusChanged(equipment)
-                    .setStatusIds(new HashSet<>(Arrays.asList(updateProductStatus.getProductStatus().getId())));
-
-            eventService.merge(event);
-            productStatusChangedEvent.fireAsync(event);
-
-        }
+        service.validate(updateProductStatus, securityContext);
+        return service.updateProductStatus(updateProductStatus, securityContext);
 
     }
+
+
 
     @PUT
     @Produces("application/json")
