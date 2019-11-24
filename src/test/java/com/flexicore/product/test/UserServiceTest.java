@@ -222,8 +222,7 @@ public class UserServiceTest {
         SimpleModule mod = new SimpleModule();
         FieldSetContainerDeserializer<? extends Serializable> s = new FieldSetContainerDeserializer<>();
         mod.addDeserializer(FieldSetContainer.class, s);
-        PropertySetContainerDeserializer<? extends Serializable> s1 = new PropertySetContainerDeserializer<>();
-        mod.addDeserializer(PropertySetContainer.class, s1);
+
         mapper.registerModule(mod);
         JavaTimeModule module = new JavaTimeModule();
         mapper.registerModule(module);

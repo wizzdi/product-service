@@ -347,11 +347,6 @@ public class EquipmentService implements IEquipmentService {
         }
         equipmentCreate.setAddress(address);
 
-        BuildingFloor buildingFloor = equipmentCreate.getBuildingFloorId() != null ? getByIdOrNull(equipmentCreate.getBuildingFloorId(), BuildingFloor.class, null, securityContext) : null;
-        if (buildingFloor == null && equipmentCreate.getAddressId() != null) {
-            throw new BadRequestException("No BuildingFloor with Id " + equipmentCreate.getBuildingFloorId());
-        }
-        equipmentCreate.setBuildingFloor(buildingFloor);
 
     }
 
@@ -479,10 +474,6 @@ public class EquipmentService implements IEquipmentService {
             update = true;
         }
 
-        if (equipmentCreate.getBuildingFloor() != null && (equipment.getBuildingFloor() == null || !equipment.getBuildingFloor().getId().equals(equipmentCreate.getBuildingFloor().getId()))) {
-            equipment.setBuildingFloor(equipmentCreate.getBuildingFloor());
-            update = true;
-        }
         if (equipmentCreate.getSku() != null && !equipmentCreate.getSku().equals(equipment.getSku())) {
             equipment.setSku(equipmentCreate.getSku());
             update = true;
@@ -761,15 +752,6 @@ public class EquipmentService implements IEquipmentService {
             filtering.setStreets(streets);
         }
 
-        if (filtering.getBuildingFloorIds() != null && !filtering.getBuildingFloorIds().isEmpty()) {
-            Set<String> ids = filtering.getBuildingFloorIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-            List<BuildingFloor> buildingFloors = listByIds(BuildingFloor.class, ids, securityContext);
-            ids.removeAll(buildingFloors.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
-            if (!ids.isEmpty()) {
-                throw new BadRequestException("No buildingFloors with ids " + ids);
-            }
-            filtering.setBuildingFloors(buildingFloors);
-        }
         if (filtering.getGatewayIds() != null && !filtering.getGatewayIds().isEmpty()) {
             Set<String> ids = filtering.getGatewayIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
             List<Gateway> gateways = getGateways(ids, securityContext);

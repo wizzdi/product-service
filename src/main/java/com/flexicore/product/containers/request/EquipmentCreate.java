@@ -5,10 +5,7 @@ import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.model.territories.Address;
-import com.flexicore.product.model.BuildingFloor;
-import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.Gateway;
-import com.flexicore.product.model.ProductType;
 
 import java.time.LocalDateTime;
 
@@ -55,11 +52,6 @@ public class EquipmentCreate extends ProductCreate{
     private Address address;
     private String addressId;
 
-    @IdRefFieldInfo(refType = BuildingFloor.class,list = false)
-
-    private String buildingFloorId;
-    @JsonIgnore
-    private BuildingFloor buildingFloor;
 
     private String descriptor3D;
 
@@ -190,24 +182,6 @@ public class EquipmentCreate extends ProductCreate{
         return this;
     }
 
-    public String getBuildingFloorId() {
-        return buildingFloorId;
-    }
-
-    public EquipmentCreate setBuildingFloorId(String buildingFloorId) {
-        this.buildingFloorId = buildingFloorId;
-        return this;
-    }
-
-    @JsonIgnore
-    public BuildingFloor getBuildingFloor() {
-        return buildingFloor;
-    }
-
-    public EquipmentCreate setBuildingFloor(BuildingFloor buildingFloor) {
-        this.buildingFloor = buildingFloor;
-        return this;
-    }
 
     public String getDescriptor3D() {
         return descriptor3D;

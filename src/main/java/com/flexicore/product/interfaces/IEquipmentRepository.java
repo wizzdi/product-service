@@ -5,21 +5,19 @@ import com.flexicore.interfaces.PluginRepository;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.iot.ExternalServer_;
 import com.flexicore.model.Baselink_;
-import com.flexicore.model.FileResource;
-import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.model.SortParameter;
 import com.flexicore.model.territories.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
 
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public interface IEquipmentRepository extends PluginRepository {
@@ -86,15 +84,6 @@ public interface IEquipmentRepository extends PluginRepository {
             Predicate pred = join1.get(Street_.id).in(gids);
             preds.add(pred);
         }
-
-        if (filtering.getBuildingFloors() != null && !filtering.getBuildingFloors().isEmpty()) {
-            Set<String> gids = filtering.getBuildingFloors().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-            Join<T, BuildingFloor> join = r.join(Equipment_.buildingFloor);
-            Predicate pred = join.get(BuildingFloor_.id).in(gids);
-            preds.add(pred);
-        }
-
-
         if (filtering.getExternalEquipmentIds() != null && !filtering.getExternalEquipmentIds().isEmpty()) {
             preds.add(r.get(Equipment_.externalId).in(filtering.getExternalEquipmentIds().parallelStream().map(f -> f.getId() + "").collect(Collectors.toSet())));
 

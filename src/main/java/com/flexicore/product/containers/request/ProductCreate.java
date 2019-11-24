@@ -6,6 +6,7 @@ import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
 import com.flexicore.model.Tenant;
 import com.flexicore.product.model.Gateway;
 import com.flexicore.product.model.Model;
+import com.flexicore.product.model.Product;
 import com.flexicore.product.model.ProductType;
 
 import java.time.LocalDateTime;
@@ -40,6 +41,17 @@ public class ProductCreate {
 
     @JsonIgnore
     private Tenant tenant;
+
+    public ProductCreate() {
+    }
+
+    public ProductCreate(Product other) {
+        this.name = other.getName();
+        this.description = other.getDescription();
+        this.sku = other.getSku();
+        this.ProductType = other.getProductType();
+        this.model = other.getModel();
+    }
 
     public String getName() {
         return name;
