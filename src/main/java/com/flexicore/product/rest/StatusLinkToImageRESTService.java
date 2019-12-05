@@ -3,8 +3,8 @@ package com.flexicore.product.rest;
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interceptors.DynamicResourceInjector;
-import com.flexicore.interceptors.SecurityImposer;
+
+import com.flexicore.annotations.ProtectedREST;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.product.containers.request.GroupCreate;
 import com.flexicore.product.containers.request.GroupUpdate;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
 @OperationsInside
-@Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
+@ProtectedREST
 @Path("plugins/statusLinkToImage")
 
 @Tag(name = "statusLinkToImage")

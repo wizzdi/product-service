@@ -3,8 +3,8 @@ package com.flexicore.product.rest;
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interceptors.DynamicResourceInjector;
-import com.flexicore.interceptors.SecurityImposer;
+
+import com.flexicore.annotations.ProtectedREST;
 import com.flexicore.model.FileResource;
 import com.flexicore.product.containers.request.CreateAggregatedReport;
 import com.flexicore.product.containers.request.EventFiltering;
@@ -33,7 +33,7 @@ import java.util.logging.Logger;
 
 @PluginInfo(version = 1)
 @OperationsInside
-@Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
+@ProtectedREST
 @Path("plugins/Events")
 
 @Tag(name = "Events")

@@ -6,6 +6,7 @@ import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.model.*;
 import com.flexicore.request.GetClassInfo;
 import com.flexicore.service.BaseclassService;
+import com.flexicore.utils.InheritanceUtils;
 import com.mongodb.client.model.Filters;
 import org.bson.conversions.Bson;
 
@@ -104,7 +105,7 @@ public interface IEventNoSqlRepository extends PluginRepository {
 
         String eventType = eventFiltering.getEventType();
         if (eventType != null) {
-            Set<String> names=BaseclassService.listInheritingClassesWithFilter(new GetClassInfo().setClassName(eventType)).getList().parallelStream().map(f->f.getClazz().getCanonicalName()).collect(Collectors.toSet());
+            Set<String> names= InheritanceUtils.listInheritingClassesWithFilter(new GetClassInfo().setClassName(eventType)).getList().parallelStream().map(f->f.getClazz().getCanonicalName()).collect(Collectors.toSet());
             names.add(eventType);
             Bson eq = in(EVENT_TYPE, names);
             pred = pred == null ? eq : and(pred, eq);

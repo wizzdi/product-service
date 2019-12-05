@@ -34,6 +34,9 @@ public class GatewayService implements IGatewayService {
     @Inject
     private Logger logger;
 
+    @Inject
+    private EncryptionService encryptionService;
+
     public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, List<String> batchString, SecurityContext securityContext) {
         return repository.getByIdOrNull(id, c, batchString, securityContext);
     }
@@ -107,9 +110,8 @@ public class GatewayService implements IGatewayService {
 
         String password = gatewayCreate.getPassword();
         if (password != null) {
-            EncryptionService.initEncryption(logger);
             try {
-                String encryptedPassword = Base64.getEncoder().encodeToString(EncryptionService.getAead().encrypt(password.getBytes(StandardCharsets.UTF_8), "test".getBytes()));
+                String encryptedPassword = Base64.getEncoder().encodeToString(encryptionService.encrypt(password.getBytes(StandardCharsets.UTF_8), "test".getBytes()));
                 if (!encryptedPassword.equals(gateway.getEncryptedPassword())) {
                     gateway.setEncryptedPassword(encryptedPassword);
                     update = true;

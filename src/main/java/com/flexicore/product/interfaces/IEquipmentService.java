@@ -101,6 +101,8 @@ public interface IEquipmentService extends ServicePlugin,InitPlugin {
 
     ProductType createProductType(ProductTypeCreate productTypeCreate, SecurityContext securityContext);
 
+    ProductType createProductTypeNoMerge(ProductTypeCreate productTypeCreate, SecurityContext securityContext);
+
     <T extends Equipment> Class<T> validateFiltering(EquipmentFiltering filtering, @Context SecurityContext securityContext);
 
     <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatus(Class<T> c, EquipmentFiltering equipmentFiltering, SecurityContext securityContext);

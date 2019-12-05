@@ -2,6 +2,7 @@ package com.flexicore.product.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.organization.model.Manufacturer;
+import com.flexicore.product.model.Model;
 
 public class ModelCreate {
     private String name;
@@ -9,6 +10,16 @@ public class ModelCreate {
     @JsonIgnore
     private Manufacturer manufacturer;
     private String manufacturerId;
+
+    public ModelCreate(Model other) {
+        this.name = other.getName();
+        this.description = other.getDescription();
+        this.manufacturer = other.getManufacturer();
+        this.manufacturerId = this.manufacturer!=null?this.manufacturer.getId():null;
+    }
+
+    public ModelCreate() {
+    }
 
     public String getName() {
         return name;

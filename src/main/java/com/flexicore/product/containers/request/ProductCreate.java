@@ -50,7 +50,9 @@ public class ProductCreate {
         this.description = other.getDescription();
         this.sku = other.getSku();
         this.ProductType = other.getProductType();
+        this.productTypeId=this.ProductType!=null?this.ProductType.getId():null;
         this.model = other.getModel();
+        this.modelId=this.model!=null?this.model.getId():null;
     }
 
     public String getName() {

@@ -1,16 +1,15 @@
 package com.flexicore.product.websocket;
 
+import com.flexicore.annotations.Protected;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Update;
 import com.flexicore.annotations.rest.Write;
-import com.flexicore.interceptors.SecurityImposer;
 import com.flexicore.interfaces.WebSocketPlugin;
 import com.flexicore.product.websocket.encoders.EventsWSMessageEncoder;
 import com.flexicore.product.websocket.service.EventSender;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
-import javax.interceptor.Interceptors;
 import javax.websocket.CloseReason;
 import javax.websocket.OnClose;
 import javax.websocket.OnOpen;
@@ -24,7 +23,7 @@ import java.util.logging.Logger;
  */
 @ServerEndpoint(value = "/eventsWS/{authenticationKey}",
         encoders = {EventsWSMessageEncoder.class})
-@Interceptors({SecurityImposer.class})
+@Protected
 @PluginInfo(version = 1)
 public class EventsWS implements WebSocketPlugin {
 

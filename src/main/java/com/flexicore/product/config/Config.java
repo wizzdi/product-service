@@ -16,6 +16,7 @@ import com.flexicore.product.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.product.request.ProductStatusChanged;
 import com.flexicore.product.request.UpdateEquipmentParameters;
 import com.flexicore.service.BaseclassService;
+import com.flexicore.utils.InheritanceUtils;
 
 import javax.inject.Inject;
 import java.util.Properties;
@@ -66,7 +67,7 @@ public class Config implements InitPlugin {
             BaseclassService.registerFilterClass(FilteringInformationHolder.class,EquipmentFiltering.class);
 
             CrossLoaderResolver.registerClass(EventFiltering.class);
-            BaseclassService.registerClass(EquipmentByStatusEvent.class);
+            InheritanceUtils.registerClass(EquipmentByStatusEvent.class);
             IEventService.addClassForMongoCodec(EquipmentByStatusEvent.class);
             IEventService.addClassForMongoCodec(EquipmentByStatusEntry.class);
             IEventService.addClassForMongoCodec(ProductStatusChanged.class);

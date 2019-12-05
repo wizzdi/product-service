@@ -23,7 +23,7 @@ import com.flexicore.request.TenantFilter;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassService;
 import com.flexicore.service.FileResourceService;
-import com.flexicore.service.MediaService;
+
 import com.flexicore.service.TenantService;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -103,7 +103,7 @@ public class EventService implements IEventService {
         List<EquipmentByStatusEvent> events = getAllEvents(lightStatusEventFilter, EquipmentByStatusEvent.class).getList();
 
         Map<String, String> statusMap = equipmentService.getAllProductStatus(new ProductStatusFiltering(), null).getList().parallelStream().collect(Collectors.toMap(f -> f.getId(), f -> f.getName(), (a, b) -> a));
-        File file = new File(MediaService.generateNewPathForFileResource("EquipmentStatusReport", securityContext.getUser()) + ".csv");
+        File file = new File(FileResourceService.generateNewPathForFileResource("EquipmentStatusReport", securityContext.getUser()) + ".csv");
         CSVFormat format = CSVFormat.DEFAULT.withHeader("Entry Date", "Status", "Count");
         Map<String,List<EquipmentByStatusEntry>> map=repository.listAllEquipmentByStatusEntry(new EquipmentByStatusEntryFiltering().setEquipmentByStatusEventIdFilterings(events.parallelStream().map(f->new EquipmentByStatusEventIdFiltering().setId(f.getId())).collect(Collectors.toSet()))).parallelStream().collect(Collectors.groupingBy(f->f.getEquipmentByStatusEventId()));
         try (CSVPrinter csvPrinter = new CSVPrinter(new BufferedWriter(new FileWriter(file)), format)) {

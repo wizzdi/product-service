@@ -26,6 +26,7 @@ import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.*;
+import com.flexicore.utils.InheritanceUtils;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
@@ -80,6 +81,9 @@ public class EquipmentService implements IEquipmentService {
     @Inject
     @PluginInfo(version = 1)
     private EventNoSQLRepository repository;
+
+    @Inject
+    private EncryptionService encryptionService;
 
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
     private static AtomicBoolean init = new AtomicBoolean(false);
@@ -282,9 +286,8 @@ public class EquipmentService implements IEquipmentService {
 
         String password = equipmentCreate.getPassword();
         if (password != null) {
-            EncryptionService.initEncryption(logger);
             try {
-                String encryptedPassword = Base64.getEncoder().encodeToString(EncryptionService.getAead().encrypt(password.getBytes(StandardCharsets.UTF_8), "test".getBytes()));
+                String encryptedPassword = Base64.getEncoder().encodeToString(encryptionService.encrypt(password.getBytes(StandardCharsets.UTF_8), "test".getBytes()));
                 if (!encryptedPassword.equals(equipment.getEncryptedPassword())) {
                     equipment.setEncryptedPassword(encryptedPassword);
                     update = true;
@@ -672,7 +675,8 @@ public class EquipmentService implements IEquipmentService {
         return productType;
     }
 
-    private ProductType createProductTypeNoMerge(ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
+    @Override
+    public ProductType createProductTypeNoMerge(ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
         ProductType productType = ProductType.s().CreateUnchecked(productTypeCreate.getName(), securityContext);
         productType.Init();
         productType.setId(getProductTypeId(productTypeCreate.getName()));
@@ -703,7 +707,7 @@ public class EquipmentService implements IEquipmentService {
         }
         if (!filtering.getTypesToReturn().isEmpty()) {
             Set<String> canonicalNames = filtering.getTypesToReturnIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-            List<Class<?>> classes = BaseclassService.listInheritingClassesWithFilter(new GetClassInfo().setClassName(c.getCanonicalName())).getList().parallelStream().filter(f -> canonicalNames.contains(f.getClazz().getCanonicalName())).map(f -> f.getClazz()).collect(Collectors.toList());
+            List<Class<?>> classes = InheritanceUtils.listInheritingClassesWithFilter(new GetClassInfo().setClassName(c.getCanonicalName())).getList().parallelStream().filter(f -> canonicalNames.contains(f.getClazz().getCanonicalName())).map(f -> f.getClazz()).collect(Collectors.toList());
             filtering.setTypesToReturn(classes);
 
         }

@@ -30,6 +30,9 @@ public class ExternalServerService implements IExternalServerService {
     @PluginInfo(version = 1)
     private EquipmentService equipmentService;
 
+    @Inject
+    private EncryptionService encryptionService;
+
     @Override
     public boolean updateExternalServerNoMerge(ExternalServerCreate externalServerCreate, ExternalServer externalServer) {
         boolean update = equipmentService.updateEquipmentNoMerge(externalServerCreate,externalServer);
@@ -74,9 +77,8 @@ public class ExternalServerService implements IExternalServerService {
         }
         String password = externalServerCreate.getPassword();
 
-        EncryptionService.initEncryption(logger);
         try {
-            String encryptedPassword = Base64.getEncoder().encodeToString(EncryptionService.getAead().encrypt(password.getBytes(StandardCharsets.UTF_8), SALT.getBytes()));
+            String encryptedPassword = Base64.getEncoder().encodeToString(encryptionService.encrypt(password.getBytes(StandardCharsets.UTF_8), SALT.getBytes()));
             if (!encryptedPassword.equals(externalServerUser.getPassword())) {
                 externalServerUser.setPassword(encryptedPassword);
                 update = true;
@@ -90,7 +92,6 @@ public class ExternalServerService implements IExternalServerService {
 
     @Override
     public String getDecryptedPassword(String encryptedPassword) throws GeneralSecurityException {
-        EncryptionService.initEncryption(logger);
-        return new String(EncryptionService.getAead().decrypt(Base64.getDecoder().decode(encryptedPassword),SALT.getBytes()),StandardCharsets.UTF_8);
+        return new String(encryptionService.decrypt(Base64.getDecoder().decode(encryptedPassword),SALT.getBytes()),StandardCharsets.UTF_8);
     }
 }

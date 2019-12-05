@@ -3,8 +3,8 @@ package com.flexicore.product.rest;
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interceptors.DynamicResourceInjector;
-import com.flexicore.interceptors.SecurityImposer;
+
+import com.flexicore.annotations.ProtectedREST;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.organization.model.Manufacturer;
 import com.flexicore.product.request.ManufacturerCreate;
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 
 @PluginInfo(version = 1)
 @OperationsInside
-@Interceptors({SecurityImposer.class, DynamicResourceInjector.class})
+@ProtectedREST
 @Path("plugins/Manufacturer")
 
 @Tag(name = "Manufacturer")
