@@ -1,8 +1,10 @@
 package com.flexicore.product.iot.request;
 
+import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.product.containers.request.EquipmentCreate;
 
 public class ExternalServerCreate extends EquipmentCreate {
+    @FieldInfo
     private String url;
 
 

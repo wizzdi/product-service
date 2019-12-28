@@ -8,6 +8,7 @@ import com.flexicore.product.model.GatewayFiltering;
 import com.flexicore.product.request.GatewayUpdate;
 import com.flexicore.security.SecurityContext;
 
+import java.security.GeneralSecurityException;
 import java.util.List;
 
 public interface IGatewayService extends ServicePlugin {
@@ -28,4 +29,6 @@ public interface IGatewayService extends ServicePlugin {
     boolean updateGatewayNoMerge(GatewayCreate gatewayCreate, Gateway gateway);
 
     Gateway updateGateway(GatewayUpdate gatewayUpdate, SecurityContext securityContext);
+
+    String getDecryptedPassword(String encryptedPassword) throws GeneralSecurityException;
 }

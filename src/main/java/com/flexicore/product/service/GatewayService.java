@@ -15,6 +15,7 @@ import com.flexicore.service.EncryptionService;
 
 import javax.inject.Inject;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
@@ -23,6 +24,7 @@ import java.util.logging.Logger;
 @PluginInfo(version = 1)
 public class GatewayService implements IGatewayService {
 
+    public static final String SALT = "test";
     @Inject
     @PluginInfo(version = 1)
     private GatewayRepository repository;
@@ -111,7 +113,7 @@ public class GatewayService implements IGatewayService {
         String password = gatewayCreate.getPassword();
         if (password != null) {
             try {
-                String encryptedPassword = Base64.getEncoder().encodeToString(encryptionService.encrypt(password.getBytes(StandardCharsets.UTF_8), "test".getBytes()));
+                String encryptedPassword = Base64.getEncoder().encodeToString(encryptionService.encrypt(password.getBytes(StandardCharsets.UTF_8), SALT.getBytes()));
                 if (!encryptedPassword.equals(gateway.getEncryptedPassword())) {
                     gateway.setEncryptedPassword(encryptedPassword);
                     update = true;
@@ -132,5 +134,10 @@ public class GatewayService implements IGatewayService {
             repository.merge(gateway);
         }
         return gateway;
+    }
+
+    @Override
+    public String getDecryptedPassword(String encryptedPassword) throws GeneralSecurityException {
+        return new String(encryptionService.decrypt(Base64.getDecoder().decode(encryptedPassword),SALT.getBytes()),StandardCharsets.UTF_8);
     }
 }
