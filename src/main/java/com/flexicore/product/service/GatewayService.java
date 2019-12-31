@@ -110,6 +110,7 @@ public class GatewayService implements IGatewayService {
             update = true;
         }
 
+
         String password = gatewayCreate.getPassword();
         if (password != null) {
             try {

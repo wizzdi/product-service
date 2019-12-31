@@ -350,6 +350,12 @@ public class EquipmentService implements IEquipmentService {
         }
         equipmentCreate.setAddress(address);
 
+        ExternalServer externalServer = equipmentCreate.getExternalServerId() != null ? getByIdOrNull(equipmentCreate.getExternalServerId(), ExternalServer.class, null, securityContext) : null;
+        if (externalServer == null && equipmentCreate.getExternalServerId() != null) {
+            throw new BadRequestException("No address with Id " + equipmentCreate.getExternalServerId());
+        }
+        equipmentCreate.setExternalServer(externalServer);
+
 
     }
 
