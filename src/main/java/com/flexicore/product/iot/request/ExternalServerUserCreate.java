@@ -1,13 +1,20 @@
 package com.flexicore.product.iot.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.interfaces.dynamic.FieldInfo;
+import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
 import com.flexicore.iot.ExternalServer;
 
 public class ExternalServerUserCreate {
+    @FieldInfo
     private String name;
+    @FieldInfo
     private String description;
+    @FieldInfo
     private String username;
+    @FieldInfo
     private String password;
+    @IdRefFieldInfo(refType = ExternalServer.class,list = false,mandatory = true)
     private String externalServerId;
     @JsonIgnore
     private ExternalServer externalServer;

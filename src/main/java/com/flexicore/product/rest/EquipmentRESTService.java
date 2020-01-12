@@ -450,9 +450,10 @@ public class EquipmentRESTService implements RestServicePlugin {
             @HeaderParam("authenticationKey") String authenticationKey,
             UpdateProductType updateProductType,
             @Context SecurityContext securityContext) {
-        ProductType productType = updateProductType.getId() != null ? service.getByIdOrNull(updateProductType.getId(), ProductType.class, null, securityContext) : null;
+        String id = updateProductType.getId();
+        ProductType productType = id != null ? service.getByIdOrNull(id, ProductType.class, null, securityContext) : null;
         if (productType == null) {
-            throw new BadRequestException("no ProductType with id " + updateProductType.getId());
+            throw new BadRequestException("no ProductType with id " + id);
         }
         updateProductType.setProductType(productType);
         service.validate(updateProductType, securityContext);

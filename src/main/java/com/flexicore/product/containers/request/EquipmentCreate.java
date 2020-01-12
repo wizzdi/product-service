@@ -42,6 +42,7 @@ public class EquipmentCreate extends ProductCreate{
     @FieldInfo(description = "serial")
 
     private String serial;
+    @FieldInfo
     private String externalId;
     @IdRefFieldInfo(refType = ExternalServer.class,list = false)
     private String externalServerId;

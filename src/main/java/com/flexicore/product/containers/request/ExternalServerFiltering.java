@@ -1,8 +1,8 @@
 package com.flexicore.product.containers.request;
 
-import com.flexicore.model.FilteringInformationHolder;
+import com.flexicore.product.model.EquipmentFiltering;
 
-public class ExternalServerFiltering extends FilteringInformationHolder {
+public class ExternalServerFiltering extends EquipmentFiltering {
 
 
 }

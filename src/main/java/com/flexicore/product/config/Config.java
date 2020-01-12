@@ -4,10 +4,12 @@ import com.flexicore.annotations.InjectProperties;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
 import com.flexicore.interfaces.InitPlugin;
+import com.flexicore.iot.ExternalServer;
 import com.flexicore.model.FilteringInformationHolder;
 import com.flexicore.model.territories.Neighbourhood;
 import com.flexicore.model.territories.Street;
 import com.flexicore.product.containers.request.EventFiltering;
+import com.flexicore.product.containers.request.ExternalServerFiltering;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.interfaces.IEventService;
@@ -71,6 +73,7 @@ public class Config implements InitPlugin {
             IEventService.addClassForMongoCodec(EquipmentByStatusEvent.class);
             IEventService.addClassForMongoCodec(EquipmentByStatusEntry.class);
             IEventService.addClassForMongoCodec(ProductStatusChanged.class);
+            BaseclassService.registerFilterClass(ExternalServerFiltering.class, ExternalServer.class);
 
 
 

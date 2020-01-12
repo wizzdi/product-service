@@ -1285,15 +1285,17 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public void validate(ProductTypeCreate updateProductType, SecurityContext securityContext) {
-        FileResource newIcon = updateProductType.getIconId() != null ? getByIdOrNull(updateProductType.getIconId(), FileResource.class, null, securityContext) : null;
-        if (newIcon == null && updateProductType.getIconId() != null) {
-            throw new BadRequestException("no file resource with id " + updateProductType.getIconId());
+        String iconId = updateProductType.getIconId();
+        FileResource newIcon = iconId != null ? getByIdOrNull(iconId, FileResource.class, null, securityContext) : null;
+        if (newIcon == null && iconId != null) {
+            throw new BadRequestException("no file resource with id " + iconId);
         }
         updateProductType.setIcon(newIcon);
 
-        FileResource diagram3d = updateProductType.getDiagram3DId() != null ? getByIdOrNull(updateProductType.getDiagram3DId(), FileResource.class, null, securityContext) : null;
-        if (diagram3d == null && updateProductType.getIconId() != null) {
-            throw new BadRequestException("no file resource with id " + updateProductType.getDiagram3DId());
+        String diagram3DId = updateProductType.getDiagram3DId();
+        FileResource diagram3d = diagram3DId != null ? getByIdOrNull(diagram3DId, FileResource.class, null, securityContext) : null;
+        if (diagram3d == null && diagram3DId != null) {
+            throw new BadRequestException("no file resource with id " + diagram3DId);
         }
         updateProductType.setDiagram3D(diagram3d);
     }

@@ -5,6 +5,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.iot.ExternalServerUser;
 import com.flexicore.product.containers.request.ExternalServerFiltering;
+import com.flexicore.product.data.ExternalServerRepository;
 import com.flexicore.product.interfaces.IExternalServerService;
 import com.flexicore.product.iot.request.ExternalServerCreate;
 import com.flexicore.product.iot.request.ExternalServerUserCreate;
@@ -16,6 +17,7 @@ import javax.ws.rs.BadRequestException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,6 +33,10 @@ public class ExternalServerService implements IExternalServerService {
     private EquipmentService equipmentService;
 
     @Inject
+    @PluginInfo(version = 1)
+    private ExternalServerRepository externalServerRepository;
+
+    @Inject
     private EncryptionService encryptionService;
 
     @Override
@@ -44,7 +50,9 @@ public class ExternalServerService implements IExternalServerService {
     }
 
 
+    public void validate(ExternalServerFiltering externalServerFiltering, SecurityContext securityContext){
 
+    }
 
 
     @Override
@@ -93,5 +101,11 @@ public class ExternalServerService implements IExternalServerService {
     @Override
     public String getDecryptedPassword(String encryptedPassword) throws GeneralSecurityException {
         return new String(encryptionService.decrypt(Base64.getDecoder().decode(encryptedPassword),SALT.getBytes()),StandardCharsets.UTF_8);
+    }
+
+    public PaginationResponse<ExternalServer> getAllExternalServers(ExternalServerFiltering externalServerFiltering, SecurityContext securityContext) {
+        List<ExternalServer> list=externalServerRepository.listAllExternalServers(externalServerFiltering,securityContext);
+        long count = externalServerRepository.countAllExternalServers(externalServerFiltering,securityContext);
+        return new PaginationResponse<>(list,externalServerFiltering,count);
     }
 }
