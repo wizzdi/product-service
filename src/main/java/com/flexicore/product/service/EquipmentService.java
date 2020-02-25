@@ -30,7 +30,6 @@ import com.flexicore.utils.InheritanceUtils;
 
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.Context;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -306,18 +305,29 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public void updateProductStatus(Product product, List<ProductToStatus> allExistingStatus, SecurityContext securityContext, List<Object> toMerge, ProductStatus newStatus) {
+        updateProductStatus(product, allExistingStatus, securityContext, toMerge, Collections.singletonList(newStatus));
+    }
+
+
+    @Override
+    public void updateProductStatus(Product product, List<ProductToStatus> allExistingStatus, SecurityContext securityContext, List<Object> toMerge, List<ProductStatus> newStatuses) {
         Map<String, ProductToStatus> available = allExistingStatus.parallelStream().collect(Collectors.toMap(f -> f.getRightside().getId(), f -> f, (a, b) -> a));
-        ProductToStatus link = available.get(newStatus.getId());
-        if (link == null) {
-            link = createProductToProductStatusLinkNoMerge(new ProductStatusToProductCreate().setProduct(product).setProductStatus(newStatus), securityContext);
-            available.put(newStatus.getId(), link);
-            allExistingStatus.add(link);
-            toMerge.add(link);
+        Set<String> ids=newStatuses.stream().map(f->f.getId()).collect(Collectors.toSet());
+        for (ProductStatus newStatus : newStatuses) {
+           ProductToStatus link= available.get(newStatus.getId());
+            if (link == null) {
+                link = createProductToProductStatusLinkNoMerge(new ProductStatusToProductCreate().setProduct(product).setProductStatus(newStatus), securityContext);
+                available.put(newStatus.getId(), link);
+                allExistingStatus.add(link);
+                toMerge.add(link);
+            }
+
         }
+
         for (Map.Entry<String, ProductToStatus> entry : available.entrySet()) {
-            boolean expected = entry.getKey().equals(newStatus.getId());
-            if (entry.getValue().isEnabled() != expected) {
-                entry.getValue().setEnabled(expected);
+            boolean statusEnabled = ids.contains(entry.getKey());
+            if (entry.getValue().isEnabled() != statusEnabled) {
+                entry.getValue().setEnabled(statusEnabled);
                 toMerge.add(entry.getValue());
             }
         }
@@ -1115,6 +1125,7 @@ public class EquipmentService implements IEquipmentService {
         }
         updateProductStatus.setEquipment(equipment);
     }
+
     @Inject
     private javax.enterprise.event.Event<ProductStatusChanged> productStatusChangedEvent;
 
@@ -1124,7 +1135,7 @@ public class EquipmentService implements IEquipmentService {
         updateProductStatus(updateProductStatus.getEquipment(), links, securityContext, toMerge, updateProductStatus.getProductStatus());
         equipmentRepository.massMerge(toMerge);
         boolean updated = !toMerge.isEmpty();
-        if(updated){
+        if (updated) {
             ProductStatusChanged event = new ProductStatusChanged(updateProductStatus.getEquipment())
                     .setStatusIds(new HashSet<>(Arrays.asList(updateProductStatus.getProductStatus().getId())));
 

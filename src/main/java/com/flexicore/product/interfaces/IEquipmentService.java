@@ -57,6 +57,8 @@ public interface IEquipmentService extends ServicePlugin,InitPlugin {
 
     void updateProductStatus(Product light, List<ProductToStatus> allExistingStatus, SecurityContext securityContext, List<Object> toMerge, ProductStatus newStatus);
 
+    void updateProductStatus(Product product, List<ProductToStatus> allExistingStatus, SecurityContext securityContext, List<Object> toMerge, List<ProductStatus> newStatuses);
+
     EquipmentToGroup createEquipmentToGroup(LinkToGroup linkToGroup, SecurityContext securityContext);
 
     void validateEquipmentCreate(EquipmentCreate equipmentCreate, SecurityContext securityContext);
