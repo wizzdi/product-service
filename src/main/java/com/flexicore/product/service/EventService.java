@@ -155,7 +155,7 @@ public class EventService implements IEventService {
 
     @Override
     public void validateFiltering(EventFiltering eventFiltering, SecurityContext securityContext) {
-        Set<String> sourceBaseclassIds = eventFiltering.getBaseclassIds();
+        Set<String> sourceBaseclassIds = eventFiltering.getBaseclassIds().stream().map(f->f.getId()).collect(Collectors.toSet());
         List<Baseclass> baseclasses = sourceBaseclassIds.isEmpty() ? new ArrayList<>() : baseclassService.listByIds(Baseclass.class, sourceBaseclassIds, securityContext);
         sourceBaseclassIds.removeAll(baseclasses.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         if (!sourceBaseclassIds.isEmpty()) {
@@ -169,7 +169,7 @@ public class EventService implements IEventService {
                 throw new BadRequestException("No Clazz by name " + eventFiltering.getClazzName());
             }
         }
-        Set<String> userIds=eventFiltering.getAckedUsersIds();
+        Set<String> userIds=eventFiltering.getAckedUsersIds().stream().map(f->f.getId()).collect(Collectors.toSet());;
         Map<String, User> userMap=userIds.isEmpty()?new HashMap<>():baseclassService.listByIds(User.class,userIds,securityContext).parallelStream().collect(Collectors.toMap(f->f.getId(),f->f));
         userIds.removeAll(userMap.keySet());
         if(!userIds.isEmpty()){
@@ -177,7 +177,7 @@ public class EventService implements IEventService {
         }
         eventFiltering.setAckedUsers(new ArrayList<>(userMap.values()));
 
-        Set<String> targetBaseclassIds = eventFiltering.getTargetBaseclassIds();
+        Set<String> targetBaseclassIds = eventFiltering.getTargetBaseclassIds().stream().map(f->f.getId()).collect(Collectors.toSet());;
         List<Baseclass> targetBaseclasses = targetBaseclassIds.isEmpty() ? new ArrayList<>() : baseclassService.listByIds(Baseclass.class, targetBaseclassIds, securityContext);
         targetBaseclassIds.removeAll(targetBaseclasses.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
         if (!targetBaseclassIds.isEmpty()) {

@@ -299,9 +299,6 @@ public class EquipmentService implements IEquipmentService {
         return update;
     }
 
-    public List<Equipment> getEquipmentToSync(LocalDateTime now) {
-        return equipmentRepository.getEquipmentToSync(now);
-    }
 
     @Override
     public void updateProductStatus(Product product, List<ProductToStatus> allExistingStatus, SecurityContext securityContext, List<Object> toMerge, ProductStatus newStatus) {

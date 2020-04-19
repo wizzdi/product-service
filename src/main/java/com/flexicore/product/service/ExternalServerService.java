@@ -46,6 +46,21 @@ public class ExternalServerService implements IExternalServerService {
             externalServer.setUrl(externalServerCreate.getUrl());
             update = true;
         }
+
+        if (externalServerCreate.getInspectIntervalMs() != null && !externalServerCreate.getInspectIntervalMs().equals(externalServer.getInspectIntervalMs())) {
+            externalServer.setInspectIntervalMs(externalServerCreate.getInspectIntervalMs());
+            update = true;
+        }
+
+        if (externalServerCreate.getLastInspectAttempt() != null && !externalServerCreate.getLastInspectAttempt().equals(externalServer.getLastInspectAttempt())) {
+            externalServer.setLastInspectAttempt(externalServerCreate.getLastInspectAttempt());
+            update = true;
+        }
+
+        if (externalServerCreate.getLastSuccessfulInspect() != null && !externalServerCreate.getLastSuccessfulInspect().equals(externalServer.getLastSuccessfulInspect())) {
+            externalServer.setLastSuccessfulInspect(externalServerCreate.getLastSuccessfulInspect());
+            update = true;
+        }
         return update;
     }
 

@@ -6,7 +6,7 @@
 
     <groupId>com.flexicore</groupId>
     <artifactId>product-service</artifactId>
-    <version>3.1.8</version>
+    <version>3.1.10</version>
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -20,7 +20,7 @@
         <repository>
             <id>flexicore-local</id>
             <name>flexicore-local</name>
-            <url>http://138.201.191.203:8083/artifactory/flexicore-local</url>
+            <url>https://artifactory.wizzdi.com/artifactory/flexicore-local</url>
         </repository>
 
     </distributionManagement>
@@ -29,7 +29,7 @@
         <repository>
             <id>flexicore-local</id>
             <name>flexicore-local</name>
-            <url>http://138.201.191.203:8083/artifactory/flexicore-local</url>
+            <url>https://artifactory.wizzdi.com/artifactory/flexicore-local</url>
         </repository>
 
     </repositories>
@@ -39,7 +39,7 @@
         <pluginRepository>
             <id>flexicore-local</id>
             <name>flexicore-local</name>
-            <url>http://138.201.191.203:8083/artifactory/flexicore-local</url>
+            <url>https://artifactory.wizzdi.com/artifactory/flexicore-local</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -94,7 +94,7 @@
         <dependency>
             <groupId>com.flexicore</groupId>
             <artifactId>product-model</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.3</version>
             <scope>provided</scope>
         </dependency>
 

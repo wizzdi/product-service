@@ -11,7 +11,6 @@ import com.flexicore.data.jsoncontainers.*;
 import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.model.Event;
 import com.flexicore.product.rest.IEventRESTService;
-import com.flexicore.rest.interfaces.IAuthenticationRESTService;
 import com.flexicore.security.AuthenticationRequestHolder;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -259,14 +258,7 @@ public class UserServiceTest {
     }
 
 
-    @Test
-    public void aCreateEquipment() {
-        IAuthenticationRESTService authenticationRESTService = target.proxy(IAuthenticationRESTService.class);
-        String key = authenticationRESTService.login("", new AuthenticationRequestHolder().setMail("admin@flexicore.com").setPassword("admin")).getAuthenticationkey();
-        IEventRESTService iEventRESTService = target.proxy(IEventRESTService.class);
-        PaginationResponse<Event> res = iEventRESTService.getAllEvents(key, new EventFiltering().setPageSize(10).setCurrentPage(0), null);
-        System.out.println(res.getTotalRecords());
-    }
+
 
 
 }

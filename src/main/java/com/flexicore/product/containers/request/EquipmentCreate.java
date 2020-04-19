@@ -54,6 +54,7 @@ public class EquipmentCreate extends ProductCreate{
     private String addressId;
 
 
+
     private String descriptor3D;
 
     public String getExternalServerId() {
@@ -192,4 +193,5 @@ public class EquipmentCreate extends ProductCreate{
         this.descriptor3D = descriptor3D;
         return (T) this;
     }
+
 }

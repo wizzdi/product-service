@@ -108,18 +108,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
     }
 
 
-    public List<Equipment> getEquipmentToSync(LocalDateTime now) {
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Equipment> q = cb.createQuery(Equipment.class);
-        Root<Equipment> r = q.from(Equipment.class);
-        Predicate pred = cb.or(r.get(Equipment_.nextSyncTime).isNull(),cb.lessThan(r.get(Equipment_.nextSyncTime),now));
 
-
-        q.select(r).where(pred);
-        TypedQuery<Equipment> query = em.createQuery(q);
-        return query.getResultList();
-
-    }
 
 
 

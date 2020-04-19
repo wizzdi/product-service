@@ -37,30 +37,5 @@ public class AlertFiltering extends EventFiltering {
         return this;
     }
 
-    @Override
-    public AlertFiltering setHumanReadableTextLike(String humanReadableTextLike) {
-        return  (AlertFiltering)super.setHumanReadableTextLike(humanReadableTextLike);
-    }
-
-    @Override
-    public AlertFiltering setBaseclassIds(Set<String> baseclassIds) {
-        return (AlertFiltering) super.setBaseclassIds(baseclassIds);
-    }
-
-    @Override
-    public AlertFiltering setBaseclass(List<Baseclass> baseclass) {
-        return  (AlertFiltering)super.setBaseclass(baseclass);
-    }
-
-    @Override
-    public AlertFiltering setClazzName(String clazzName) {
-        return  (AlertFiltering)super.setClazzName(clazzName);
-    }
-
-
-    @Override
-    public AlertFiltering setBaseclassNameLike(String baseclassNameLike) {
-        return  (AlertFiltering)super.setBaseclassNameLike(baseclassNameLike);
-    }
 
 }
