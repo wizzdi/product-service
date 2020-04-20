@@ -9,10 +9,7 @@ import com.flexicore.product.containers.response.EquipmentSpecificTypeGroup;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
 import com.flexicore.product.model.*;
-import com.flexicore.product.request.EquipmentAndType;
-import com.flexicore.product.request.LatLonFilter;
-import com.flexicore.product.request.ProductStatusNoProductContainer;
-import com.flexicore.product.request.ProductTypeToProductStatusFilter;
+import com.flexicore.product.request.*;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
@@ -256,6 +253,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin implements com
         TypedQuery<ProductToStatus> query = em.createQuery(q);
         return query.getResultList();
     }
+
 
     @Override
     public List<ProductToStatus> getCurrentStatusLinks(Set<String> equipmentIds) {

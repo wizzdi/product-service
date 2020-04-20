@@ -465,18 +465,6 @@ public class EquipmentRESTService implements RestServicePlugin {
 
 
 
-    @PUT
-    @Produces("application/json")
-    @Operation(summary = "updateProductStatus", description = "Updates product status")
-    @Path("updateProductStatus")
-    public boolean updateProductStatus(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            UpdateProductStatus updateProductStatus,
-            @Context SecurityContext securityContext) {
-        service.validate(updateProductStatus, securityContext);
-        return service.updateProductStatus(updateProductStatus, securityContext);
-
-    }
 
 
 

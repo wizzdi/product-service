@@ -6,6 +6,7 @@ import com.flexicore.annotations.rest.Read;
 import com.flexicore.constants.Constants;
 import com.flexicore.data.jsoncontainers.CreatePermissionGroupLinkRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.interfaces.EntityListener;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.model.*;
 import com.flexicore.model.territories.Address;
@@ -104,6 +105,9 @@ public class EquipmentService implements IEquipmentService {
 
         }
     }
+
+
+
 
     @Override
     public ProductType getGatewayProductType() {
@@ -1121,26 +1125,6 @@ public class EquipmentService implements IEquipmentService {
             throw new BadRequestException("no Equipment with id " + updateProductStatus.getEquipmentId());
         }
         updateProductStatus.setEquipment(equipment);
-    }
-
-    @Inject
-    private javax.enterprise.event.Event<ProductStatusChanged> productStatusChangedEvent;
-
-    public boolean updateProductStatus(UpdateProductStatus updateProductStatus, SecurityContext securityContext) {
-        List<Object> toMerge = new ArrayList<>();
-        List<ProductToStatus> links = getStatusLinks(new HashSet<>(Collections.singletonList(updateProductStatus.getEquipment().getId())));
-        updateProductStatus(updateProductStatus.getEquipment(), links, securityContext, toMerge, updateProductStatus.getProductStatus());
-        equipmentRepository.massMerge(toMerge);
-        boolean updated = !toMerge.isEmpty();
-        if (updated) {
-            ProductStatusChanged event = new ProductStatusChanged(updateProductStatus.getEquipment())
-                    .setStatusIds(new HashSet<>(Arrays.asList(updateProductStatus.getProductStatus().getId())));
-
-            repository.merge(event);
-            productStatusChangedEvent.fireAsync(event);
-        }
-        updateProductStatus.getEquipment();
-        return updated;
     }
 
 

@@ -29,11 +29,7 @@ public class ProductStatusInvoker implements ListingInvoker<ProductStatus,Produc
         return equipmentService.getAllProductStatus(productStatusFiltering, null);
     }
 
-    @InvokerMethodInfo(displayName = "updateProductStatus",description = "updateProductStatus",relatedClasses = {ProductStatus.class})
-    public boolean updateProductStatus(UpdateProductStatus updateProductStatus, SecurityContext securityContext) {
-        equipmentService.validate(updateProductStatus,securityContext);
-        return equipmentService.updateProductStatus(updateProductStatus,securityContext);
-    }
+
 
     @Override
     public Class<ProductStatusFiltering> getFilterClass() {

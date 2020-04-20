@@ -13,6 +13,7 @@ import com.flexicore.security.SecurityContext;
 import com.flexicore.service.EncryptionService;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.ws.rs.BadRequestException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -122,5 +123,10 @@ public class ExternalServerService implements IExternalServerService {
         List<ExternalServer> list=externalServerRepository.listAllExternalServers(externalServerFiltering,securityContext);
         long count = externalServerRepository.countAllExternalServers(externalServerFiltering,securityContext);
         return new PaginationResponse<>(list,externalServerFiltering,count);
+    }
+
+    @Transactional(Transactional.TxType.REQUIRED)
+    public void massMerge(List<?> toMerge) {
+        externalServerRepository.massMerge(toMerge);
     }
 }
