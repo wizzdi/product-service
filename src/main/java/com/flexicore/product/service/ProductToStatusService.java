@@ -9,6 +9,7 @@ import com.flexicore.product.request.ProductToStatusMassUpdate;
 import com.flexicore.security.SecurityContext;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import java.util.List;
 
 @PluginInfo(version = 1)
@@ -27,5 +28,10 @@ public class ProductToStatusService implements IProductToStatusService {
 
     public int massUpdateProductToStatus(ProductToStatusMassUpdate productToStatusMassUpdate, SecurityContext securityContext){
         return productToStatusRepository.massUpdateProductToStatus(productToStatusMassUpdate,securityContext);
+    }
+
+    @Transactional(Transactional.TxType.REQUIRED)
+    public void massMerge(List<?> toMerge) {
+        productToStatusRepository.massMerge(toMerge);
     }
 }
