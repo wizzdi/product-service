@@ -55,6 +55,9 @@ public class EquipmentService implements IEquipmentService {
     private BaselinkService baselinkService;
 
     @Inject
+    private BaseclassNewService baseclassNewService;
+
+    @Inject
     @PluginInfo(version = 1)
     private GroupService groupService;
 
@@ -401,16 +404,7 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public boolean updateProductNoMerge(ProductCreate productCreate, Product product) {
-        boolean update = false;
-        if (productCreate.getName() != null && !productCreate.getName().equals(product.getName())) {
-            product.setName(productCreate.getName());
-            update = true;
-        }
-
-        if (productCreate.getDescription() != null && !productCreate.getDescription().equals(product.getDescription())) {
-            product.setDescription(productCreate.getDescription());
-            update = true;
-        }
+        boolean update = baseclassNewService.updateBaseclassNoMerge(productCreate,product);
 
         if (productCreate.getSku() != null && !productCreate.getSku().equals(product.getSku())) {
             product.setSku(productCreate.getSku());

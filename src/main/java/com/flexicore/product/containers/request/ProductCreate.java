@@ -8,17 +8,12 @@ import com.flexicore.product.model.Gateway;
 import com.flexicore.product.model.Model;
 import com.flexicore.product.model.Product;
 import com.flexicore.product.model.ProductType;
+import com.flexicore.request.BaseclassCreate;
 
 import java.time.LocalDateTime;
 
-public class ProductCreate {
+public class ProductCreate extends BaseclassCreate {
 
-    @FieldInfo(mandatory = true,description = "name")
-
-    private String name;
-    @FieldInfo(description = "description")
-
-    private String description;
 
     @FieldInfo(description = "sku")
 
@@ -46,8 +41,7 @@ public class ProductCreate {
     }
 
     public ProductCreate(Product other) {
-        this.name = other.getName();
-        this.description = other.getDescription();
+        super(other);
         this.sku = other.getSku();
         this.ProductType = other.getProductType();
         this.productTypeId=this.ProductType!=null?this.ProductType.getId():null;
@@ -55,23 +49,6 @@ public class ProductCreate {
         this.modelId=this.model!=null?this.model.getId():null;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public <T extends ProductCreate> T setName(String name) {
-        this.name = name;
-        return (T) this;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public <T extends ProductCreate> T setDescription(String description) {
-        this.description = description;
-        return (T) this;
-    }
 
     public String getSku() {
         return sku;
@@ -139,14 +116,5 @@ public class ProductCreate {
         return (T) this;
     }
 
-    @JsonIgnore
-    public Tenant getTenant() {
-        return tenant;
-    }
-
-    public <T extends ProductCreate> T setTenant(Tenant tenant) {
-        this.tenant = tenant;
-        return (T) this;
-    }
 
 }
