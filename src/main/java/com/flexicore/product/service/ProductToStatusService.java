@@ -34,4 +34,8 @@ public class ProductToStatusService implements IProductToStatusService {
     public void massMerge(List<?> toMerge) {
         productToStatusRepository.massMerge(toMerge);
     }
+
+    public void flush() {
+        productToStatusRepository.flush();
+    }
 }

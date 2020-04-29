@@ -309,7 +309,10 @@ public class EquipmentService implements IEquipmentService {
 
     @Override
     public void updateProductStatus(Product product, List<ProductToStatus> allExistingStatus, SecurityContext securityContext, List<Object> toMerge, ProductStatus newStatus) {
-        updateProductStatus(product, allExistingStatus, securityContext, toMerge, Collections.singletonList(newStatus));
+        if(newStatus!=null){
+            updateProductStatus(product, allExistingStatus, securityContext, toMerge, Collections.singletonList(newStatus));
+
+        }
     }
 
 

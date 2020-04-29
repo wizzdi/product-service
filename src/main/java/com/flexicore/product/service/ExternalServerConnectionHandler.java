@@ -3,6 +3,7 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.iot.ExternalServer;
+import com.flexicore.model.Baseclass;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentFiltering;
 import com.flexicore.product.model.ProductStatus;
@@ -102,8 +103,10 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
                         equipmentService.updateProductStatus(equipment, statuses, securityContext, toMerge, disconnected);
                     }
 
+                    Map<String, Baseclass> toMergeMap=toMerge.stream().filter(f->f instanceof Baseclass).map(f->(Baseclass)f).collect(Collectors.toMap(f->f.getId(),f->f,(a,b)->a));
 
-                    productToStatusService.massMerge(toMerge);
+                    productToStatusService.massMerge(new ArrayList<>(toMergeMap.values()));
+                    productToStatusService.flush();
                 }
             }
 
