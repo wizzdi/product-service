@@ -45,6 +45,12 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>26.0-jre</version>
+                <scope>provided</scope>
+            </dependency>
             <!-- https://mvnrepository.com/artifact/org.wildfly.bom/wildfly -->
             <dependency>
                 <groupId>org.wildfly.bom</groupId>

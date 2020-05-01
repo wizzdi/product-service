@@ -13,8 +13,10 @@ import com.flexicore.product.request.ExternalServerConnectionConfiguration;
 import com.flexicore.product.request.ProductToStatusFilter;
 import com.flexicore.product.response.GenericInspectResponse;
 import com.flexicore.security.SecurityContext;
+import com.google.common.collect.Lists;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -25,7 +27,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
-@ApplicationScoped
 public class ExternalServerConnectionHandler implements ServicePlugin {
 
     @Inject
@@ -48,11 +49,11 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 
         }
         for (S externalServer : configurationCasted.getCache()) {
-            if (externalServer.getLastInspectAttempt() == null || ((System.currentTimeMillis() - externalServer.getLastInspectAttempt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) > externalServer.getInspectIntervalMs())) {
+            if (ExternalServerConnectionManager.connectionManagerShouldCheck(externalServer)) {
                 logger.info("Starting connection handling for "+externalServer.getName()+" ("+externalServer.getId()+")");
                 List<Object> toMerge = new ArrayList<>();
-                List<Equipment> connectedEquipment = new ArrayList<>();
-                List<Equipment> disconnectedEquipment = new ArrayList<>();
+                List<Equipment> connectedEquipmentRaw = new ArrayList<>();
+                List<Equipment> disconnectedEquipmentRaw = new ArrayList<>();
                 boolean success=false;
                 try {
                     String id = externalServer.getId();
@@ -74,7 +75,7 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
                     GenericInspectResponse genericInspectResponse = configurationCasted.getOnInspect().apply(connectionHolder);
                     logger.info("Inspect ended with"+genericInspectResponse+" for "+externalServer.getName()+" ("+externalServer.getId()+")");
 
-                    connectedEquipment = genericInspectResponse.getConnectedEquipment();
+                    connectedEquipmentRaw = genericInspectResponse.getConnectedEquipment();
                     success = genericInspectResponse.isSuccess();
 
                 } catch (Exception e) {
@@ -84,24 +85,30 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
                     externalServer.setLastInspectAttempt(inspectTime);
                     if (success) {
                         externalServer.setLastSuccessfulInspect(inspectTime);
-                        connectedEquipment.add(externalServer);
+                        connectedEquipmentRaw.add(externalServer);
                     } else {
-                        disconnectedEquipment.add(externalServer);
+                        disconnectedEquipmentRaw.add(externalServer);
                     }
                     toMerge.add(externalServer);
-                    disconnectedEquipment.addAll(equipmentService.listAllEquipments(Equipment.class, new EquipmentFiltering().setExternalServers(Collections.singletonList(externalServer)).setExcludingIds(connectedEquipment.stream().map(f -> f.getId()).collect(Collectors.toSet())), securityContext));
-
-                    Map<String, List<ProductToStatus>> allStatusesToSetConnect = connectedEquipment.isEmpty() ? new HashMap<>() : productToStatusService.listAllProductToStatus(new ProductToStatusFilter().setProducts(connectedEquipment).setStatuses(Arrays.asList(connected, disconnected)), securityContext).stream().collect(Collectors.groupingBy(f -> f.getLeftside().getId()));
-                    for (Equipment equipment : connectedEquipment) {
-                        List<ProductToStatus> statuses = allStatusesToSetConnect.getOrDefault(equipment.getId(), new ArrayList<>());
-                        equipmentService.updateProductStatus(equipment, statuses, securityContext, toMerge, connected);
+                    Set<String> connectedIds=connectedEquipmentRaw.stream().map(f->f.getId()).collect(Collectors.toSet());
+                    List<Equipment> c = equipmentService.listAllEquipments(Equipment.class, new EquipmentFiltering().setExternalServers(Collections.singletonList(externalServer)), securityContext).stream().filter(f->!connectedIds.contains(f.getId())).collect(Collectors.toList());
+                    disconnectedEquipmentRaw.addAll(c);
+                    for (List<Equipment> connectedEquipment : Lists.partition(connectedEquipmentRaw,100)) {
+                        Map<String, List<ProductToStatus>> allStatusesToSetConnect = connectedEquipment.isEmpty() ? new HashMap<>() : productToStatusService.listAllProductToStatus(new ProductToStatusFilter().setProducts(connectedEquipment).setStatuses(Arrays.asList(connected, disconnected)), securityContext).stream().collect(Collectors.groupingBy(f -> f.getLeftside().getId()));
+                        for (Equipment equipment : connectedEquipment) {
+                            List<ProductToStatus> statuses = allStatusesToSetConnect.getOrDefault(equipment.getId(), new ArrayList<>());
+                            equipmentService.updateProductStatus(equipment, statuses, securityContext, toMerge, connected);
+                        }
                     }
 
-                    Map<String, List<ProductToStatus>> allStatusesToSetDisconnect = disconnectedEquipment.isEmpty() ? new HashMap<>() : productToStatusService.listAllProductToStatus(new ProductToStatusFilter().setProducts(disconnectedEquipment).setStatuses(Arrays.asList(connected, disconnected)), securityContext).stream().collect(Collectors.groupingBy(f -> f.getLeftside().getId()));
-                    for (Equipment equipment : disconnectedEquipment) {
-                        List<ProductToStatus> statuses = allStatusesToSetDisconnect.getOrDefault(equipment.getId(), new ArrayList<>());
-                        equipmentService.updateProductStatus(equipment, statuses, securityContext, toMerge, disconnected);
+                    for (List<Equipment> disconnectedEquipment : Lists.partition(disconnectedEquipmentRaw, 100)) {
+                        Map<String, List<ProductToStatus>> allStatusesToSetDisconnect = disconnectedEquipment.isEmpty() ? new HashMap<>() : productToStatusService.listAllProductToStatus(new ProductToStatusFilter().setProducts(disconnectedEquipment).setStatuses(Arrays.asList(connected, disconnected)), securityContext).stream().collect(Collectors.groupingBy(f -> f.getLeftside().getId()));
+                        for (Equipment equipment : disconnectedEquipment) {
+                            List<ProductToStatus> statuses = allStatusesToSetDisconnect.getOrDefault(equipment.getId(), new ArrayList<>());
+                            equipmentService.updateProductStatus(equipment, statuses, securityContext, toMerge, disconnected);
+                        }
                     }
+
 
                     Map<String, Baseclass> toMergeMap=toMerge.stream().filter(f->f instanceof Baseclass).map(f->(Baseclass)f).collect(Collectors.toMap(f->f.getId(),f->f,(a,b)->a));
 

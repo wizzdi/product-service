@@ -3,18 +3,21 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.interfaces.ServicePlugin;
+import com.flexicore.iot.ExternalServer;
 import com.flexicore.product.config.Config;
 import com.flexicore.product.containers.request.ProductStatusCreate;
 import com.flexicore.product.model.ProductStatus;
 import com.flexicore.product.request.ExternalServerConnectionConfiguration;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.PluginService;
 import com.flexicore.service.SecurityService;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
-import java.util.*;
+import java.time.ZoneId;
+import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -38,12 +41,11 @@ public class ExternalServerConnectionManager implements ServicePlugin, InitPlugi
     private EquipmentService equipmentService;
 
 
-
     @Inject
     private SecurityService securityService;
+
     @Inject
-    @PluginInfo(version = 1)
-    private ExternalServerConnectionHandler connectionHandler;
+    private PluginService pluginService;
 
     private static ProductStatus connected;
     private static ProductStatus disconnected;
@@ -63,7 +65,7 @@ public class ExternalServerConnectionManager implements ServicePlugin, InitPlugi
     }
 
     public void onExternalServerConnectionRegistration(
-            @ObservesAsync ExternalServerConnectionConfiguration<?,?> externalServerConnectionRegistration) {
+            @ObservesAsync ExternalServerConnectionConfiguration<?, ?> externalServerConnectionRegistration) {
         configurations.add(externalServerConnectionRegistration);
 
     }
@@ -80,27 +82,35 @@ public class ExternalServerConnectionManager implements ServicePlugin, InitPlugi
         @Override
         public void run() {
             logger.info("Generic Connection Manager Started");
-            List<ExternalServerConnectionConfiguration<?, ?>> startedConnections = new ArrayList<>();
+            Queue<ExternalServerConnectionConfiguration<?, ?>> startedConnections = new LinkedBlockingQueue<>();
             while (!stop) {
 
                 for (ExternalServerConnectionConfiguration<?, ?> configuration : configurations) {
-                    if (startedConnections.contains(configuration)) {
+                    if (startedConnections.contains(configuration) || (configuration.getCache() != null && configuration.getCache().stream().noneMatch(ExternalServerConnectionManager::connectionManagerShouldCheck))) {
                         continue;
                     }
                     try {
                         startedConnections.add(configuration);
-                        executorService.execute(() -> connectionHandler.handleConfiguration(configuration, securityContext,connected,disconnected));
+                        ExternalServerConnectionHandler connectionHandler = pluginService.instansiate(ExternalServerConnectionHandler.class, null);
+                        CompletableFuture.runAsync(() -> connectionHandler.handleConfiguration(configuration, securityContext, connected, disconnected), executorService)
+                                .exceptionally(e -> {
+                                    logger.log(Level.SEVERE, "configuration handling ended with exception", e);
+                                    return null;
+                                })
+                                .thenRun(() -> {
+                                    startedConnections.remove(configuration);
+                                    pluginService.cleanUpInstance(connectionHandler);
+                                });
+
                     } catch (Exception e) {
                         logger.log(Level.SEVERE, "failed calling connection manager", e);
-                    } finally {
-                        startedConnections.remove(configuration);
                     }
                 }
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     logger.log(Level.WARNING, "inturrpted while waiting for next connection check", e);
-                    stop=true;
+                    stop = true;
                 }
 
             }
@@ -108,8 +118,13 @@ public class ExternalServerConnectionManager implements ServicePlugin, InitPlugi
             logger.info("Generic Connection Manager Stopped");
 
         }
+
+
     }
 
+    public static boolean connectionManagerShouldCheck(ExternalServer externalServer) {
+        return externalServer.getLastInspectAttempt() == null || ((System.currentTimeMillis() - externalServer.getLastInspectAttempt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) > externalServer.getInspectIntervalMs());
+    }
 
 
     public static ExecutorService createExecutor(int maximumAcceptableThreads, int nParallelThreads, Logger logger, int keepAliveTimeMS) {
