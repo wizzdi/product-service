@@ -7,6 +7,7 @@ import java.util.List;
 
 public class GenericInspectResponse {
     private boolean success;
+    private boolean reconnect;
     private List<Equipment> connectedEquipment=new ArrayList<>();
 
 
@@ -28,11 +29,21 @@ public class GenericInspectResponse {
         return (T) this;
     }
 
+    public boolean isReconnect() {
+        return reconnect;
+    }
+
+    public <T extends GenericInspectResponse> T setReconnect(boolean reconnect) {
+        this.reconnect = reconnect;
+        return (T) this;
+    }
+
     @Override
     public String toString() {
         return "GenericInspectResponse{" +
                 "success=" + success +
-                ", numberConnectedEquipment=" + (connectedEquipment!=null?connectedEquipment.size():0) +
+                ", reconnect=" + reconnect +
+                ", connectedEquipment=" + connectedEquipment +
                 '}';
     }
 }

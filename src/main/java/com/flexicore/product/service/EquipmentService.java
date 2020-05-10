@@ -1329,14 +1329,14 @@ public class EquipmentService implements IEquipmentService {
             String dateString = now.toString();
             Date date = Date.from(now);
 
-            EquipmentByStatusEvent lightsByStatusEvent = new EquipmentByStatusEvent()
+            EquipmentByStatusEvent equipmentByStatusEvent = new EquipmentByStatusEvent()
                     .setEventDate(date)
                     .setBaseclassTenantId(tenant.getId());
-            events.add(lightsByStatusEvent);
+            events.add(equipmentByStatusEvent);
             for (Map.Entry<String, Map<String, Set<String>>> productTypeEntry : grouping.entrySet()) {
                 for (Map.Entry<String, Set<String>> productStatusEntry : productTypeEntry.getValue().entrySet()) {
                     EquipmentByStatusEntry equipmentByStatusEntry = new EquipmentByStatusEntry()
-                            .setEquipmentByStatusEventId(lightsByStatusEvent.getId())
+                            .setEquipmentByStatusEventId(equipmentByStatusEvent.getId())
                             .setProductStatus(productStatusEntry.getKey())
                             .setProductTypeId(productTypeEntry.getKey())
                             .setTotal(productStatusEntry.getValue().size())

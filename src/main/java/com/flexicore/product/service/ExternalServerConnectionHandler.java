@@ -77,6 +77,9 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 
                     connectedEquipmentRaw = genericInspectResponse.getConnectedEquipment();
                     success = genericInspectResponse.isSuccess();
+                    if(genericInspectResponse.isReconnect()){
+                        configurationCasted.getConnectionHolders().remove(id);
+                    }
 
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, "failed inspecting server " + externalServer.getName() + " (" + externalServer.getId() + ")", e);
