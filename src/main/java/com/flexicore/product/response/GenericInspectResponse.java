@@ -1,5 +1,6 @@
 package com.flexicore.product.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.flexicore.product.model.Equipment;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 public class GenericInspectResponse {
     private boolean success;
     private boolean reconnect;
+    @JsonIgnore
     private List<Equipment> connectedEquipment=new ArrayList<>();
 
 
@@ -20,6 +22,7 @@ public class GenericInspectResponse {
         return (T) this;
     }
 
+    @JsonIgnore
     public List<Equipment> getConnectedEquipment() {
         return connectedEquipment;
     }
@@ -43,7 +46,7 @@ public class GenericInspectResponse {
         return "GenericInspectResponse{" +
                 "success=" + success +
                 ", reconnect=" + reconnect +
-                ", connectedEquipment=" + connectedEquipment +
+                ", connectedEquipmentCount=" + (connectedEquipment!=null?connectedEquipment.size():0) +
                 '}';
     }
 }

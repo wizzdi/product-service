@@ -8,6 +8,7 @@ import com.flexicore.product.config.Config;
 import com.flexicore.product.containers.request.ProductStatusCreate;
 import com.flexicore.product.model.ProductStatus;
 import com.flexicore.product.request.ExternalServerConnectionConfiguration;
+import com.flexicore.product.request.SingleInspectJob;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.PluginService;
 import com.flexicore.service.SecurityService;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.ObservesAsync;
 import javax.inject.Inject;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Queue;
 import java.util.concurrent.*;
@@ -70,6 +72,22 @@ public class ExternalServerConnectionManager implements ServicePlugin, InitPlugi
 
     }
 
+    public void onSingleJobAdded(@ObservesAsync SingleInspectJob<?, ?> singleInspectJob) {
+        ExternalServerConnectionConfiguration<?, ?> connectionConfiguration=configurations.stream().filter(f->f.getId().equals(singleInspectJob.getConfigurationId())).findFirst().orElse(null);
+        if(connectionConfiguration!=null){
+            addSingleInspectJob(connectionConfiguration,singleInspectJob);
+        }
+
+    }
+
+    private <S extends com.flexicore.iot.ExternalServer, C extends com.flexicore.product.request.ConnectionHolder<S>> void addSingleInspectJob(ExternalServerConnectionConfiguration<?,?> connectionConfiguration, SingleInspectJob<?,?> singleInspectJob) {
+        ExternalServerConnectionConfiguration<S,C> connectionConfigurationCasted= (ExternalServerConnectionConfiguration<S, C>) connectionConfiguration;
+        SingleInspectJob<S,C> singleInspectJobCasted= (SingleInspectJob<S, C>) singleInspectJob;
+        connectionConfigurationCasted.addSingleInspectJob(singleInspectJobCasted);
+
+
+    }
+
     class ConnectionManager implements Runnable {
         private final ExecutorService executorService;
         private final SecurityContext securityContext;
@@ -86,7 +104,7 @@ public class ExternalServerConnectionManager implements ServicePlugin, InitPlugi
             while (!stop) {
 
                 for (ExternalServerConnectionConfiguration<?, ?> configuration : configurations) {
-                    if (startedConnections.contains(configuration) || (configuration.getCache() != null && configuration.getCache().stream().noneMatch(ExternalServerConnectionManager::connectionManagerShouldCheck))) {
+                    if (startedConnections.contains(configuration) || (configuration.getCache() != null && configuration.getCache().stream().noneMatch(f->ExternalServerConnectionManager.connectionManagerShouldCheck(f,configuration.getSingleInspectJobs())))) {
                         continue;
                     }
                     try {
@@ -122,7 +140,17 @@ public class ExternalServerConnectionManager implements ServicePlugin, InitPlugi
 
     }
 
-    public static boolean connectionManagerShouldCheck(ExternalServer externalServer) {
+    public static <S extends com.flexicore.iot.ExternalServer, C extends com.flexicore.product.request.ConnectionHolder<S>> boolean connectionManagerShouldCheck(ExternalServer externalServer, Queue<SingleInspectJob<S,C>> singleInspectJobs) {
+        return shouldInspectAll(externalServer) || shouldInspectSingle(singleInspectJobs);
+    }
+
+
+    public static <S extends ExternalServer, C extends com.flexicore.product.request.ConnectionHolder<S>> boolean shouldInspectSingle(Queue<SingleInspectJob<S, C>> singleInspectJobs) {
+        LocalDateTime now=LocalDateTime.now();
+        return singleInspectJobs.stream().anyMatch(f->f.getTimeToInspect().isBefore(now));
+    }
+
+    public static boolean shouldInspectAll(ExternalServer externalServer) {
         return externalServer.getLastInspectAttempt() == null || ((System.currentTimeMillis() - externalServer.getLastInspectAttempt().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) > externalServer.getInspectIntervalMs());
     }
 

@@ -12,6 +12,8 @@ public class ExternalServerCreate extends EquipmentCreate {
 
     @FieldInfo
     private Long inspectIntervalMs;
+    @FieldInfo
+    private Long inspectAfterActivateIntervalMs;
     @JsonIgnore
     private LocalDateTime lastInspectAttempt;
     @JsonIgnore
@@ -52,6 +54,15 @@ public class ExternalServerCreate extends EquipmentCreate {
 
     public <T extends ExternalServerCreate> T setLastSuccessfulInspect(LocalDateTime lastSuccessfulInspect) {
         this.lastSuccessfulInspect = lastSuccessfulInspect;
+        return (T) this;
+    }
+
+    public Long getInspectAfterActivateIntervalMs() {
+        return inspectAfterActivateIntervalMs;
+    }
+
+    public <T extends ExternalServerCreate> T setInspectAfterActivateIntervalMs(Long inspectAfterActivateIntervalMs) {
+        this.inspectAfterActivateIntervalMs = inspectAfterActivateIntervalMs;
         return (T) this;
     }
 }
