@@ -10,25 +10,25 @@ import java.util.Set;
 
 public class ModelFiltering extends FilteringInformationHolder {
 
-    private Set<String> manufacturersIds=new HashSet<>();
-    private List<Manufacturer> manufacturers;
+	private Set<String> manufacturersIds = new HashSet<>();
+	private List<Manufacturer> manufacturers;
 
-    public Set<String> getManufacturersIds() {
-        return manufacturersIds;
-    }
+	public Set<String> getManufacturersIds() {
+		return manufacturersIds;
+	}
 
-    public ModelFiltering setManufacturersIds(Set<String> manufacturersIds) {
-        this.manufacturersIds = manufacturersIds;
-        return this;
-    }
+	public ModelFiltering setManufacturersIds(Set<String> manufacturersIds) {
+		this.manufacturersIds = manufacturersIds;
+		return this;
+	}
 
-    @JsonIgnore
-    public List<Manufacturer> getManufacturers() {
-        return manufacturers;
-    }
+	@JsonIgnore
+	public List<Manufacturer> getManufacturers() {
+		return manufacturers;
+	}
 
-    public ModelFiltering setManufacturers(List<Manufacturer> manufacturers) {
-        this.manufacturers = manufacturers;
-        return this;
-    }
+	public ModelFiltering setManufacturers(List<Manufacturer> manufacturers) {
+		this.manufacturers = manufacturers;
+		return this;
+	}
 }

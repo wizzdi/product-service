@@ -5,8 +5,8 @@ import com.flexicore.product.model.EquipmentByStatusEvent;
 
 public class EquipmentStatusEventFilter extends EventFiltering {
 
-    @Override
-    public String getEventType() {
-        return EquipmentByStatusEvent.class.getCanonicalName();
-    }
+	@Override
+	public String getEventType() {
+		return EquipmentByStatusEvent.class.getCanonicalName();
+	}
 }

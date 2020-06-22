@@ -18,32 +18,31 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Path("plugins/Events")
-
 public interface IEventRESTService extends RestServicePlugin {
-    @POST
-    @Produces("application/json")
-    @Operation(summary = "getAllEvents", description = "return Events Filtered")
-    @Path("getAllEvents")
-    <T extends Event> PaginationResponse<T> getAllEvents(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            EventFiltering eventFiltering,
-            @Context SecurityContext securityContext);
+	@POST
+	@Produces("application/json")
+	@Operation(summary = "getAllEvents", description = "return Events Filtered")
+	@Path("getAllEvents")
+	<T extends Event> PaginationResponse<T> getAllEvents(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			EventFiltering eventFiltering,
+			@Context SecurityContext securityContext);
 
-    @PUT
-    @Produces("application/json")
-    @Operation(summary = "ackEvents", description = "ack events")
-    @Path("ackEvents")
-    AckEventsResponse ackEvents(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            AckEventsRequest eventFiltering,
-            @Context SecurityContext securityContext);
+	@PUT
+	@Produces("application/json")
+	@Operation(summary = "ackEvents", description = "ack events")
+	@Path("ackEvents")
+	AckEventsResponse ackEvents(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			AckEventsRequest eventFiltering,
+			@Context SecurityContext securityContext);
 
-    @POST
-    @Produces("application/json")
-    @Operation(summary = "generateReport", description = "Generates report")
-    @Path("generateReport")
-    AggregationReport generateReport(
-            @HeaderParam("authenticationKey") String authenticationKey,
-            CreateAggregatedReport filtering,
-            @Context SecurityContext securityContext);
+	@POST
+	@Produces("application/json")
+	@Operation(summary = "generateReport", description = "Generates report")
+	@Path("generateReport")
+	AggregationReport generateReport(
+			@HeaderParam("authenticationKey") String authenticationKey,
+			CreateAggregatedReport filtering,
+			@Context SecurityContext securityContext);
 }

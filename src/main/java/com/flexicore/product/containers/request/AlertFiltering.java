@@ -10,32 +10,30 @@ import java.util.Set;
 
 public class AlertFiltering extends EventFiltering {
 
+	private Integer severityStart;
+	private Integer severityEnd;
 
-    private Integer severityStart;
-    private Integer severityEnd;
+	public AlertFiltering() {
+		super();
+		setEventType(Alert.class.getCanonicalName());
+	}
 
-    public AlertFiltering() {
-        super();
-        setEventType(Alert.class.getCanonicalName());
-    }
+	public Integer getSeverityStart() {
+		return severityStart;
+	}
 
-    public Integer getSeverityStart() {
-        return severityStart;
-    }
+	public AlertFiltering setSeverityStart(Integer severityStart) {
+		this.severityStart = severityStart;
+		return this;
+	}
 
-    public AlertFiltering setSeverityStart(Integer severityStart) {
-        this.severityStart = severityStart;
-        return this;
-    }
+	public Integer getSeverityEnd() {
+		return severityEnd;
+	}
 
-    public Integer getSeverityEnd() {
-        return severityEnd;
-    }
-
-    public AlertFiltering setSeverityEnd(Integer severityEnd) {
-        this.severityEnd = severityEnd;
-        return this;
-    }
-
+	public AlertFiltering setSeverityEnd(Integer severityEnd) {
+		this.severityEnd = severityEnd;
+		return this;
+	}
 
 }

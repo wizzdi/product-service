@@ -10,32 +10,39 @@ import com.flexicore.product.model.ProductType;
 import com.flexicore.product.model.ProductTypeFiltering;
 import com.flexicore.security.SecurityContext;
 
-import javax.inject.Inject;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
 @InvokerInfo(displayName = "ProductType Invoker", description = "Invoker for Product Type")
+@Extension
+@Component
+public class ProductTypeInvoker
+		implements
+			ListingInvoker<ProductType, ProductTypeFiltering> {
 
-public class ProductTypeInvoker implements ListingInvoker<ProductType,ProductTypeFiltering> {
+	@PluginInfo(version = 1)
+	@Autowired
+	private EquipmentService equipmentService;
 
-    @Inject
-    @PluginInfo(version = 1)
-    private EquipmentService equipmentService;
+	@Override
+	@InvokerMethodInfo(displayName = "listAllProductTypes", description = "lists all Product types", relatedClasses = {ProductType.class})
+	public PaginationResponse<ProductType> listAll(
+			ProductTypeFiltering productTypeFiltering,
+			SecurityContext securityContext) {
+		equipmentService.validate(productTypeFiltering, securityContext);
+		return equipmentService.getAllProductTypes(productTypeFiltering,
+				securityContext);
+	}
 
-    @Override
-    @InvokerMethodInfo(displayName = "listAllProductTypes",description = "lists all Product types",relatedClasses = {ProductType.class})
+	@Override
+	public Class<ProductTypeFiltering> getFilterClass() {
+		return ProductTypeFiltering.class;
+	}
 
-    public PaginationResponse<ProductType> listAll(ProductTypeFiltering productTypeFiltering, SecurityContext securityContext) {
-        equipmentService.validate(productTypeFiltering,securityContext);
-        return equipmentService.getAllProductTypes(productTypeFiltering, securityContext);
-    }
-
-    @Override
-    public Class<ProductTypeFiltering> getFilterClass() {
-        return ProductTypeFiltering.class;
-    }
-
-    @Override
-    public Class<?> getHandlingClass() {
-        return ProductType.class;
-    }
+	@Override
+	public Class<?> getHandlingClass() {
+		return ProductType.class;
+	}
 }

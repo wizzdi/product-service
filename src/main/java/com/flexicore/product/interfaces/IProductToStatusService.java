@@ -8,5 +8,7 @@ import com.flexicore.security.SecurityContext;
 import java.util.List;
 
 public interface IProductToStatusService extends ServicePlugin {
-    List<ProductToStatus> listAllProductToStatus(ProductToStatusFilter productToStatusFilter, SecurityContext securityContext);
+	List<ProductToStatus> listAllProductToStatus(
+			ProductToStatusFilter productToStatusFilter,
+			SecurityContext securityContext);
 }

@@ -15,22 +15,24 @@ import java.io.Writer;
  */
 public class EventsWSMessageEncoder implements Encoder.TextStream<Event> {
 
-    private static ObjectMapper objectMapper;
+	private static ObjectMapper objectMapper;
 
-    @Override
-    public void init(EndpointConfig config) {
-        objectMapper= ObjectMapperContextResolver.createClassLoaderObjectMapper(getClass().getClassLoader(), Views.ForSwaggerOnly.class);
+	@Override
+	public void init(EndpointConfig config) {
+		objectMapper = ObjectMapperContextResolver
+				.createClassLoaderObjectMapper(getClass().getClassLoader(),
+						Views.ForSwaggerOnly.class);
 
-    }
+	}
 
-    @Override
-    public void destroy() {
+	@Override
+	public void destroy() {
 
-    }
+	}
 
-    @Override
-    public void encode(Event object, Writer writer) throws IOException {
-        objectMapper.writeValue(writer, object);
+	@Override
+	public void encode(Event object, Writer writer) throws IOException {
+		objectMapper.writeValue(writer, object);
 
-    }
+	}
 }

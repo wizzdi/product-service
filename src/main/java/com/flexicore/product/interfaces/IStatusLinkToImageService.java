@@ -11,21 +11,34 @@ import com.flexicore.security.SecurityContext;
 import java.util.List;
 
 public interface IStatusLinkToImageService extends ServicePlugin {
-    void validate(StatusLinksToImageFilter filtering, SecurityContext securityContext);
+	void validate(StatusLinksToImageFilter filtering,
+			SecurityContext securityContext);
 
-    PaginationResponse<StatusLinkToImage> getAllStatusLinksToImage(StatusLinksToImageFilter filtering, SecurityContext securityContext);
+	PaginationResponse<StatusLinkToImage> getAllStatusLinksToImage(
+			StatusLinksToImageFilter filtering, SecurityContext securityContext);
 
-    List<StatusLinkToImage> listAllStatusLinksToImage(StatusLinksToImageFilter filtering, SecurityContext securityContext);
+	List<StatusLinkToImage> listAllStatusLinksToImage(
+			StatusLinksToImageFilter filtering, SecurityContext securityContext);
 
-    void validateCreate(StatusLinksToImageCreate statusLinksToImageCreate, SecurityContext securityContext);
+	void validateCreate(StatusLinksToImageCreate statusLinksToImageCreate,
+			SecurityContext securityContext);
 
-    void validateUpdate(StatusLinksToImageUpdate statusLinksToImageCreate, SecurityContext securityContext);
+	void validateUpdate(StatusLinksToImageUpdate statusLinksToImageCreate,
+			SecurityContext securityContext);
 
-    StatusLinkToImage createStatusLinkToImage(StatusLinksToImageCreate statusLinksToImageCreate, SecurityContext securityContext);
+	StatusLinkToImage createStatusLinkToImage(
+			StatusLinksToImageCreate statusLinksToImageCreate,
+			SecurityContext securityContext);
 
-    StatusLinkToImage createStatusLinkToImageNoMerge(StatusLinksToImageCreate statusLinksToImageCreate, SecurityContext securityContext);
+	StatusLinkToImage createStatusLinkToImageNoMerge(
+			StatusLinksToImageCreate statusLinksToImageCreate,
+			SecurityContext securityContext);
 
-    boolean updateStatusLinkToImageNoMerge(StatusLinksToImageCreate statusLinksToImageCreate, StatusLinkToImage statusLinkToImage);
+	boolean updateStatusLinkToImageNoMerge(
+			StatusLinksToImageCreate statusLinksToImageCreate,
+			StatusLinkToImage statusLinkToImage);
 
-    StatusLinkToImage updateStatusLinkToImage(StatusLinksToImageUpdate statusLinksToImageUpdate, SecurityContext securityContext);
+	StatusLinkToImage updateStatusLinkToImage(
+			StatusLinksToImageUpdate statusLinksToImageUpdate,
+			SecurityContext securityContext);
 }

@@ -9,31 +9,40 @@ import com.flexicore.iot.ExternalServer;
 import com.flexicore.product.containers.request.ExternalServerFiltering;
 import com.flexicore.security.SecurityContext;
 
-import javax.inject.Inject;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
 @InvokerInfo(displayName = "ExternalServer Invoker", description = "Invoker for ExternalServers")
+@Extension
+@Component
+public class ExternalServerInvoker
+		implements
+			ListingInvoker<ExternalServer, ExternalServerFiltering> {
 
-public class ExternalServerInvoker implements ListingInvoker<ExternalServer, ExternalServerFiltering> {
+	@PluginInfo(version = 1)
+	@Autowired
+	private ExternalServerService externalServerService;
 
-    @Inject
-    @PluginInfo(version = 1)
-    private ExternalServerService externalServerService;
+	@Override
+	@InvokerMethodInfo(displayName = "listAllExternalServer", description = "lists all External servers", relatedClasses = {ExternalServer.class})
+	public PaginationResponse<ExternalServer> listAll(
+			ExternalServerFiltering externalServerFiltering,
+			SecurityContext securityContext) {
+		externalServerService
+				.validate(externalServerFiltering, securityContext);
+		return externalServerService.getAllExternalServers(
+				externalServerFiltering, securityContext);
+	}
 
-    @Override
-    @InvokerMethodInfo(displayName = "listAllExternalServer",description = "lists all External servers",relatedClasses = {ExternalServer.class})
-    public PaginationResponse<ExternalServer> listAll(ExternalServerFiltering externalServerFiltering, SecurityContext securityContext) {
-        externalServerService.validate(externalServerFiltering,securityContext);
-        return externalServerService.getAllExternalServers(externalServerFiltering,securityContext);
-    }
+	@Override
+	public Class<ExternalServerFiltering> getFilterClass() {
+		return ExternalServerFiltering.class;
+	}
 
-    @Override
-    public Class<ExternalServerFiltering> getFilterClass() {
-        return ExternalServerFiltering.class;
-    }
-
-    @Override
-    public Class<?> getHandlingClass() {
-        return ExternalServer.class;
-    }
+	@Override
+	public Class<?> getHandlingClass() {
+		return ExternalServer.class;
+	}
 }

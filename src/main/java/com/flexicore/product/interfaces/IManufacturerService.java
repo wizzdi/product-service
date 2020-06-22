@@ -9,17 +9,25 @@ import com.flexicore.product.request.ManufacturerUpdate;
 import com.flexicore.security.SecurityContext;
 
 public interface IManufacturerService extends ServicePlugin {
-    PaginationResponse<Manufacturer> getAllManufacturers(ManufacturerFiltering filtering, SecurityContext securityContext);
+	PaginationResponse<Manufacturer> getAllManufacturers(
+			ManufacturerFiltering filtering, SecurityContext securityContext);
 
-    Manufacturer createManufacturer(ManufacturerCreate manufacturerCreate, SecurityContext securityContext);
+	Manufacturer createManufacturer(ManufacturerCreate manufacturerCreate,
+			SecurityContext securityContext);
 
-    Manufacturer createManufacturerNoMerge(ManufacturerCreate manufacturerCreate, SecurityContext securityContext);
+	Manufacturer createManufacturerNoMerge(
+			ManufacturerCreate manufacturerCreate,
+			SecurityContext securityContext);
 
-    boolean updateManufacturerNoMerge(Manufacturer manufacturer, ManufacturerCreate manufacturerCreate);
+	boolean updateManufacturerNoMerge(Manufacturer manufacturer,
+			ManufacturerCreate manufacturerCreate);
 
-    void validateManufacturerFiltering(ManufacturerFiltering filtering, SecurityContext securityContext);
+	void validateManufacturerFiltering(ManufacturerFiltering filtering,
+			SecurityContext securityContext);
 
-    Manufacturer updateManufacturer(ManufacturerUpdate manufacturerUpdate, SecurityContext securityContext);
+	Manufacturer updateManufacturer(ManufacturerUpdate manufacturerUpdate,
+			SecurityContext securityContext);
 
-    void validate(ManufacturerCreate manufacturerCreate, SecurityContext securityContext);
+	void validate(ManufacturerCreate manufacturerCreate,
+			SecurityContext securityContext);
 }

@@ -10,34 +10,40 @@ import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentFiltering;
 import com.flexicore.security.SecurityContext;
 
-import javax.inject.Inject;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
 @InvokerInfo(displayName = "Equipment short Invoker", description = "Invoker for Equipments short")
+@Extension
+@Component
+public class EquipmentShortInvoker
+		implements
+			ListingInvoker<EquipmentShort, EquipmentFiltering> {
 
-public class EquipmentShortInvoker implements ListingInvoker<EquipmentShort,EquipmentFiltering>{
+	@PluginInfo(version = 1)
+	@Autowired
+	private EquipmentService equipmentService;
 
-    @Inject
-    @PluginInfo(version = 1)
-    private EquipmentService equipmentService;
+	@Override
+	@InvokerMethodInfo(displayName = "listAllEquipmentShort", description = "lists all Equipment Short", relatedClasses = {Equipment.class})
+	public PaginationResponse<EquipmentShort> listAll(
+			EquipmentFiltering equipmentFiltering,
+			SecurityContext securityContext) {
+		equipmentService.validateFiltering(equipmentFiltering, securityContext);
+		return equipmentService.getAllEquipmentsShort(Equipment.class,
+				equipmentFiltering, securityContext);
+	}
 
-    @Override
-    @InvokerMethodInfo(displayName = "listAllEquipmentShort",description = "lists all Equipment Short",relatedClasses = {Equipment.class})
+	@Override
+	public Class<EquipmentFiltering> getFilterClass() {
+		return EquipmentFiltering.class;
+	}
 
-    public PaginationResponse<EquipmentShort> listAll(EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
-        equipmentService.validateFiltering(equipmentFiltering,securityContext);
-        return equipmentService.getAllEquipmentsShort(Equipment.class,equipmentFiltering,securityContext);
-    }
-
-    @Override
-    public Class<EquipmentFiltering> getFilterClass() {
-        return EquipmentFiltering.class;
-    }
-
-    @Override
-    public Class<?> getHandlingClass() {
-        return EquipmentShort.class;
-    }
-
+	@Override
+	public Class<?> getHandlingClass() {
+		return EquipmentShort.class;
+	}
 
 }

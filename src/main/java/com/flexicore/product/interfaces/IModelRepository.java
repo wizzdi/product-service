@@ -1,7 +1,6 @@
 package com.flexicore.product.interfaces;
 
-import com.flexicore.code.metadata.model.AddPredicates;
-import com.flexicore.code.metadata.model.Repository;
+
 import com.flexicore.organization.model.Manufacturer;
 import com.flexicore.organization.model.Manufacturer_;
 import com.flexicore.product.model.Model;
@@ -16,15 +15,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Repository
 public interface IModelRepository {
 
-    @AddPredicates(type = Model.class)
-    static <T extends Model> void getAllModelsPredicates(List<Predicate> preds, ModelFiltering filtering, Root<T> r, CriteriaBuilder cb) {
-        if (filtering.getManufacturers() != null && !filtering.getManufacturers().isEmpty()) {
-            Set<String> ids = filtering.getManufacturers().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
-            Join<T, Manufacturer> manufacturerJoin = r.join(Model_.manufacturer);
-            preds.add(manufacturerJoin.get(Manufacturer_.id).in(ids));
-        }
-    }
+	static <T extends Model> void getAllModelsPredicates(List<Predicate> preds,
+			ModelFiltering filtering, Root<T> r, CriteriaBuilder cb) {
+		if (filtering.getManufacturers() != null
+				&& !filtering.getManufacturers().isEmpty()) {
+			Set<String> ids = filtering.getManufacturers().parallelStream()
+					.map(f -> f.getId()).collect(Collectors.toSet());
+			Join<T, Manufacturer> manufacturerJoin = r
+					.join(Model_.manufacturer);
+			preds.add(manufacturerJoin.get(Manufacturer_.id).in(ids));
+		}
+	}
 }

@@ -6,48 +6,48 @@ import com.flexicore.product.model.ProductType;
 
 public class ProductStatusToTypeCreate {
 
-   private String productTypeId;
-   private String productStatusId;
+	private String productTypeId;
+	private String productStatusId;
 
-   @JsonIgnore
-   private ProductType productType;
-   @JsonIgnore
-   private ProductStatus productStatus;
+	@JsonIgnore
+	private ProductType productType;
+	@JsonIgnore
+	private ProductStatus productStatus;
 
+	public String getProductTypeId() {
+		return productTypeId;
+	}
 
-    public String getProductTypeId() {
-        return productTypeId;
-    }
+	public ProductStatusToTypeCreate setProductTypeId(String productTypeId) {
+		this.productTypeId = productTypeId;
+		return this;
+	}
 
-    public ProductStatusToTypeCreate setProductTypeId(String productTypeId) {
-        this.productTypeId = productTypeId;
-        return this;
-    }
+	public String getProductStatusId() {
+		return productStatusId;
+	}
 
-    public String getProductStatusId() {
-        return productStatusId;
-    }
+	public ProductStatusToTypeCreate setProductStatusId(String productStatusId) {
+		this.productStatusId = productStatusId;
+		return this;
+	}
+	@JsonIgnore
+	public ProductType getProductType() {
+		return productType;
+	}
 
-    public ProductStatusToTypeCreate setProductStatusId(String productStatusId) {
-        this.productStatusId = productStatusId;
-        return this;
-    }
-    @JsonIgnore
-    public ProductType getProductType() {
-        return productType;
-    }
+	public ProductStatusToTypeCreate setProductType(ProductType productType) {
+		this.productType = productType;
+		return this;
+	}
+	@JsonIgnore
+	public ProductStatus getProductStatus() {
+		return productStatus;
+	}
 
-    public ProductStatusToTypeCreate setProductType(ProductType productType) {
-        this.productType = productType;
-        return this;
-    }
-    @JsonIgnore
-    public ProductStatus getProductStatus() {
-        return productStatus;
-    }
-
-    public ProductStatusToTypeCreate setProductStatus(ProductStatus productStatus) {
-        this.productStatus = productStatus;
-        return this;
-    }
+	public ProductStatusToTypeCreate setProductStatus(
+			ProductStatus productStatus) {
+		this.productStatus = productStatus;
+		return this;
+	}
 }

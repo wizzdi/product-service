@@ -6,15 +6,16 @@ import com.flexicore.product.containers.request.FlexiCoreGatewayCreate;
 
 public class FlexiCoreGatewayCreateParameters extends ExecutionParametersHolder {
 
-    @FieldInfo(mandatory = true,displayName = "Creation Container")
-    private FlexiCoreGatewayCreate flexiCoreGatewayCreate;
+	@FieldInfo(mandatory = true, displayName = "Creation Container")
+	private FlexiCoreGatewayCreate flexiCoreGatewayCreate;
 
-    public FlexiCoreGatewayCreate getFlexiCoreGatewayCreate() {
-        return flexiCoreGatewayCreate;
-    }
+	public FlexiCoreGatewayCreate getFlexiCoreGatewayCreate() {
+		return flexiCoreGatewayCreate;
+	}
 
-    public FlexiCoreGatewayCreateParameters setFlexiCoreGatewayCreate(FlexiCoreGatewayCreate flexiCoreGatewayCreate) {
-        this.flexiCoreGatewayCreate = flexiCoreGatewayCreate;
-        return this;
-    }
+	public FlexiCoreGatewayCreateParameters setFlexiCoreGatewayCreate(
+			FlexiCoreGatewayCreate flexiCoreGatewayCreate) {
+		this.flexiCoreGatewayCreate = flexiCoreGatewayCreate;
+		return this;
+	}
 }

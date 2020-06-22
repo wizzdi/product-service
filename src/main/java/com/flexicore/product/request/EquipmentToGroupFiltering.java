@@ -11,59 +11,62 @@ import java.util.Set;
 
 public class EquipmentToGroupFiltering extends FilteringInformationHolder {
 
-    private Set<String> equipmentIds=new HashSet<>();
-    @JsonIgnore
-    private List<Equipment> equipments;
-    private Set<String> groupIds=new HashSet<>();
-    @JsonIgnore
-    private List<EquipmentGroup> groups;
-    private boolean raw;
+	private Set<String> equipmentIds = new HashSet<>();
+	@JsonIgnore
+	private List<Equipment> equipments;
+	private Set<String> groupIds = new HashSet<>();
+	@JsonIgnore
+	private List<EquipmentGroup> groups;
+	private boolean raw;
 
+	public Set<String> getEquipmentIds() {
+		return equipmentIds;
+	}
 
-    public Set<String> getEquipmentIds() {
-        return equipmentIds;
-    }
+	public <T extends EquipmentToGroupFiltering> T setEquipmentIds(
+			Set<String> equipmentIds) {
+		this.equipmentIds = equipmentIds;
+		return (T) this;
+	}
 
-    public <T extends EquipmentToGroupFiltering> T setEquipmentIds(Set<String> equipmentIds) {
-        this.equipmentIds = equipmentIds;
-        return (T) this;
-    }
+	@JsonIgnore
+	public List<Equipment> getEquipments() {
+		return equipments;
+	}
 
-    @JsonIgnore
-    public List<Equipment> getEquipments() {
-        return equipments;
-    }
+	public <T extends EquipmentToGroupFiltering> T setEquipments(
+			List<Equipment> equipments) {
+		this.equipments = equipments;
+		return (T) this;
+	}
 
-    public <T extends EquipmentToGroupFiltering> T setEquipments(List<Equipment> equipments) {
-        this.equipments = equipments;
-        return (T) this;
-    }
+	public Set<String> getGroupIds() {
+		return groupIds;
+	}
 
-    public Set<String> getGroupIds() {
-        return groupIds;
-    }
+	public <T extends EquipmentToGroupFiltering> T setGroupIds(
+			Set<String> groupIds) {
+		this.groupIds = groupIds;
+		return (T) this;
+	}
 
-    public <T extends EquipmentToGroupFiltering> T setGroupIds(Set<String> groupIds) {
-        this.groupIds = groupIds;
-        return (T) this;
-    }
+	@JsonIgnore
+	public List<EquipmentGroup> getGroups() {
+		return groups;
+	}
 
-    @JsonIgnore
-    public List<EquipmentGroup> getGroups() {
-        return groups;
-    }
+	public <T extends EquipmentToGroupFiltering> T setGroups(
+			List<EquipmentGroup> groups) {
+		this.groups = groups;
+		return (T) this;
+	}
 
-    public <T extends EquipmentToGroupFiltering> T setGroups(List<EquipmentGroup> groups) {
-        this.groups = groups;
-        return (T) this;
-    }
+	public boolean isRaw() {
+		return raw;
+	}
 
-    public boolean isRaw() {
-        return raw;
-    }
-
-    public <T extends EquipmentToGroupFiltering> T setRaw(boolean raw) {
-        this.raw = raw;
-        return (T) this;
-    }
+	public <T extends EquipmentToGroupFiltering> T setRaw(boolean raw) {
+		this.raw = raw;
+		return (T) this;
+	}
 }

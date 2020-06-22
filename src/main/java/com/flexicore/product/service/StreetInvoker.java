@@ -11,31 +11,34 @@ import com.flexicore.product.model.ProductTypeFiltering;
 import com.flexicore.product.model.StreetFiltering;
 import com.flexicore.security.SecurityContext;
 
-import javax.inject.Inject;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
 @InvokerInfo(displayName = "Street Invoker", description = "Invoker for Street")
-
+@Extension
+@Component
 public class StreetInvoker implements ListingInvoker<Street, StreetFiltering> {
 
-    @Inject
-    @PluginInfo(version = 1)
-    private EquipmentService equipmentService;
+	@PluginInfo(version = 1)
+	@Autowired
+	private EquipmentService equipmentService;
 
-    @Override
-    @InvokerMethodInfo(displayName = "listAllStreets",description = "lists all Streets",relatedClasses = {Street.class})
+	@Override
+	@InvokerMethodInfo(displayName = "listAllStreets", description = "lists all Streets", relatedClasses = {Street.class})
+	public PaginationResponse<Street> listAll(StreetFiltering streetFiltering,
+			SecurityContext securityContext) {
+		return equipmentService.getAllStreets(streetFiltering, securityContext);
+	}
 
-    public PaginationResponse<Street> listAll(StreetFiltering streetFiltering, SecurityContext securityContext) {
-        return equipmentService.getAllStreets(streetFiltering, securityContext);
-    }
+	@Override
+	public Class<StreetFiltering> getFilterClass() {
+		return StreetFiltering.class;
+	}
 
-    @Override
-    public Class<StreetFiltering> getFilterClass() {
-        return StreetFiltering.class;
-    }
-
-    @Override
-    public Class<?> getHandlingClass() {
-        return Street.class;
-    }
+	@Override
+	public Class<?> getHandlingClass() {
+		return Street.class;
+	}
 }

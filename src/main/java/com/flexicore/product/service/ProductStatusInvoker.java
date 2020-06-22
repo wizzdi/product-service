@@ -11,33 +11,40 @@ import com.flexicore.product.model.ProductStatus;
 import com.flexicore.product.model.ProductStatusFiltering;
 import com.flexicore.security.SecurityContext;
 
-import javax.inject.Inject;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
 @InvokerInfo(displayName = "ProductStatus Invoker", description = "Invoker for Product Status")
+@Extension
+@Component
+public class ProductStatusInvoker
+		implements
+			ListingInvoker<ProductStatus, ProductStatusFiltering> {
 
-public class ProductStatusInvoker implements ListingInvoker<ProductStatus,ProductStatusFiltering> {
+	@PluginInfo(version = 1)
+	@Autowired
+	private EquipmentService equipmentService;
 
-    @Inject
-    @PluginInfo(version = 1)
-    private EquipmentService equipmentService;
+	@Override
+	@InvokerMethodInfo(displayName = "listAllProductStatus", description = "lists all Product status", relatedClasses = {ProductStatus.class})
+	public PaginationResponse<ProductStatus> listAll(
+			ProductStatusFiltering productStatusFiltering,
+			SecurityContext securityContext) {
+		equipmentService.validateProductStatusFiltering(productStatusFiltering,
+				securityContext);
+		return equipmentService.getAllProductStatus(productStatusFiltering,
+				null);
+	}
 
-    @Override
-    @InvokerMethodInfo(displayName = "listAllProductStatus",description = "lists all Product status",relatedClasses = {ProductStatus.class})
-    public PaginationResponse<ProductStatus> listAll(ProductStatusFiltering productStatusFiltering, SecurityContext securityContext) {
-        equipmentService.validateProductStatusFiltering(productStatusFiltering,securityContext);
-        return equipmentService.getAllProductStatus(productStatusFiltering, null);
-    }
+	@Override
+	public Class<ProductStatusFiltering> getFilterClass() {
+		return ProductStatusFiltering.class;
+	}
 
-
-
-    @Override
-    public Class<ProductStatusFiltering> getFilterClass() {
-        return ProductStatusFiltering.class;
-    }
-
-    @Override
-    public Class<?> getHandlingClass() {
-        return ProductStatus.class;
-    }
+	@Override
+	public Class<?> getHandlingClass() {
+		return ProductStatus.class;
+	}
 }

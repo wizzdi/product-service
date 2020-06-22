@@ -9,189 +9,181 @@ import com.flexicore.product.model.Gateway;
 
 import java.time.LocalDateTime;
 
-public class EquipmentCreate extends ProductCreate{
+public class EquipmentCreate extends ProductCreate {
 
+	@FieldInfo(displayName = "latitude", description = "gateway latitude")
+	private Double lat;
+	@FieldInfo(displayName = "longitude", description = "gateway longitude")
+	private Double lon;
 
-    @FieldInfo(displayName = "latitude",description = "gateway latitude")
+	@FieldInfo(displayName = "x", description = "x latitude")
+	private Double x;
+	@FieldInfo(displayName = "y", description = "y longitude")
+	private Double y;
 
-    private Double lat;
-    @FieldInfo(displayName = "longitude",description = "gateway longitude")
+	@FieldInfo(description = "warranty Expiration")
+	private LocalDateTime warrantyExpiration;
 
-    private Double lon;
+	private Boolean enable;
 
+	@IdRefFieldInfo(description = "Communication Gateway used to connect to equipment", displayName = "Communication Gateway", refType = Gateway.class, list = false)
+	private String communicationGatewayId;
+	@JsonIgnore
+	private Gateway gateway;
 
-    @FieldInfo(displayName = "x",description = "x latitude")
+	@FieldInfo(description = "serial")
+	private String serial;
+	@FieldInfo
+	private String externalId;
+	@IdRefFieldInfo(refType = ExternalServer.class, list = false)
+	private String externalServerId;
+	@JsonIgnore
+	private ExternalServer externalServer;
 
-    private Double x;
-    @FieldInfo(displayName = "y",description = "y longitude")
+	@JsonIgnore
+	private Address address;
+	private String addressId;
 
-    private Double y;
+	private String descriptor3D;
 
-    @FieldInfo(description = "warranty Expiration")
+	public String getExternalServerId() {
+		return externalServerId;
+	}
 
-    private LocalDateTime warrantyExpiration;
+	public <T extends EquipmentCreate> T setExternalServerId(
+			String externalServerId) {
+		this.externalServerId = externalServerId;
+		return (T) this;
+	}
 
-    private Boolean enable;
+	public Double getLat() {
+		return lat;
+	}
 
-    @IdRefFieldInfo(description = "Communication Gateway used to connect to equipment",displayName = "Communication Gateway",refType = Gateway.class,list = false)
+	public <T extends EquipmentCreate> T setLat(Double lat) {
+		this.lat = lat;
+		return (T) this;
+	}
 
-    private String communicationGatewayId;
-    @JsonIgnore
-    private Gateway gateway;
+	public Double getLon() {
+		return lon;
+	}
 
-    @FieldInfo(description = "serial")
+	public <T extends EquipmentCreate> T setLon(Double lon) {
+		this.lon = lon;
+		return (T) this;
+	}
 
-    private String serial;
-    @FieldInfo
-    private String externalId;
-    @IdRefFieldInfo(refType = ExternalServer.class,list = false)
-    private String externalServerId;
-    @JsonIgnore
-    private ExternalServer externalServer;
+	public LocalDateTime getWarrantyExpiration() {
+		return warrantyExpiration;
+	}
 
-    @JsonIgnore
-    private Address address;
-    private String addressId;
+	public <T extends EquipmentCreate> T setWarrantyExpiration(
+			LocalDateTime warrantyExpiration) {
+		this.warrantyExpiration = warrantyExpiration;
+		return (T) this;
+	}
 
+	public Boolean getEnable() {
+		return enable;
+	}
 
+	public <T extends EquipmentCreate> T setEnable(Boolean enable) {
+		this.enable = enable;
+		return (T) this;
+	}
 
-    private String descriptor3D;
+	public String getCommunicationGatewayId() {
+		return communicationGatewayId;
+	}
 
-    public String getExternalServerId() {
-        return externalServerId;
-    }
+	public <T extends EquipmentCreate> T setCommunicationGatewayId(
+			String communicationGatewayId) {
+		this.communicationGatewayId = communicationGatewayId;
+		return (T) this;
+	}
 
-    public <T extends EquipmentCreate> T setExternalServerId(String externalServerId) {
-        this.externalServerId = externalServerId;
-        return (T) this;
-    }
+	@JsonIgnore
+	public Gateway getGateway() {
+		return gateway;
+	}
 
-    public Double getLat() {
-        return lat;
-    }
+	public <T extends EquipmentCreate> T setGateway(Gateway gateway) {
+		this.gateway = gateway;
+		return (T) this;
+	}
 
-    public <T extends EquipmentCreate> T setLat(Double lat) {
-        this.lat = lat;
-        return (T) this;
-    }
+	public String getSerial() {
+		return serial;
+	}
 
-    public Double getLon() {
-        return lon;
-    }
+	public <T extends EquipmentCreate> T setSerial(String serial) {
+		this.serial = serial;
+		return (T) this;
+	}
 
-    public <T extends EquipmentCreate> T setLon(Double lon) {
-        this.lon = lon;
-        return (T) this;
-    }
+	public String getExternalId() {
+		return externalId;
+	}
 
-    public LocalDateTime getWarrantyExpiration() {
-        return warrantyExpiration;
-    }
+	public <T extends EquipmentCreate> T setExternalId(String externalId) {
+		this.externalId = externalId;
+		return (T) this;
+	}
 
-    public <T extends EquipmentCreate> T setWarrantyExpiration(LocalDateTime warrantyExpiration) {
-        this.warrantyExpiration = warrantyExpiration;
-        return (T) this;
-    }
+	public ExternalServer getExternalServer() {
+		return externalServer;
+	}
 
-    public Boolean getEnable() {
-        return enable;
-    }
+	public <T extends EquipmentCreate> T setExternalServer(
+			ExternalServer externalServer) {
+		this.externalServer = externalServer;
+		return (T) this;
+	}
 
-    public <T extends EquipmentCreate> T setEnable(Boolean enable) {
-        this.enable = enable;
-        return (T) this;
-    }
+	public Address getAddress() {
+		return address;
+	}
 
-    public String getCommunicationGatewayId() {
-        return communicationGatewayId;
-    }
+	public <T extends EquipmentCreate> T setAddress(Address address) {
+		this.address = address;
+		return (T) this;
+	}
 
-    public <T extends EquipmentCreate> T setCommunicationGatewayId(String communicationGatewayId) {
-        this.communicationGatewayId = communicationGatewayId;
-        return (T) this;
-    }
+	public String getAddressId() {
+		return addressId;
+	}
 
-    @JsonIgnore
-    public Gateway getGateway() {
-        return gateway;
-    }
+	public <T extends EquipmentCreate> T setAddressId(String addressId) {
+		this.addressId = addressId;
+		return (T) this;
+	}
 
-    public <T extends EquipmentCreate> T setGateway(Gateway gateway) {
-        this.gateway = gateway;
-        return (T) this;
-    }
+	public Double getX() {
+		return x;
+	}
 
-    public String getSerial() {
-        return serial;
-    }
+	public EquipmentCreate setX(Double x) {
+		this.x = x;
+		return this;
+	}
 
-    public <T extends EquipmentCreate> T setSerial(String serial) {
-        this.serial = serial;
-        return (T) this;
-    }
+	public Double getY() {
+		return y;
+	}
 
-    public String getExternalId() {
-        return externalId;
-    }
+	public EquipmentCreate setY(Double y) {
+		this.y = y;
+		return this;
+	}
 
-    public <T extends EquipmentCreate> T setExternalId(String externalId) {
-        this.externalId = externalId;
-        return (T) this;
-    }
+	public String getDescriptor3D() {
+		return descriptor3D;
+	}
 
-    public ExternalServer getExternalServer() {
-        return externalServer;
-    }
-
-    public <T extends EquipmentCreate> T setExternalServer(ExternalServer externalServer) {
-        this.externalServer = externalServer;
-        return (T) this;
-    }
-
-    public Address getAddress() {
-        return address;
-    }
-
-    public <T extends EquipmentCreate> T setAddress(Address address) {
-        this.address = address;
-        return (T) this;
-    }
-
-    public String getAddressId() {
-        return addressId;
-    }
-
-    public <T extends EquipmentCreate> T setAddressId(String addressId) {
-        this.addressId = addressId;
-        return (T) this;
-    }
-
-    public Double getX() {
-        return x;
-    }
-
-    public EquipmentCreate setX(Double x) {
-        this.x = x;
-        return this;
-    }
-
-    public Double getY() {
-        return y;
-    }
-
-    public EquipmentCreate setY(Double y) {
-        this.y = y;
-        return this;
-    }
-
-
-    public String getDescriptor3D() {
-        return descriptor3D;
-    }
-
-    public <T extends EquipmentCreate> T setDescriptor3D(String descriptor3D) {
-        this.descriptor3D = descriptor3D;
-        return (T) this;
-    }
+	public <T extends EquipmentCreate> T setDescriptor3D(String descriptor3D) {
+		this.descriptor3D = descriptor3D;
+		return (T) this;
+	}
 
 }

@@ -10,27 +10,28 @@ import java.util.Set;
 
 public class LatLonFilter extends FilteringInformationHolder {
 
-  private Set<String> multiLatLonEquipmentIds =new HashSet<>();
-  @JsonIgnore
-  private List<? extends MultiLatLonEquipment> multiLatLonEquipments;
+	private Set<String> multiLatLonEquipmentIds = new HashSet<>();
+	@JsonIgnore
+	private List<? extends MultiLatLonEquipment> multiLatLonEquipments;
 
+	public Set<String> getMultiLatLonEquipmentIds() {
+		return multiLatLonEquipmentIds;
+	}
 
-    public Set<String> getMultiLatLonEquipmentIds() {
-        return multiLatLonEquipmentIds;
-    }
+	public <T extends LatLonFilter> T setMultiLatLonEquipmentIds(
+			Set<String> multiLatLonEquipmentIds) {
+		this.multiLatLonEquipmentIds = multiLatLonEquipmentIds;
+		return (T) this;
+	}
 
-    public <T extends LatLonFilter> T setMultiLatLonEquipmentIds(Set<String> multiLatLonEquipmentIds) {
-        this.multiLatLonEquipmentIds = multiLatLonEquipmentIds;
-        return (T) this;
-    }
+	@JsonIgnore
+	public List<? extends MultiLatLonEquipment> getMultiLatLonEquipments() {
+		return multiLatLonEquipments;
+	}
 
-    @JsonIgnore
-    public List<? extends MultiLatLonEquipment> getMultiLatLonEquipments() {
-        return multiLatLonEquipments;
-    }
-
-    public <T extends LatLonFilter> T setMultiLatLonEquipments(List<? extends MultiLatLonEquipment> multiLatLonEquipments) {
-        this.multiLatLonEquipments = multiLatLonEquipments;
-        return (T) this;
-    }
+	public <T extends LatLonFilter> T setMultiLatLonEquipments(
+			List<? extends MultiLatLonEquipment> multiLatLonEquipments) {
+		this.multiLatLonEquipments = multiLatLonEquipments;
+		return (T) this;
+	}
 }

@@ -9,7 +9,6 @@ import com.flexicore.product.websocket.encoders.EventsWSMessageEncoder;
 import com.flexicore.product.websocket.service.EventSender;
 import com.flexicore.security.SecurityContext;
 
-import javax.inject.Inject;
 import javax.websocket.CloseReason;
 import javax.websocket.OnClose;
 import javax.websocket.OnOpen;
@@ -17,43 +16,45 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.util.logging.Logger;
+import org.pf4j.Extension;
+import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Created by Asaf on 31/08/2016.
  */
-@ServerEndpoint(value = "/eventsWS/{authenticationKey}",
-        encoders = {EventsWSMessageEncoder.class})
+@ServerEndpoint(value = "/eventsWS/{authenticationKey}", encoders = {EventsWSMessageEncoder.class})
 @Protected
 @PluginInfo(version = 1)
+@Extension
+@Component
 public class EventsWS implements WebSocketPlugin {
 
-    @Inject
-    private Logger logger;
+	@Autowired
+	private Logger logger;
 
+	@OnOpen
+	@Write
+	public void open(@PathParam("authenticationKey") String authenticationKey,
+			Session session) {
+		SecurityContext securityContext = (SecurityContext) session
+				.getUserProperties().get("securityContext");
 
+		logger.info("Opening:" + session.getId());
+		EventSender.registerUISession(session);
 
+	}
 
-    @OnOpen
-    @Write
+	@OnClose
+	@Update
+	public void close(@PathParam("authenticationKey") String authenticationKey,
+			CloseReason c, Session session) {
+		SecurityContext securityContext = (SecurityContext) session
+				.getUserProperties().get("securityContext");
 
-    public void open(@PathParam("authenticationKey") String authenticationKey, Session session) {
-        SecurityContext securityContext = (SecurityContext) session.getUserProperties().get("securityContext");
+		logger.info("Closing:" + session.getId());
+		EventSender.unregisterSession(session);
 
-        logger.info("Opening:" + session.getId());
-        EventSender.registerUISession(session);
-
-    }
-
-    @OnClose
-    @Update
-    public void close(@PathParam("authenticationKey") String authenticationKey, CloseReason c, Session session) {
-        SecurityContext securityContext = (SecurityContext) session.getUserProperties().get("securityContext");
-
-        logger.info("Closing:" + session.getId());
-        EventSender.unregisterSession(session);
-
-
-    }
-
+	}
 
 }

@@ -12,23 +12,31 @@ import java.security.GeneralSecurityException;
 import java.util.List;
 
 public interface IGatewayService extends ServicePlugin {
-    void validate(GatewayFiltering filtering, SecurityContext securityContext);
+	void validate(GatewayFiltering filtering, SecurityContext securityContext);
 
-    PaginationResponse<Gateway> getAllGateways(GatewayFiltering filtering, SecurityContext securityContext);
+	PaginationResponse<Gateway> getAllGateways(GatewayFiltering filtering,
+			SecurityContext securityContext);
 
-    List<Gateway> listAllGateways(GatewayFiltering filtering, SecurityContext securityContext);
+	List<Gateway> listAllGateways(GatewayFiltering filtering,
+			SecurityContext securityContext);
 
-    void validateCreate(GatewayCreate gatewayCreate, SecurityContext securityContext);
+	void validateCreate(GatewayCreate gatewayCreate,
+			SecurityContext securityContext);
 
-    void validateUpdate(GatewayUpdate gatewayCreate, SecurityContext securityContext);
+	void validateUpdate(GatewayUpdate gatewayCreate,
+			SecurityContext securityContext);
 
-    Gateway createGateway(GatewayCreate gatewayCreate, SecurityContext securityContext);
+	Gateway createGateway(GatewayCreate gatewayCreate,
+			SecurityContext securityContext);
 
-    Gateway createGatewayNoMerge(GatewayCreate gatewayCreate, SecurityContext securityContext);
+	Gateway createGatewayNoMerge(GatewayCreate gatewayCreate,
+			SecurityContext securityContext);
 
-    boolean updateGatewayNoMerge(GatewayCreate gatewayCreate, Gateway gateway);
+	boolean updateGatewayNoMerge(GatewayCreate gatewayCreate, Gateway gateway);
 
-    Gateway updateGateway(GatewayUpdate gatewayUpdate, SecurityContext securityContext);
+	Gateway updateGateway(GatewayUpdate gatewayUpdate,
+			SecurityContext securityContext);
 
-    String getDecryptedPassword(String encryptedPassword) throws GeneralSecurityException;
+	String getDecryptedPassword(String encryptedPassword)
+			throws GeneralSecurityException;
 }

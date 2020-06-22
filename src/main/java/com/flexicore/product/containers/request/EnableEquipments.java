@@ -8,37 +8,35 @@ import java.util.List;
 import java.util.Set;
 
 public class EnableEquipments {
-    private Set<String> equipmentIds =new HashSet<>();
-    private boolean enable;
-    @JsonIgnore
-    private List<Equipment> equipmentList;
+	private Set<String> equipmentIds = new HashSet<>();
+	private boolean enable;
+	@JsonIgnore
+	private List<Equipment> equipmentList;
 
+	public Set<String> getEquipmentIds() {
+		return equipmentIds;
+	}
 
-    public Set<String> getEquipmentIds() {
-        return equipmentIds;
-    }
+	public EnableEquipments setEquipmentIds(Set<String> equipmentIds) {
+		this.equipmentIds = equipmentIds;
+		return this;
+	}
+	@JsonIgnore
+	public List<Equipment> getEquipmentList() {
+		return equipmentList;
+	}
 
+	public EnableEquipments setEquipmentList(List<Equipment> equipmentList) {
+		this.equipmentList = equipmentList;
+		return this;
+	}
 
-    public EnableEquipments setEquipmentIds(Set<String> equipmentIds) {
-        this.equipmentIds = equipmentIds;
-        return this;
-    }
-    @JsonIgnore
-    public List<Equipment> getEquipmentList() {
-        return equipmentList;
-    }
+	public boolean isEnable() {
+		return enable;
+	}
 
-    public EnableEquipments setEquipmentList(List<Equipment> equipmentList) {
-        this.equipmentList = equipmentList;
-        return this;
-    }
-
-    public boolean isEnable() {
-        return enable;
-    }
-
-    public EnableEquipments setEnable(boolean enable) {
-        this.enable = enable;
-        return this;
-    }
+	public EnableEquipments setEnable(boolean enable) {
+		this.enable = enable;
+		return this;
+	}
 }
