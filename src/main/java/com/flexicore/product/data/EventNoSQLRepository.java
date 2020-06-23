@@ -14,11 +14,8 @@ import com.flexicore.product.request.DetailedEquipmentFilter;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.MongoConnectionService;
 import com.mongodb.BasicDBObject;
-import com.mongodb.MongoClient;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
+import com.mongodb.MongoClientSettings;
+import com.mongodb.client.*;
 import com.mongodb.client.model.*;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.lang3.tuple.Pair;
@@ -46,6 +43,7 @@ import static com.mongodb.client.model.Filters.*;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -81,7 +79,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin
 	@Autowired
 	private MongoClient mongoClient;
 
-	@Named(MONGO_DB)
+	@Qualifier(MONGO_DB)
 	@Autowired
 	private String mongoDBName;
 
@@ -96,7 +94,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin
 				builder = builder.register(aClass);
 			}
 			pojoCodecRegistry = fromRegistries(
-					MongoClient.getDefaultCodecRegistry(),
+					MongoClientSettings.getDefaultCodecRegistry(),
 					fromProviders(builder.build()));
 			pojoTime = alertClazzToRegister.getKey();
 		}
@@ -217,7 +215,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin
 
 		Bson pred = IEventNoSqlRepository.getEventsPredicate(eventFiltering);
 
-		return pred == null ? collection.count() : collection.count(pred);
+		return pred == null ? collection.countDocuments() : collection.countDocuments(pred);
 
 	}
 
@@ -231,7 +229,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin
 
 		Bson pred = IEventNoSqlRepository.getAlertsPredicate(eventFiltering);
 
-		return pred == null ? collection.count() : collection.count(pred);
+		return pred == null ? collection.countDocuments() : collection.countDocuments(pred);
 
 	}
 
@@ -368,7 +366,7 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin
 
 		Bson pred = getProcessErrorsPredicate(processErrorsFiltering);
 
-		return pred == null ? collection.count() : collection.count(pred);
+		return pred == null ? collection.countDocuments() : collection.countDocuments(pred);
 	}
 
 	public void massMergeEntries(List<EquipmentByStatusEntry> entries) {
@@ -445,6 +443,6 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin
 
 		Bson pred = getEquipmentByStatusPredicate(processErrorsFiltering);
 
-		return pred == null ? collection.count() : collection.count(pred);
+		return pred == null ? collection.countDocuments() : collection.countDocuments(pred);
 	}
 }

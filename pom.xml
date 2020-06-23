@@ -17,6 +17,8 @@
     <flexicore-api.version>4.0.7</flexicore-api.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <pf4j-spring.version>0.6.0</pf4j-spring.version>
+    <flexicore-iot-service.version>1.0.0</flexicore-iot-service.version>
+    <flexicore-sync-service.version>1.0.0</flexicore-sync-service.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -30,6 +32,11 @@
     </dependencies>
   </dependencyManagement>
   <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-mongodb</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -45,7 +52,7 @@
     <dependency>
       <groupId>com.wizzdi</groupId>
       <artifactId>flexicore-iot-service</artifactId>
-      <version>1.0.0</version>
+      <version>${flexicore-iot-service.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -57,7 +64,7 @@
     <dependency>
       <groupId>com.wizzdi</groupId>
       <artifactId>flexicore-sync-service</artifactId>
-      <version>1.0.0</version>
+      <version>${flexicore-sync-service.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -67,9 +74,9 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.flexicore</groupId>
+      <groupId>com.wizzdi</groupId>
       <artifactId>flexicore-territories-model</artifactId>
-      <version>1.1.0</version>
+      <version>2.1.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -79,21 +86,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.flexicore</groupId>
+      <groupId>com.wizzdi</groupId>
       <artifactId>organization-model</artifactId>
-      <version>1.1.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.flexicore</groupId>
-      <artifactId>scheduling-model</artifactId>
-      <version>1.0.3</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.flexicore</groupId>
-      <artifactId>scheduling-service</artifactId>
-      <version>1.0.3</version>
+      <version>1.1.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -114,18 +109,7 @@
       <version>2.6</version>
       <scope>provided</scope>
     </dependency>
-    <dependency>
-      <groupId>org.mongodb</groupId>
-      <artifactId>mongo-java-driver</artifactId>
-      <version>3.10.2</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.swagger.core.v3</groupId>
-      <artifactId>swagger-jaxrs2</artifactId>
-      <version>2.0.8</version>
-      <scope>provided</scope>
-    </dependency>
+
     <dependency>
       <groupId>org.eclipse.persistence</groupId>
       <artifactId>eclipselink</artifactId>
@@ -225,7 +209,8 @@
                   <manifestEntries>
                     <Plugin-Id>${artifactId}</Plugin-Id>
                     <Plugin-Version>${version}</Plugin-Version>
-                  <!--suppress UnresolvedMavenProperty --><Plugin-Dependencies/></manifestEntries>
+                    <Plugin-Dependencies>flexicore-iot-service@&gt;=${flexicore-iot-service.version},flexicore-sync-service@&gt;=${flexicore-sync-service.version}</Plugin-Dependencies>
+                  </manifestEntries>
                 </transformer>
               </transformers>
             </configuration>

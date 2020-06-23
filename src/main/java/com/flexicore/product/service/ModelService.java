@@ -61,9 +61,8 @@ public class ModelService implements IModelService {
 	@Override
 	public Model createModelNoMerge(ModelCreate modelCreate,
 			SecurityContext securityContext) {
-		Model model = Model.s().CreateUnchecked(modelCreate.getName(),
+		Model model = new Model(modelCreate.getName(),
 				securityContext);
-		model.Init();
 		updateModelNoMerge(model, modelCreate);
 		return model;
 	}

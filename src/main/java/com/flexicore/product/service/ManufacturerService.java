@@ -61,9 +61,8 @@ public class ManufacturerService implements IManufacturerService {
 	public Manufacturer createManufacturerNoMerge(
 			ManufacturerCreate manufacturerCreate,
 			SecurityContext securityContext) {
-		Manufacturer manufacturer = Manufacturer.s().CreateUnchecked(
+		Manufacturer manufacturer = new Manufacturer(
 				manufacturerCreate.getName(), securityContext);
-		manufacturer.Init();
 		updateManufacturerNoMerge(manufacturer, manufacturerCreate);
 		return manufacturer;
 	}

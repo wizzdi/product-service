@@ -23,18 +23,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pf4j.Extension;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 
-@PluginInfo(version = 1, autoInstansiate = true)
+@PluginInfo(version = 1)
 @ApplicationScoped
 @Extension
 @Component
-public class ExternalServerConnectionManager
-		implements
-			ServicePlugin,
-			InitPlugin {
+public class ExternalServerConnectionManager implements ServicePlugin {
 
 	private static final AtomicBoolean init = new AtomicBoolean(false);
 
@@ -57,8 +55,8 @@ public class ExternalServerConnectionManager
 	private static ProductStatus connected;
 	private static ProductStatus disconnected;
 
-	@Override
-	public void init() {
+	@EventListener
+	public void init(ContextRefreshedEvent e) {
 		if (init.compareAndSet(false, true)) {
 
 			SecurityContext adminUserSecurityContext = securityService

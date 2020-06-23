@@ -46,10 +46,12 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@PluginInfo(version = 1, autoInstansiate = true)
+@PluginInfo(version = 1)
 @Extension
 @Component
 public class EquipmentService implements IEquipmentService {
@@ -75,8 +77,6 @@ public class EquipmentService implements IEquipmentService {
 	@Autowired
 	private SecurityService securityService;
 
-	@Autowired
-	private FlexiCoreServerService flexiCoreServerService;
 
 	@Autowired
 	private Logger logger;
@@ -105,8 +105,8 @@ public class EquipmentService implements IEquipmentService {
 	private static ProductType buildingProductType;
 	private static ProductStatus error;
 
-	@Override
-	public void init() {
+	@EventListener
+	public void init(ContextRefreshedEvent e) {
 		if (init.compareAndSet(false, true)) {
 			SecurityContext securityContext = securityService
 					.getAdminUserSecurityContext();
@@ -330,9 +330,8 @@ public class EquipmentService implements IEquipmentService {
 	@Override
 	public Gateway createGatewayNoMerge(GatewayCreate equipmentCreate,
 			SecurityContext securityContext) {
-		Gateway equipment = Gateway.s().CreateUnchecked(
+		Gateway equipment = new Gateway(
 				equipmentCreate.getName(), securityContext);
-		equipment.Init();
 		updateGatewayNoMerge(equipmentCreate, equipment);
 		return equipment;
 	}
@@ -788,12 +787,12 @@ public class EquipmentService implements IEquipmentService {
 			name = productStatusCreate.getProductType().getName() + "To"
 					+ productStatusCreate.getProductStatus().getName();
 		}
-		ProductTypeToProductStatus productTypeToProductStatus = ProductTypeToProductStatus
-				.s().CreateUnchecked(name, securityContext);
-		productTypeToProductStatus.Init(productStatusCreate.getProductType(),
-				productStatusCreate.getProductStatus());
-		productTypeToProductStatus
-				.setId(getProductTypeToStatusId(productTypeToProductStatus));
+		ProductTypeToProductStatus productTypeToProductStatus = new ProductTypeToProductStatus
+				(name, securityContext);
+		productTypeToProductStatus.setLeftside(productStatusCreate.getProductType());
+		productTypeToProductStatus.setRightside(productStatusCreate.getProductStatus());
+
+		productTypeToProductStatus.setId(getProductTypeToStatusId(productTypeToProductStatus));
 		baselinkService.merge(productTypeToProductStatus);
 		return productTypeToProductStatus;
 	}
@@ -838,10 +837,10 @@ public class EquipmentService implements IEquipmentService {
 	public ProductToStatus createProductToProductStatusLinkNoMerge(
 			ProductStatusToProductCreate productStatusCreate,
 			SecurityContext securityContext) {
-		ProductToStatus productToStatus = ProductToStatus.s().CreateUnchecked(
+		ProductToStatus productToStatus = new ProductToStatus(
 				"link", securityContext);
-		productToStatus.Init(productStatusCreate.getProduct(),
-				productStatusCreate.getProductStatus());
+		productToStatus.setLeftside(productStatusCreate.getProduct());
+		productToStatus.setRightside(productStatusCreate.getProductStatus());
 		productToStatus.setId(getProductToStatusId(productToStatus));
 		productToStatus.setEnabled(true);
 		return productToStatus;
@@ -867,9 +866,8 @@ public class EquipmentService implements IEquipmentService {
 	public ProductStatus createProductStatus(
 			ProductStatusCreate productStatusCreate,
 			SecurityContext securityContext) {
-		ProductStatus productStatus = ProductStatus.s().CreateUnchecked(
+		ProductStatus productStatus = new ProductStatus(
 				productStatusCreate.getName(), securityContext);
-		productStatus.Init();
 		productStatus.setId(getProductStatusId(productStatusCreate.getName()));
 		productStatus.setDescription(productStatusCreate.getDescription());
 		return productStatus;
@@ -912,9 +910,8 @@ public class EquipmentService implements IEquipmentService {
 	@Override
 	public ProductType createProductTypeNoMerge(
 			ProductTypeCreate productTypeCreate, SecurityContext securityContext) {
-		ProductType productType = ProductType.s().CreateUnchecked(
+		ProductType productType = new ProductType(
 				productTypeCreate.getName(), securityContext);
-		productType.Init();
 		productType.setId(getProductTypeId(productTypeCreate.getName()));
 		updateProductTypeNoMerge(productTypeCreate, productType);
 		return productType;
@@ -1227,8 +1224,7 @@ public class EquipmentService implements IEquipmentService {
 
 	public LatLon createLatLonNoMerge(CreateLatLon createLatLon,
 			SecurityContext securityContext) {
-		LatLon latLon = LatLon.s().CreateUnchecked("LatLon", securityContext);
-		latLon.Init();
+		LatLon latLon = new LatLon("LatLon", securityContext);
 		updateLatLonNoMerge(createLatLon, latLon);
 		return latLon;
 	}

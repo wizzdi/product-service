@@ -101,9 +101,8 @@ public class GatewayService implements IGatewayService {
 	@Override
 	public Gateway createGatewayNoMerge(GatewayCreate gatewayCreate,
 			SecurityContext securityContext) {
-		Gateway gateway = Gateway.s().CreateUnchecked(gatewayCreate.getName(),
+		Gateway gateway = new Gateway(gatewayCreate.getName(),
 				securityContext);
-		gateway.Init();
 		updateGatewayNoMerge(gatewayCreate, gateway);
 		return gateway;
 	}

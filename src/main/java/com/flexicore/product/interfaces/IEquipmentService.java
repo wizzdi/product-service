@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface IEquipmentService extends ServicePlugin, InitPlugin {
+public interface IEquipmentService extends ServicePlugin {
 
 	ProductType getGatewayProductType();
 

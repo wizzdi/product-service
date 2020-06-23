@@ -91,10 +91,9 @@ public class GroupService implements IGroupService {
 	public EquipmentGroup createGroup(GroupCreate groupCreate,
 			SecurityContext securityContext) {
 		List<Object> toMerge = new ArrayList<>();
-		EquipmentGroup equipmentGroup = EquipmentGroup.s().CreateUnchecked(
+		EquipmentGroup equipmentGroup = new EquipmentGroup(
 				groupCreate.getName(), securityContext);
 
-		equipmentGroup.Init();
 		equipmentGroup.setDescription(groupCreate.getDescription());
 		equipmentGroup.setParent(groupCreate.getParent());
 		PermissionGroup permissionGroup = permissionGroupService
