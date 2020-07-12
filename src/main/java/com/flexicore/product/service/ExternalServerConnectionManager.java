@@ -85,6 +85,14 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 
 	}
 
+	public static ProductStatus getConnected() {
+		return connected;
+	}
+
+	public static ProductStatus getDisconnected() {
+		return disconnected;
+	}
+
 	@EventListener
 	public void onSingleJobAdded(SingleInspectJob<?, ?> singleInspectJob) {
 		ExternalServerConnectionConfiguration<?, ?> connectionConfiguration = configurations

@@ -1970,4 +1970,14 @@ public class EquipmentService implements IEquipmentService {
 		equipmentRepository.merge(equipmentFiltering);
 		return equipmentFiltering;
 	}
+
+	@Override
+	public ProductStatus getConnectedStatus(){
+		return ExternalServerConnectionManager.getConnected();
+	}
+
+	@Override
+	public ProductStatus getDisconnectedStatus(){
+		return ExternalServerConnectionManager.getDisconnected();
+	}
 }

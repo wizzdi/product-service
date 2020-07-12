@@ -194,4 +194,9 @@ public interface IEquipmentService extends ServicePlugin {
 	List<ProductTypeToProductStatus> listAllProductTypeToProductStatus(
 			ProductTypeToProductStatusFilter filter,
 			SecurityContext securityContext);
+
+
+	ProductStatus getConnectedStatus();
+
+	ProductStatus getDisconnectedStatus();
 }
