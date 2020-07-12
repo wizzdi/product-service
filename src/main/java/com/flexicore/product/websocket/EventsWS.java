@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * Created by Asaf on 31/08/2016.
  */
-@ServerEndpoint(value = "/eventsWS/{authenticationKey}", encoders = {EventsWSMessageEncoder.class})
+@ServerEndpoint(value = "/FlexiCore/eventsWS/{authenticationKey}", encoders = {EventsWSMessageEncoder.class})
 @Protected
 @PluginInfo(version = 1)
 @Extension

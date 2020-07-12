@@ -35,6 +35,7 @@ public interface IEventService extends ServicePlugin {
 		clazzToRegisterMap.put(c.getCanonicalName(), c);
 	}
 
+
 	static Pair<Long, Set<Class<?>>> getAlertClazzToRegister() {
 		return Pair
 				.of(lastListUpdateTime.get(), new HashSet<>(clazzToRegister));

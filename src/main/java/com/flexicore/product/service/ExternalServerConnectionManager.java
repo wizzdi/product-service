@@ -1,7 +1,6 @@
 package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.interfaces.InitPlugin;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.product.config.Config;

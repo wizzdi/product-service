@@ -1,6 +1,7 @@
 package com.flexicore.product.data;
 
 import com.flexicore.annotations.plugins.PluginInfo;
+import com.flexicore.events.PluginsLoadedEvent;
 import com.flexicore.interfaces.AbstractNoSqlRepositoryPlugin;
 import com.flexicore.product.containers.request.AlertFiltering;
 import com.flexicore.product.containers.request.CreateAggregatedReport;
@@ -44,6 +45,8 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -83,10 +86,21 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin
 	@Autowired
 	private String mongoDBName;
 
+
 	@PostConstruct
 	private void postConstruct() {
-		if (pojoTime != IEventService.lastListUpdateTime.get()
-				|| init.compareAndSet(false, true)) {
+		refreshCodec();
+
+	}
+
+	@EventListener
+	@Order(11)
+	public void init(PluginsLoadedEvent o){
+		refreshCodec();
+	}
+
+	private void refreshCodec() {
+
 			PojoCodecProvider.Builder builder = PojoCodecProvider.builder();
 			Pair<Long, Set<Class<?>>> alertClazzToRegister = IEventService
 					.getAlertClazzToRegister();
@@ -97,7 +111,6 @@ public class EventNoSQLRepository extends AbstractNoSqlRepositoryPlugin
 					MongoClientSettings.getDefaultCodecRegistry(),
 					fromProviders(builder.build()));
 			pojoTime = alertClazzToRegister.getKey();
-		}
 
 	}
 

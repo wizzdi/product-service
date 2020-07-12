@@ -59,15 +59,13 @@ public interface IEventNoSqlRepository extends PluginRepository {
 		Bson pred = null;
 		if (eventFiltering.getFromDate() != null) {
 
-			Date start = Date.from(eventFiltering.getFromDate()
-					.withOffsetSameInstant(ZoneOffset.of("UTC")).toInstant());
+			Date start = Date.from(eventFiltering.getFromDate().toInstant());
 			Bson gte = gte(EVENT_DATE, start);
 			pred = pred == null ? gte : and(pred, gte);
 		}
 
 		if (eventFiltering.getToDate() != null) {
-			Date end = Date.from(eventFiltering.getToDate()
-					.withOffsetSameInstant(ZoneOffset.of("UTC")).toInstant());
+			Date end = Date.from(eventFiltering.getToDate().toInstant());
 			Bson lte = lte(EVENT_DATE, end);
 			pred = pred == null ? lte : and(pred, lte);
 		}

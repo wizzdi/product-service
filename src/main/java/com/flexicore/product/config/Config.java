@@ -2,7 +2,8 @@ package com.flexicore.product.config;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
-import com.flexicore.interfaces.InitPlugin;
+import com.flexicore.events.PluginsLoadedEvent;
+import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.model.FilteringInformationHolder;
 import com.flexicore.model.territories.Neighbourhood;
@@ -21,14 +22,16 @@ import com.flexicore.utils.InheritanceUtils;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.pf4j.Extension;
+import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
-@PluginInfo(version = 1, autoInstansiate = true)
+@PluginInfo(version = 1)
 @Extension
 @Component
-public class Config implements InitPlugin {
+public class Config implements ServicePlugin {
 
 	private static AtomicBoolean init = new AtomicBoolean(false);
 	public static int MAX_CONNECTION_MANAGER_THREADS = 5;
@@ -41,8 +44,9 @@ public class Config implements InitPlugin {
 		return keySetFilePath;
 	}
 
-	@Override
-	public void init() {
+	@EventListener
+	@Order(10)
+	public void init(PluginsLoadedEvent e) {
 		if (init.compareAndSet(false, true)) {
 			MAX_CONNECTION_MANAGER_THREADS = Integer.parseInt(properties
 					.getProperty("MAX_CONNECTION_MANAGER_THREADS",

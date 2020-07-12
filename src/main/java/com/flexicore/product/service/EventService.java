@@ -89,6 +89,8 @@ public class EventService implements IEventService {
 		return new PaginationResponse<>(list, eventFiltering, count);
 	}
 
+
+
 	private List<AggregationReportEntry> cauculateReportForDate(
 			CreateAggregatedReport filtering, OffsetDateTime localDateTime,
 			Map<String, String> statusToName, Map<String, String> typeToName,
