@@ -15,7 +15,8 @@ import com.flexicore.product.request.SingleInspectJob;
 import com.flexicore.product.response.GenericInspectResponse;
 import com.flexicore.security.SecurityContext;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -42,7 +43,7 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 	@Autowired
 	private ProductToStatusService productToStatusService;
 
-	@Transactional(Transactional.TxType.REQUIRES_NEW)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public <S extends ExternalServer, C extends ConnectionHolder<S>> void handleConfiguration(
 			ExternalServerConnectionConfiguration<?, ?> configuration,
 			SecurityContext securityContext, ProductStatus connected,

@@ -32,7 +32,6 @@ import javax.ws.rs.BadRequestException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -43,6 +42,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.pf4j.Extension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,6 +68,9 @@ public class EventService implements IEventService {
 	private Logger logger;
 	@Autowired
 	private FileResourceService fileResourceService;
+
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
 	private static AtomicBoolean init = new AtomicBoolean(false);
 
 	@Override
@@ -287,6 +290,8 @@ public class EventService implements IEventService {
 	public AckEventsResponse ackEvents(AckEventsRequest ackEventsRequest,
 			SecurityContext securityContext) {
 		long updated = repository.ackEvents(ackEventsRequest, securityContext);
+		EventsAcked eventsAcked=new EventsAcked().setAckedEvents(ackEventsRequest.getEventIds()).setAckedUserId(securityContext.getUser().getId());
+		eventPublisher.publishEvent(eventsAcked);
 		return new AckEventsResponse().setUpdated(updated);
 	}
 

@@ -18,9 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @InvokerInfo(displayName = "Equipment short Invoker", description = "Invoker for Equipments short")
 @Extension
 @Component
-public class EquipmentShortInvoker
-		implements
-			ListingInvoker<EquipmentShort, EquipmentFiltering> {
+public class EquipmentShortInvoker implements ListingInvoker<EquipmentShort, EquipmentFiltering> {
 
 	@PluginInfo(version = 1)
 	@Autowired

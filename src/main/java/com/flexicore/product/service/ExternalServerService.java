@@ -12,7 +12,7 @@ import com.flexicore.product.iot.request.ExternalServerUserCreate;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.EncryptionService;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import javax.ws.rs.BadRequestException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -170,7 +170,7 @@ public class ExternalServerService implements IExternalServerService {
 		return new PaginationResponse<>(list, externalServerFiltering, count);
 	}
 
-	@Transactional(Transactional.TxType.REQUIRED)
+	@Transactional
 	public void massMerge(List<?> toMerge) {
 		externalServerRepository.massMerge(toMerge);
 	}

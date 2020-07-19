@@ -2,6 +2,7 @@ package com.flexicore.product.websocket.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.ServicePlugin;
+import com.flexicore.product.interfaces.IEvent;
 import com.flexicore.product.model.Event;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -15,6 +16,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pf4j.Extension;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -29,8 +31,9 @@ public class EventSender implements ServicePlugin {
 	private Logger logger;
 	private static Queue<Session> sessions = new LinkedBlockingQueue<>();
 
+	@Async
 	@EventListener
-	public void sendEvent(Event event) {
+	public void sendEvent(IEvent event) {
 		List<Session> toRemove = new ArrayList<>();
 		for (Session session : sessions) {
 			try {

@@ -8,7 +8,7 @@ import com.flexicore.product.request.ProductToStatusFilter;
 import com.flexicore.product.request.ProductToStatusMassUpdate;
 import com.flexicore.security.SecurityContext;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import org.pf4j.Extension;
 import org.springframework.stereotype.Component;
@@ -38,7 +38,7 @@ public class ProductToStatusService implements IProductToStatusService {
 				productToStatusMassUpdate, securityContext);
 	}
 
-	@Transactional(Transactional.TxType.REQUIRED)
+	@Transactional
 	public void massMerge(List<?> toMerge) {
 		productToStatusRepository.massMerge(toMerge);
 	}
