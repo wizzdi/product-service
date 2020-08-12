@@ -1,10 +1,12 @@
 package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
+import com.flexicore.data.jsoncontainers.CreatePermissionGroupLinkRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
+import com.flexicore.model.PermissionGroup;
+import com.flexicore.model.PermissionGroupToBaseclass;
 import com.flexicore.product.data.StatusLinkToImageRepository;
 import com.flexicore.product.interfaces.IStatusLinkToImageService;
 import com.flexicore.product.model.ProductStatus;
@@ -14,15 +16,18 @@ import com.flexicore.product.model.StatusLinkToImage;
 import com.flexicore.product.request.StatusLinksToImageCreate;
 import com.flexicore.product.request.StatusLinksToImageFilter;
 import com.flexicore.product.request.StatusLinksToImageUpdate;
+import com.flexicore.request.PermissionGroupsFilter;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.PermissionGroupService;
+import org.pf4j.Extension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.BadRequestException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import org.pf4j.Extension;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @PluginInfo(version = 1)
 @Extension
@@ -35,6 +40,9 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 
 	@Autowired
 	private Logger logger;
+
+	@Autowired
+	private PermissionGroupService permissionGroupService;
 
 	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
 			List<String> batchString, SecurityContext securityContext) {
@@ -172,6 +180,12 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 		StatusLinkToImage statusLinkToImage = createStatusLinkToImageNoMerge(
 				statusLinksToImageCreate, securityContext);
 		repository.merge(statusLinkToImage);
+		List<PermissionGroup> permissionGroups=permissionGroupService.listPermissionGroups(new PermissionGroupsFilter().setBaseclasses(Collections.singletonList(statusLinksToImageCreate.getProductTypeToProductStatus())),null);
+		if(!permissionGroups.isEmpty()){
+			List<PermissionGroupToBaseclass> permissionGroupToBaseclasses = permissionGroupService.connectPermissionGroupsToBaseclasses(new CreatePermissionGroupLinkRequest().setBaseclasses(Collections.singletonList(statusLinkToImage)).setPermissionGroups(permissionGroups), securityContext);
+			logger.info("StatusLinkToImage is connected to "+permissionGroupToBaseclasses.size() +"permission groups");
+		}
+
 		return statusLinkToImage;
 	}
 
@@ -179,12 +193,8 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 	public StatusLinkToImage createStatusLinkToImageNoMerge(
 			StatusLinksToImageCreate statusLinksToImageCreate,
 			SecurityContext securityContext) {
-		StatusLinkToImage statusLinkToImage = StatusLinkToImage.s()
-				.CreateUnchecked(statusLinksToImageCreate.getName(),
-						securityContext);
-		statusLinkToImage.Init();
-		updateStatusLinkToImageNoMerge(statusLinksToImageCreate,
-				statusLinkToImage);
+		StatusLinkToImage statusLinkToImage = new StatusLinkToImage(statusLinksToImageCreate.getName(), securityContext);
+		updateStatusLinkToImageNoMerge(statusLinksToImageCreate, statusLinkToImage);
 		return statusLinkToImage;
 	}
 

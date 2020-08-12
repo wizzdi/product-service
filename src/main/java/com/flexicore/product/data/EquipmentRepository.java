@@ -10,6 +10,7 @@ import com.flexicore.product.containers.response.EquipmentStatusGroup;
 import com.flexicore.product.interfaces.IEquipmentRepository;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.*;
+import com.flexicore.product.response.TypeHolder;
 import com.flexicore.security.SecurityContext;
 
 import javax.persistence.TypedQuery;
@@ -636,4 +637,25 @@ public class EquipmentRepository extends AbstractRepositoryPlugin
 		return subquery;
 	}
 
+	public  List<TypeHolder> listAllEquipmentTypes(EquipmentFiltering filtering, SecurityContext securityContext) {
+
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<TypeHolder> q = cb.createQuery(TypeHolder.class);
+		Root<Equipment> r = q.from(Equipment.class);
+
+		List<Predicate> preds = new ArrayList<>();
+		IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+
+
+		QueryInformationHolder<Equipment> queryInformationHolder = new QueryInformationHolder<>(
+				filtering, Equipment.class, securityContext);
+		prepareQuery(queryInformationHolder, preds, cb, q, r);
+		Join<Equipment,Clazz> clazzJoin=r.join(Equipment_.clazz);
+		CompoundSelection<TypeHolder> construct = cb.construct(TypeHolder.class, clazzJoin.get(Clazz_.id), cb.count(r.get(Equipment_.id)));
+		Predicate[] predsArray = new Predicate[preds.size()];
+		predsArray = preds.toArray(predsArray);
+		q.select(construct).where(predsArray).groupBy(clazzJoin.get(Clazz_.id)).orderBy(cb.desc(clazzJoin.get(Clazz_.id)));
+		return em.createQuery(q).getResultList();
+
+	}
 }

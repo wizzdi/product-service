@@ -8,6 +8,7 @@ import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.containers.request.EquipmentUpdate;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.UpdateEquipmentParameters;
+import com.flexicore.product.response.TypeHolder;
 import com.flexicore.security.SecurityContext;
 
 import javax.ws.rs.BadRequestException;
@@ -20,9 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @InvokerInfo(displayName = "Equipment Invoker", description = "Invoker for Equipments")
 @Extension
 @Component
-public class EquipmentInvoker
-		implements
-			ListingInvoker<Equipment, EquipmentFiltering> {
+public class EquipmentInvoker implements ListingInvoker<Equipment, EquipmentFiltering> {
 
 	@PluginInfo(version = 1)
 	@Autowired
@@ -65,6 +64,13 @@ public class EquipmentInvoker
 				executionParametersHolder.getEquipmentFiltering(),
 				executionParametersHolder.getSecurityContext());
 	}
+
+	@InvokerMethodInfo(displayName = "listAllTypes", description = "lists all Equipment types", relatedClasses = {Equipment.class})
+	public List<TypeHolder> listAllTypes(EquipmentGroupFiltering equipmentGroupFiltering, SecurityContext securityContext) {
+		equipmentService.validateFiltering(equipmentGroupFiltering, securityContext);
+		return equipmentService.listAllEquipmentTypes(equipmentGroupFiltering, securityContext);
+	}
+
 
 	@Override
 	public Class<EquipmentFiltering> getFilterClass() {

@@ -1,6 +1,7 @@
 package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
+import com.flexicore.events.PluginsLoadedEvent;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.product.config.Config;
@@ -23,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pf4j.Extension;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
@@ -68,13 +70,22 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 					new ProductStatusCreate().setName("Disconnected")
 							.setDescription("Disconnected"),
 					adminUserSecurityContext);
+		}
+	}
+
+	@Async
+	@EventListener
+	public void init(PluginsLoadedEvent e) {
+
+			SecurityContext adminUserSecurityContext = securityService
+					.getAdminUserSecurityContext();
 
 			ExecutorService executorService = createExecutor(
 					Config.MAX_CONNECTION_MANAGER_THREADS,
 					Config.MAX_CONNECTION_MANAGER_THREADS, logger, 60 * 1000);
 			new Thread(new ConnectionManager(executorService,
 					adminUserSecurityContext)).start();
-		}
+
 	}
 
 	@EventListener

@@ -25,6 +25,7 @@ import com.flexicore.product.interfaces.IEquipmentService;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.*;
 import com.flexicore.product.response.ProductStatusEntry;
+import com.flexicore.product.response.TypeHolder;
 import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
@@ -1979,5 +1980,19 @@ public class EquipmentService implements IEquipmentService {
 	@Override
 	public ProductStatus getDisconnectedStatus(){
 		return ExternalServerConnectionManager.getDisconnected();
+	}
+
+	public List<TypeHolder> listAllEquipmentTypes(EquipmentFiltering equipmentFiltering, SecurityContext securityContext) {
+		List<TypeHolder> typeHolders = equipmentRepository.listAllEquipmentTypes(equipmentFiltering, securityContext);
+		Set<String> ids=typeHolders.stream().map(f->f.getId()).collect(Collectors.toSet());
+		Map<String,Clazz> clazzes=ids.isEmpty()?new HashMap<>():equipmentRepository.listByIds(Clazz.class,ids,null).stream().collect(Collectors.toMap(f->f.getId(),f->f));
+		for (TypeHolder typeHolder : typeHolders) {
+			Clazz clazz = clazzes.get(typeHolder.getId());
+			if(clazz!=null){
+				typeHolder.setName(clazz.getName());
+
+			}
+		}
+		return typeHolders;
 	}
 }

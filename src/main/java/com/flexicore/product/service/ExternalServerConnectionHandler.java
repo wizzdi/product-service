@@ -88,43 +88,31 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 			ProductStatus disconnected,
 			ExternalServerConnectionConfiguration<S, C> configurationCasted,
 			S externalServer) {
-		logger.info("Starting connection handling for "
-				+ externalServer.getName() + " (" + externalServer.getId()
-				+ ")");
+		logger.info("Starting connection handling for " + externalServer.getName() + " (" + externalServer.getId() + ")");
 		List<Object> toMerge = new ArrayList<>();
 		List<Equipment> connectedEquipmentRaw = new ArrayList<>();
 		List<Equipment> disconnectedEquipmentRaw = new ArrayList<>();
 		boolean success = false;
 		try {
 			String id = externalServer.getId();
-			C connectionHolder = configurationCasted.getConnectionHolders()
-					.get(id);
+			C connectionHolder = configurationCasted.getConnectionHolders().get(id);
 			if (connectionHolder == null) {
-				logger.info("Getting Connection Holder for "
-						+ externalServer.getName() + " ("
-						+ externalServer.getId() + ")");
+				logger.info("Getting Connection Holder for " + externalServer.getName() + " (" + externalServer.getId() + ")");
 
 				connectionHolder = configurationCasted.getOnConnect().apply(
 						externalServer);
 				if (connectionHolder == null) {
-					logger.warning("Failed Getting Connection Holder for "
-							+ externalServer.getName() + " ("
-							+ externalServer.getId() + ")");
+					logger.warning("Failed Getting Connection Holder for " + externalServer.getName() + " (" + externalServer.getId() + ")");
 					return;
 				}
-				configurationCasted.getConnectionHolders().put(id,
-						connectionHolder);
+				configurationCasted.getConnectionHolders().put(id, connectionHolder);
 				if (connectionHolder.getSecurityContext() == null) {
 					connectionHolder.setSecurityContext(securityContext);
 				}
 			}
-			logger.info("Starting Inspect for " + externalServer.getName()
-					+ " (" + externalServer.getId() + ")");
-			GenericInspectResponse genericInspectResponse = configurationCasted
-					.getOnInspect().apply(connectionHolder);
-			logger.info("Inspect ended with" + genericInspectResponse + " for "
-					+ externalServer.getName() + " (" + externalServer.getId()
-					+ ")");
+			logger.info("Starting Inspect for " + externalServer.getName() + " (" + externalServer.getId() + ")");
+			GenericInspectResponse genericInspectResponse = configurationCasted.getOnInspect().apply(connectionHolder);
+			logger.info("Inspect ended with" + genericInspectResponse + " for " + externalServer.getName() + " (" + externalServer.getId() + ")");
 
 			connectedEquipmentRaw = genericInspectResponse
 					.getConnectedEquipment();
@@ -134,9 +122,7 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 			}
 
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "failed inspecting server "
-					+ externalServer.getName() + " (" + externalServer.getId()
-					+ ")", e);
+			logger.log(Level.SEVERE, "failed inspecting server " + externalServer.getName() + " (" + externalServer.getId() + ")", e);
 		} finally {
 			LocalDateTime inspectTime = LocalDateTime.now();
 			externalServer.setLastInspectAttempt(inspectTime);
@@ -147,84 +133,30 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 				disconnectedEquipmentRaw.add(externalServer);
 			}
 			toMerge.add(externalServer);
-			Set<String> connectedIds = connectedEquipmentRaw.stream()
-					.map(f -> f.getId()).collect(Collectors.toSet());
-			List<Equipment> c = equipmentService
-					.listAllEquipments(
-							Equipment.class,
-							new EquipmentFiltering()
-									.setExternalServers(Collections
-											.singletonList(externalServer)),
-							securityContext).stream()
-					.filter(f -> !connectedIds.contains(f.getId()))
-					.collect(Collectors.toList());
+			Set<String> connectedIds = connectedEquipmentRaw.stream().map(f -> f.getId()).collect(Collectors.toSet());
+			List<Equipment> c = equipmentService.listAllEquipments(Equipment.class, new EquipmentFiltering().setExternalServers(Collections.singletonList(externalServer)), securityContext).stream().filter(f -> !connectedIds.contains(f.getId())).collect(Collectors.toList());
 			disconnectedEquipmentRaw.addAll(c);
-			for (List<Equipment> connectedEquipment : Lists.partition(
-					connectedEquipmentRaw, 100)) {
-				Map<String, List<ProductToStatus>> allStatusesToSetConnect = connectedEquipment
-						.isEmpty()
-						? new HashMap<>()
-						: productToStatusService
-								.listAllProductToStatus(
-										new ProductToStatusFilter()
-												.setProducts(connectedEquipment)
-												.setStatuses(
-														Arrays.asList(
-																connected,
-																disconnected)),
-										securityContext)
-								.stream()
-								.collect(
-										Collectors.groupingBy(f -> f
-												.getLeftside().getId()));
+			for (List<Equipment> connectedEquipment : Lists.partition(connectedEquipmentRaw, 100)) {
+				Map<String, List<ProductToStatus>> allStatusesToSetConnect = connectedEquipment.isEmpty() ? new HashMap<>() : productToStatusService.listAllProductToStatus(new ProductToStatusFilter().setProducts(connectedEquipment).setStatuses(Arrays.asList(connected, disconnected)), securityContext).stream().collect(Collectors.groupingBy(f -> f.getLeftside().getId()));
 				for (Equipment equipment : connectedEquipment) {
-					List<ProductToStatus> statuses = allStatusesToSetConnect
-							.getOrDefault(equipment.getId(), new ArrayList<>());
-					equipmentService.updateProductStatus(equipment, statuses,
-							securityContext, toMerge, connected);
+					List<ProductToStatus> statuses = allStatusesToSetConnect.getOrDefault(equipment.getId(), new ArrayList<>());
+					equipmentService.updateProductStatus(equipment, statuses, securityContext, toMerge, connected);
 				}
 			}
 
-			for (List<Equipment> disconnectedEquipment : Lists.partition(
-					disconnectedEquipmentRaw, 100)) {
-				Map<String, List<ProductToStatus>> allStatusesToSetDisconnect = disconnectedEquipment
-						.isEmpty()
-						? new HashMap<>()
-						: productToStatusService
-								.listAllProductToStatus(
-										new ProductToStatusFilter()
-												.setProducts(
-														disconnectedEquipment)
-												.setStatuses(
-														Arrays.asList(
-																connected,
-																disconnected)),
-										securityContext)
-								.stream()
-								.collect(
-										Collectors.groupingBy(f -> f
-												.getLeftside().getId()));
+			for (List<Equipment> disconnectedEquipment : Lists.partition(disconnectedEquipmentRaw, 100)) {
+				Map<String, List<ProductToStatus>> allStatusesToSetDisconnect = disconnectedEquipment.isEmpty() ? new HashMap<>() : productToStatusService.listAllProductToStatus(new ProductToStatusFilter().setProducts(disconnectedEquipment).setStatuses(Arrays.asList(connected, disconnected)), securityContext).stream().collect(Collectors.groupingBy(f -> f.getLeftside().getId()));
 				for (Equipment equipment : disconnectedEquipment) {
-					List<ProductToStatus> statuses = allStatusesToSetDisconnect
-							.getOrDefault(equipment.getId(), new ArrayList<>());
-					equipmentService.updateProductStatus(equipment, statuses,
-							securityContext, toMerge, disconnected);
+					List<ProductToStatus> statuses = allStatusesToSetDisconnect.getOrDefault(equipment.getId(), new ArrayList<>());
+					equipmentService.updateProductStatus(equipment, statuses, securityContext, toMerge, disconnected);
 				}
 			}
 
-			Map<String, Baseclass> toMergeMap = toMerge
-					.stream()
-					.filter(f -> f instanceof Baseclass)
-					.map(f -> (Baseclass) f)
-					.collect(
-							Collectors.toMap(f -> f.getId(), f -> f,
-									(a, b) -> a));
+			Map<String, Baseclass> toMergeMap = toMerge.stream().filter(f -> f instanceof Baseclass).map(f -> (Baseclass) f).collect(Collectors.toMap(f -> f.getId(), f -> f, (a, b) -> a));
 
-			productToStatusService.massMerge(new ArrayList<>(toMergeMap
-					.values()));
+			productToStatusService.massMerge(new ArrayList<>(toMergeMap.values()));
 			productToStatusService.flush();
-			configurationCasted.getSingleInspectJobs().removeIf(
-					f -> f.getTimeToInspect().isBefore(inspectTime));
+			configurationCasted.getSingleInspectJobs().removeIf(f -> f.getTimeToInspect().isBefore(inspectTime));
 		}
 	}
 
