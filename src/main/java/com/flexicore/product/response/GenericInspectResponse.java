@@ -41,11 +41,15 @@ public class GenericInspectResponse {
 		return (T) this;
 	}
 
+	public int getConnectedEquipmentCount(){
+		return (connectedEquipment != null ? connectedEquipment.size() : 0);
+	}
+
 	@Override
 	public String toString() {
 		return "GenericInspectResponse{" + "success=" + success
 				+ ", reconnect=" + reconnect + ", connectedEquipmentCount="
-				+ (connectedEquipment != null ? connectedEquipment.size() : 0)
+				+ getConnectedEquipmentCount()
 				+ '}';
 	}
 }
