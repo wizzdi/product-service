@@ -180,13 +180,25 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 		StatusLinkToImage statusLinkToImage = createStatusLinkToImageNoMerge(
 				statusLinksToImageCreate, securityContext);
 		repository.merge(statusLinkToImage);
-		List<PermissionGroup> permissionGroups=permissionGroupService.listPermissionGroups(new PermissionGroupsFilter().setBaseclasses(Collections.singletonList(statusLinksToImageCreate.getProductTypeToProductStatus())),null);
-		if(!permissionGroups.isEmpty()){
-			List<PermissionGroupToBaseclass> permissionGroupToBaseclasses = permissionGroupService.connectPermissionGroupsToBaseclasses(new CreatePermissionGroupLinkRequest().setBaseclasses(Collections.singletonList(statusLinkToImage)).setPermissionGroups(permissionGroups), securityContext);
-			logger.info("StatusLinkToImage is connected to "+permissionGroupToBaseclasses.size() +"permission groups");
-		}
+		updatePermissionGroup(securityContext, statusLinkToImage);
 
 		return statusLinkToImage;
+	}
+
+	public void updatePermissionGroup(SecurityContext securityContext, StatusLinkToImage statusLinkToImage) {
+		if(statusLinkToImage.getStatusLink()!=null){
+			List<PermissionGroup> permissionGroups=permissionGroupService.listPermissionGroups(new PermissionGroupsFilter().setBaseclasses(Collections.singletonList(statusLinkToImage.getStatusLink())),null);
+			if(!permissionGroups.isEmpty()){
+				List<Baseclass> baseclasses = new ArrayList<>();
+				baseclasses.add(statusLinkToImage);
+				if(statusLinkToImage.getImage()!=null){
+					baseclasses.add(statusLinkToImage.getImage());
+				}
+				List<PermissionGroupToBaseclass> permissionGroupToBaseclasses = permissionGroupService.connectPermissionGroupsToBaseclasses(new CreatePermissionGroupLinkRequest().setBaseclasses(baseclasses).setPermissionGroups(permissionGroups), securityContext);
+				logger.info("StatusLinkToImage is connected to "+permissionGroupToBaseclasses.size() +"permission groups");
+			}
+
+		}
 	}
 
 	@Override
@@ -239,6 +251,8 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 				statusLinkToImage)) {
 			repository.merge(statusLinkToImage);
 		}
+		updatePermissionGroup(securityContext,statusLinkToImage);
+
 		return statusLinkToImage;
 	}
 }

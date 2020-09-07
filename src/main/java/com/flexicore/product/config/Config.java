@@ -33,6 +33,7 @@ import org.springframework.core.env.Environment;
 @Component
 public class Config implements ServicePlugin {
 
+
 	private static AtomicBoolean init = new AtomicBoolean(false);
 	public static int MAX_CONNECTION_MANAGER_THREADS = 5;
 	private static String keySetFilePath = "/home/flexicore/keySet.json";
@@ -72,10 +73,6 @@ public class Config implements ServicePlugin {
 					EquipmentGroup.class);
 			BaseclassService.registerFilterClass(EquipmentGroupFiltering.class,
 					EquipmentGroupHolder.class);
-			BaseclassService.registerFilterClass(NeighbourhoodFiltering.class,
-					Neighbourhood.class);
-			BaseclassService.registerFilterClass(StreetFiltering.class,
-					Street.class);
 			BaseclassService.registerFilterClass(EventFiltering.class,
 					Event.class);
 			BaseclassService.registerFilterClass(

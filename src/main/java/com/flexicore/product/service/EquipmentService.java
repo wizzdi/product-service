@@ -30,6 +30,8 @@ import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.*;
+import com.flexicore.territories.request.NeighbourhoodFiltering;
+import com.flexicore.territories.request.StreetFiltering;
 import com.flexicore.utils.InheritanceUtils;
 
 import javax.ws.rs.BadRequestException;
