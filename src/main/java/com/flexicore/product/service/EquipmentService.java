@@ -1127,10 +1127,8 @@ public class EquipmentService implements IEquipmentService {
 	public MultiLatLonEquipment createMultiLatLonEquipmentNoMerge(
 			CreateMultiLatLonEquipment createMultiLatLonEquipment,
 			SecurityContext securityContext) {
-		MultiLatLonEquipment multiLatLonEquipment = MultiLatLonEquipment.s()
-				.CreateUnchecked(createMultiLatLonEquipment.getName(),
+		MultiLatLonEquipment multiLatLonEquipment = new MultiLatLonEquipment(createMultiLatLonEquipment.getName(),
 						securityContext);
-		multiLatLonEquipment.Init();
 		updateMultiLatLonEquipmentNoMerge(createMultiLatLonEquipment,
 				multiLatLonEquipment);
 		return multiLatLonEquipment;
@@ -1497,9 +1495,7 @@ public class EquipmentService implements IEquipmentService {
 	public FlexiCoreGateway createFlexiCoreGateway(
 			FlexiCoreGatewayCreate gatewayCreate,
 			SecurityContext securityContext) {
-		FlexiCoreGateway flexiCoreGateway = FlexiCoreGateway.s()
-				.CreateUnchecked(gatewayCreate.getName(), securityContext);
-		flexiCoreGateway.Init();
+		FlexiCoreGateway flexiCoreGateway = new FlexiCoreGateway(gatewayCreate.getName(), securityContext);
 		if (gatewayCreate.getProductType() == null) {
 			flexiCoreGateway.setProductType(fcGatewayType);
 		}
