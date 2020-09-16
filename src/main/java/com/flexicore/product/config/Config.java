@@ -14,6 +14,7 @@ import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.*;
+import com.flexicore.product.request.EquipmentLocationFiltering;
 import com.flexicore.product.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.product.request.UpdateEquipmentParameters;
 import com.flexicore.service.BaseclassService;
@@ -75,6 +76,8 @@ public class Config implements ServicePlugin {
 					EquipmentGroupHolder.class);
 			BaseclassService.registerFilterClass(EventFiltering.class,
 					Event.class);
+			BaseclassService.registerFilterClass(EquipmentLocationFiltering.class,
+					EquipmentLocation.class);
 			BaseclassService.registerFilterClass(
 					FilteringInformationHolder.class, EquipmentFiltering.class);
 
