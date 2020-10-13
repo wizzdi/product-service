@@ -3,7 +3,6 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.CreatePermissionGroupRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.PermissionGroup;
 import com.flexicore.product.containers.request.GroupCreate;
@@ -16,6 +15,7 @@ import com.flexicore.product.model.EquipmentToGroup;
 import com.flexicore.product.model.GroupFiltering;
 import com.flexicore.product.request.EquipmentToGroupFiltering;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.service.BaseclassNewService;
 import com.flexicore.service.PermissionGroupService;
 
 import javax.ws.rs.BadRequestException;
@@ -38,6 +38,9 @@ public class GroupService implements IGroupService {
 
 	@Autowired
 	private PermissionGroupService permissionGroupService;
+
+	@Autowired
+	private BaseclassNewService baseclassNewService;
 
 	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
 			SecurityContext securityContext) {
@@ -91,16 +94,14 @@ public class GroupService implements IGroupService {
 	public EquipmentGroup createGroup(GroupCreate groupCreate,
 			SecurityContext securityContext) {
 		List<Object> toMerge = new ArrayList<>();
-		EquipmentGroup equipmentGroup = new EquipmentGroup(
-				groupCreate.getName(), securityContext);
-
-		equipmentGroup.setDescription(groupCreate.getDescription());
-		equipmentGroup.setParent(groupCreate.getParent());
+		EquipmentGroup equipmentGroup = createGroupNoMerge(groupCreate, securityContext);
+		CreatePermissionGroupRequest createPermissionGroupRequest = new CreatePermissionGroupRequest()
+				.setExternalId(groupCreate.getExternalId())
+				.setDescription(groupCreate.getDescription())
+				.setName(groupCreate.getName());
 		PermissionGroup permissionGroup = permissionGroupService
 				.createPermissionGroupNoMerge(
-						new CreatePermissionGroupRequest().setDescription(
-								groupCreate.getDescription()).setName(
-								groupCreate.getName()), securityContext);
+						createPermissionGroupRequest, securityContext);
 		equipmentGroup.setRelatedPermissionGroup(permissionGroup);
 		toMerge.add(permissionGroup);
 		toMerge.add(equipmentGroup);
@@ -108,28 +109,35 @@ public class GroupService implements IGroupService {
 		return equipmentGroup;
 	}
 
+	public EquipmentGroup createGroupNoMerge(GroupCreate groupCreate, SecurityContext securityContext) {
+		EquipmentGroup equipmentGroup = new EquipmentGroup(groupCreate.getName(), securityContext);
+		updateGroupNoMerge(groupCreate,equipmentGroup);
+		return equipmentGroup;
+	}
+
 	public EquipmentGroup updateGroup(GroupUpdate groupUpdate,
-			SecurityContext securityContext) {
-		EquipmentGroup equipmentGroup = groupUpdate.getEquipmentGroup();
-		boolean update = false;
-		if (groupUpdate.getName() != null && !groupUpdate.getName().equals(equipmentGroup.getName())) {
-			equipmentGroup.setName(groupUpdate.getName());
-			update = true;
-		}
-
-		if (groupUpdate.getDescription() != null && !groupUpdate.getDescription().equals(equipmentGroup.getDescription())) {
-			equipmentGroup.setDescription(groupUpdate.getDescription());
-			update = true;
-		}
-
-		if (groupUpdate.getParent() != null && equipmentGroup.getParent() != null && !groupUpdate.getParent().getId().equals(equipmentGroup.getParent().getId())) {
-			equipmentGroup.setParent(groupUpdate.getParent());
-			update = true;
-		}
-		if (update) {
+											 SecurityContext securityContext) {
+		EquipmentGroup equipmentGroup=groupUpdate.getEquipmentGroup();
+		if(updateGroupNoMerge(groupUpdate,equipmentGroup)){
 			equipmentRepository.merge(equipmentGroup);
 		}
 		return equipmentGroup;
+
+	}
+
+	public boolean updateGroupNoMerge(GroupCreate groupCreate, EquipmentGroup equipmentGroup) {
+
+		boolean update = baseclassNewService.updateBaseclassNoMerge(groupCreate,equipmentGroup);
+		if (groupCreate.getExternalId() != null && !groupCreate.getExternalId().equals(equipmentGroup.getExternalId())) {
+			equipmentGroup.setExternalId(groupCreate.getExternalId());
+			update = true;
+		}
+
+		if (groupCreate.getParent() != null && equipmentGroup.getParent() != null && !groupCreate.getParent().getId().equals(equipmentGroup.getParent().getId())) {
+			equipmentGroup.setParent(groupCreate.getParent());
+			update = true;
+		}
+		return update;
 	}
 
 	@Override
