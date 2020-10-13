@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.pf4j.Extension;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 @PluginInfo(version = 1)
 @Extension
@@ -107,6 +108,11 @@ public class GroupService implements IGroupService {
 		toMerge.add(equipmentGroup);
 		equipmentRepository.massMerge(toMerge);
 		return equipmentGroup;
+	}
+
+	@Transactional
+	public void massMerge(List<?> toMerge) {
+		equipmentRepository.massMerge(toMerge);
 	}
 
 	public EquipmentGroup createGroupNoMerge(GroupCreate groupCreate, SecurityContext securityContext) {
