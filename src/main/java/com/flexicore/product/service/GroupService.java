@@ -112,23 +112,17 @@ public class GroupService implements IGroupService {
 			SecurityContext securityContext) {
 		EquipmentGroup equipmentGroup = groupUpdate.getEquipmentGroup();
 		boolean update = false;
-		if (groupUpdate.getName() != null
-				&& !groupUpdate.getName().equals(equipmentGroup.getName())) {
+		if (groupUpdate.getName() != null && !groupUpdate.getName().equals(equipmentGroup.getName())) {
 			equipmentGroup.setName(groupUpdate.getName());
 			update = true;
 		}
 
-		if (groupUpdate.getDescription() != null
-				&& !groupUpdate.getDescription().equals(
-						equipmentGroup.getDescription())) {
+		if (groupUpdate.getDescription() != null && !groupUpdate.getDescription().equals(equipmentGroup.getDescription())) {
 			equipmentGroup.setDescription(groupUpdate.getDescription());
 			update = true;
 		}
 
-		if (groupUpdate.getParent() != null
-				&& equipmentGroup.getParent() != null
-				&& !groupUpdate.getParent().getId()
-						.equals(equipmentGroup.getParent().getId())) {
+		if (groupUpdate.getParent() != null && equipmentGroup.getParent() != null && !groupUpdate.getParent().getId().equals(equipmentGroup.getParent().getId())) {
 			equipmentGroup.setParent(groupUpdate.getParent());
 			update = true;
 		}
@@ -141,30 +135,21 @@ public class GroupService implements IGroupService {
 	@Override
 	public void validateGroupFiltering(GroupFiltering filtering,
 			SecurityContext securityContext) {
-		Set<String> ids = filtering.getGroupIds().parallelStream()
-				.map(f -> f.getId()).collect(Collectors.toSet());
-		List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty()
-				? new ArrayList<>()
-				: listByIds(EquipmentGroup.class, ids, securityContext);
-		ids.removeAll(groups.parallelStream().map(f -> f.getId())
-				.collect(Collectors.toSet()));
+		Set<String> ids = filtering.getGroupIds().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+		List<EquipmentGroup> groups = filtering.getGroupIds().isEmpty() ? new ArrayList<>() : listByIds(EquipmentGroup.class, ids, securityContext);
+		ids.removeAll(groups.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
 		if (!ids.isEmpty()) {
-			throw new BadRequestException("could not find groups with ids "
-					+ ids.parallelStream().collect(Collectors.joining(",")));
+			throw new BadRequestException("could not find groups with ids " + ids.parallelStream().collect(Collectors.joining(",")));
 		}
 		filtering.setEquipmentGroups(groups);
-		Set<String> equipmentIds = filtering.getEquipmentIdFilterings()
-				.parallelStream().map(f -> f.getId())
-				.collect(Collectors.toSet());
-		List<Equipment> equipment = !filtering.getEquipmentIdFilterings()
-				.isEmpty() ? listByIds(Equipment.class, equipmentIds,
-				securityContext) : new ArrayList<>();
-		equipmentIds.removeAll(equipment.parallelStream().map(f -> f.getId())
-				.collect(Collectors.toSet()));
+
+		Set<String> equipmentIds = filtering.getEquipmentIdFilterings().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+		List<Equipment> equipment = !filtering.getEquipmentIdFilterings().isEmpty() ? listByIds(Equipment.class, equipmentIds, securityContext) : new ArrayList<>();
+		equipmentIds.removeAll(equipment.parallelStream().map(f -> f.getId()).collect(Collectors.toSet()));
 		if (!equipmentIds.isEmpty()) {
-			throw new BadRequestException("No Equipments with ids "
-					+ equipmentIds);
+			throw new BadRequestException("No Equipments with ids " + equipmentIds);
 		}
 		filtering.setEquipment(equipment);
+
 	}
 }

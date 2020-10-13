@@ -8,7 +8,6 @@ import com.flexicore.product.model.*;
 import com.flexicore.product.request.EquipmentToGroupFiltering;
 import com.flexicore.security.SecurityContext;
 
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,35 +26,34 @@ public class EquipmentGroupRepository extends AbstractRepositoryPlugin {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<EquipmentGroup> q = cb.createQuery(EquipmentGroup.class);
 		Root<EquipmentGroup> r = q.from(EquipmentGroup.class);
-		List<Predicate> preds = getAllEquipmentGroupsPredicates(filtering, r,
-				cb);
+		List<Predicate> preds=new ArrayList<>();
+		addEquipmentGroupPredicates(filtering, r,
+				cb,preds);
 		QueryInformationHolder<EquipmentGroup> queryInformationHolder = new QueryInformationHolder<>(
 				filtering, EquipmentGroup.class, securityContext);
 		return getAllFiltered(queryInformationHolder, preds, cb, q, r);
 	}
 
-	private List<Predicate> getAllEquipmentGroupsPredicates(
-			GroupFiltering filtering, Root<EquipmentGroup> r, CriteriaBuilder cb) {
-		Set<String> ids = filtering.getEquipmentGroups().parallelStream()
-				.map(f -> f.getId()).collect(Collectors.toSet());
+	private void addEquipmentGroupPredicates(
+			GroupFiltering filtering, Root<EquipmentGroup> r, CriteriaBuilder cb, List<Predicate> preds) {
+		if(filtering.getEquipmentGroups()!=null && !filtering.getEquipmentGroups().isEmpty()){
+			Set<String> ids = filtering.getEquipmentGroups().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+			preds.add(r.get(EquipmentGroup_.id).in(ids));
 
-		List<Predicate> preds = new ArrayList<>();
-		if (!ids.isEmpty()) {
-			Predicate predicate = r.get(EquipmentGroup_.id).in(ids);
-			preds.add(predicate);
 		}
-		if (filtering.getEquipment() != null
-				&& !filtering.getEquipment().isEmpty()) {
-			Join<EquipmentGroup, EquipmentToGroup> join = r
-					.join(EquipmentGroup_.equipmentToGroupList);
-			Join<EquipmentToGroup, Equipment> equipmentJoin = cb.treat(
-					join.join(Baselink_.leftside), Equipment.class);
-			List<String> equipmentIds = filtering.getEquipment()
-					.parallelStream().map(f -> f.getId())
-					.collect(Collectors.toList());
+
+		if (filtering.getEquipment() != null && !filtering.getEquipment().isEmpty()) {
+			List<String> equipmentIds = filtering.getEquipment().parallelStream().map(f -> f.getId()).collect(Collectors.toList());
+			Join<EquipmentGroup, EquipmentToGroup> join = r.join(EquipmentGroup_.equipmentToGroupList);
+			Join<EquipmentToGroup, Equipment> equipmentJoin = cb.treat(join.join(Baselink_.leftside), Equipment.class);
 			preds.add(equipmentJoin.get(Equipment_.id).in(equipmentIds));
 		}
-		return preds;
+		if(filtering.getEquipmentIdFilterings()!=null && !filtering.getEquipmentIdFilterings().isEmpty()){
+			Set<String> ids = filtering.getEquipmentIdFilterings().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+			preds.add(r.get(EquipmentGroup_.externalId).in(ids));
+
+		}
+
 	}
 
 	public long countAllEquipmentGroups(GroupFiltering filtering,
@@ -63,10 +61,9 @@ public class EquipmentGroupRepository extends AbstractRepositoryPlugin {
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<Long> q = cb.createQuery(Long.class);
 		Root<EquipmentGroup> r = q.from(EquipmentGroup.class);
-		List<Predicate> preds = getAllEquipmentGroupsPredicates(filtering, r,
-				cb);
-		QueryInformationHolder<EquipmentGroup> queryInformationHolder = new QueryInformationHolder<>(
-				filtering, EquipmentGroup.class, securityContext);
+		List<Predicate> preds =new ArrayList<>();
+		addEquipmentGroupPredicates(filtering, r, cb, preds);
+		QueryInformationHolder<EquipmentGroup> queryInformationHolder = new QueryInformationHolder<>(filtering, EquipmentGroup.class, securityContext);
 		return countAllFiltered(queryInformationHolder, preds, cb, q, r);
 	}
 
