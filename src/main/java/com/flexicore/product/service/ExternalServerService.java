@@ -2,16 +2,23 @@ package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.events.PluginsLoadedEvent;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.iot.ExternalServerUser;
 import com.flexicore.product.containers.request.ExternalServerFiltering;
+import com.flexicore.product.containers.request.ProductTypeCreate;
 import com.flexicore.product.data.ExternalServerRepository;
 import com.flexicore.product.interfaces.IExternalServerService;
 import com.flexicore.product.iot.request.ExternalServerCreate;
 import com.flexicore.product.iot.request.ExternalServerUserCreate;
+import com.flexicore.product.model.ProductType;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.EncryptionService;
 
+import com.flexicore.service.SecurityService;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 import javax.ws.rs.BadRequestException;
 import java.nio.charset.StandardCharsets;
@@ -48,6 +55,9 @@ public class ExternalServerService implements IExternalServerService {
 	public boolean updateExternalServerNoMerge(
 			ExternalServerCreate externalServerCreate,
 			ExternalServer externalServer) {
+		if(externalServerCreate.getProductType()==null&&externalServer.getProductType()==null){
+			externalServerCreate.setProductType(ExternalServerConnectionManager.getExternalServerProductType());
+		}
 		boolean update = equipmentService.updateEquipmentNoMerge(
 				externalServerCreate, externalServer);
 		if (externalServerCreate.getUrl() != null

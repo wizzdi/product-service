@@ -6,7 +6,10 @@ import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.product.config.Config;
 import com.flexicore.product.containers.request.ProductStatusCreate;
+import com.flexicore.product.containers.request.ProductStatusToTypeCreate;
+import com.flexicore.product.containers.request.ProductTypeCreate;
 import com.flexicore.product.model.ProductStatus;
+import com.flexicore.product.model.ProductType;
 import com.flexicore.product.request.ExternalServerConnectionConfiguration;
 import com.flexicore.product.request.SingleInspectJob;
 import com.flexicore.security.SecurityContext;
@@ -55,6 +58,7 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 
 	private static ProductStatus connected;
 	private static ProductStatus disconnected;
+	private static ProductType externalServerProductType;
 
 	@EventListener
 	public void init(ContextRefreshedEvent e) {
@@ -70,6 +74,13 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 					new ProductStatusCreate().setName("Disconnected")
 							.setDescription("Disconnected"),
 					adminUserSecurityContext);
+
+			externalServerProductType = equipmentService.getOrCreateProductType(new ProductTypeCreate().setName("External Server").setDescription("External Server"), adminUserSecurityContext);
+			equipmentService.linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductStatus(connected).setProductType(externalServerProductType),adminUserSecurityContext);
+			equipmentService.linkProductTypeToProductStatus(new ProductStatusToTypeCreate().setProductStatus(disconnected).setProductType(externalServerProductType),adminUserSecurityContext);
+
+
+
 		}
 	}
 
@@ -256,4 +267,7 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 		return threadPool;
 	}
 
+	public static ProductType getExternalServerProductType() {
+		return externalServerProductType;
+	}
 }
