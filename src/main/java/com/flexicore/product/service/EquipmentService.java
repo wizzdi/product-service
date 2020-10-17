@@ -3,6 +3,8 @@ package com.flexicore.product.service;
 import ch.hsr.geohash.GeoHash;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
+import com.flexicore.building.model.BuildingFloor;
+import com.flexicore.building.model.Room;
 import com.flexicore.constants.Constants;
 import com.flexicore.data.jsoncontainers.CreatePermissionGroupLinkRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
@@ -461,6 +463,20 @@ public class EquipmentService implements IEquipmentService {
 		}
 		equipmentCreate.setGateway(gateway);
 
+		String buildingFloorId = equipmentCreate.getBuildingFloorId();
+		BuildingFloor buildingFloor = buildingFloorId != null ? getByIdOrNull(buildingFloorId, BuildingFloor.class, null, securityContext) : null;
+		if (buildingFloor == null && buildingFloorId != null) {
+			throw new BadRequestException("No BuildingFloor with Id " + buildingFloorId);
+		}
+		equipmentCreate.setBuildingFloor(buildingFloor);
+
+		String roomId = equipmentCreate.getRoomId();
+		Room room = roomId != null ? getByIdOrNull(roomId, Room.class, null, securityContext) : null;
+		if (room == null && roomId != null) {
+			throw new BadRequestException("No Room with Id " + roomId);
+		}
+		equipmentCreate.setRoom(room);
+
 		Address address = equipmentCreate.getAddressId() != null
 				? getByIdOrNull(equipmentCreate.getAddressId(), Address.class,
 						null, securityContext) : null;
@@ -619,11 +635,17 @@ public class EquipmentService implements IEquipmentService {
 			update = true;
 		}
 
-		if (equipmentCreate.getGateway() != null
-				&& (equipment.getCommunicationGateway() == null || !equipment
-						.getCommunicationGateway().getId()
-						.equals(equipmentCreate.getGateway().getId()))) {
+		if (equipmentCreate.getGateway() != null && (equipment.getCommunicationGateway() == null || !equipment.getCommunicationGateway().getId().equals(equipmentCreate.getGateway().getId()))) {
 			equipment.setCommunicationGateway(equipmentCreate.getGateway());
+			update = true;
+		}
+
+		if (equipmentCreate.getRoom() != null && (equipment.getRoom() == null || !equipment.getRoom().getId().equals(equipmentCreate.getRoom().getId()))) {
+			equipment.setRoom(equipmentCreate.getRoom());
+			update = true;
+		}
+		if (equipmentCreate.getBuildingFloor() != null && (equipment.getBuildingFloor() == null || !equipment.getBuildingFloor().getId().equals(equipmentCreate.getBuildingFloor().getId()))) {
+			equipment.setBuildingFloor(equipmentCreate.getBuildingFloor());
 			update = true;
 		}
 		if (equipmentCreate.getAddress() != null

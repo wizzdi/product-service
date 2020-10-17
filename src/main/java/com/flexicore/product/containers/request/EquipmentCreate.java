@@ -1,6 +1,8 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.flexicore.building.model.BuildingFloor;
+import com.flexicore.building.model.Room;
 import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.interfaces.dynamic.IdRefFieldInfo;
 import com.flexicore.iot.ExternalServer;
@@ -45,6 +47,14 @@ public class EquipmentCreate extends ProductCreate {
 	private String addressId;
 
 	private String descriptor3D;
+	@IdRefFieldInfo(refType = Room.class)
+	private String roomId;
+	@JsonIgnore
+	private Room room;
+	@IdRefFieldInfo(refType = BuildingFloor.class)
+	private String buildingFloorId;
+	@JsonIgnore
+	private BuildingFloor buildingFloor;
 
 	public String getExternalServerId() {
 		return externalServerId;
@@ -186,4 +196,41 @@ public class EquipmentCreate extends ProductCreate {
 		return (T) this;
 	}
 
+	public String getRoomId() {
+		return roomId;
+	}
+
+	public <T extends EquipmentCreate> T setRoomId(String roomId) {
+		this.roomId = roomId;
+		return (T) this;
+	}
+
+	@JsonIgnore
+	public Room getRoom() {
+		return room;
+	}
+
+	public <T extends EquipmentCreate> T setRoom(Room room) {
+		this.room = room;
+		return (T) this;
+	}
+
+	public String getBuildingFloorId() {
+		return buildingFloorId;
+	}
+
+	public <T extends EquipmentCreate> T setBuildingFloorId(String buildingFloorId) {
+		this.buildingFloorId = buildingFloorId;
+		return (T) this;
+	}
+
+	@JsonIgnore
+	public BuildingFloor getBuildingFloor() {
+		return buildingFloor;
+	}
+
+	public <T extends EquipmentCreate> T setBuildingFloor(BuildingFloor buildingFloor) {
+		this.buildingFloor = buildingFloor;
+		return (T) this;
+	}
 }
