@@ -54,9 +54,10 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 	@Autowired
 	private SecurityService securityService;
 
+
 	@Autowired
-	@Lazy
-	private PluginManager pluginManager;
+	@PluginInfo(version = 1)
+	private ExternalServerConnectionHandler externalServerConnectionHandler;
 
 	private static ProductStatus connected;
 	private static ProductStatus disconnected;
@@ -161,9 +162,8 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 					}
 					try {
 						startedConnections.add(configuration);
-						ExternalServerConnectionHandler connectionHandler = pluginManager.getExtensions(ExternalServerConnectionHandler.class, null).stream().findFirst().orElse(null);
 						CompletableFuture
-								.runAsync(() -> connectionHandler.handleConfiguration(configuration, securityContext, connected, disconnected), executorService)
+								.runAsync(() -> externalServerConnectionHandler.handleConfiguration(configuration, securityContext, connected, disconnected), executorService)
 								.exceptionally(
 										e -> { logger.log(Level.SEVERE, "configuration handling ended with exception", e);return null; })
 								.thenRun(() -> { startedConnections.remove(configuration);});
