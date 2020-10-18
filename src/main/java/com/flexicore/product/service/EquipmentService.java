@@ -5,10 +5,8 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.annotations.rest.Read;
 import com.flexicore.building.model.BuildingFloor;
 import com.flexicore.building.model.Room;
-import com.flexicore.constants.Constants;
 import com.flexicore.data.jsoncontainers.CreatePermissionGroupLinkRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.EntityListener;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.iot.api.FlexiCoreServerService;
 import com.flexicore.iot.model.FlexiCoreServer;
@@ -37,6 +35,7 @@ import com.flexicore.territories.request.StreetFiltering;
 import com.flexicore.utils.InheritanceUtils;
 
 import javax.ws.rs.BadRequestException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -47,9 +46,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.pf4j.Extension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -83,8 +83,7 @@ public class EquipmentService implements IEquipmentService {
 	private SecurityService securityService;
 
 
-	@Autowired
-	private Logger logger;
+	private static final Logger logger= LoggerFactory.getLogger(EquipmentService.class);
 
 	@Autowired
 	private PermissionGroupService permissionGroupService;
@@ -325,9 +324,14 @@ public class EquipmentService implements IEquipmentService {
 	@Override
 	public <T extends Equipment> T createEquipmentNoMerge(Class<T> c,
 			EquipmentCreate equipmentCreate, SecurityContext securityContext) {
-		T equipment = Baseclass.createUnchecked(c, equipmentCreate.getName(),
-				securityContext);
-		equipment.Init();
+		T equipment =null;
+		try {
+			Constructor<T> constructor = c.getConstructor(String.class, SecurityContext.class);
+			equipment = constructor.newInstance(c, equipmentCreate.getName(), securityContext);
+		}
+		catch (Exception e){
+			logger.error("failed creating equipment",e);
+		}
 		updateEquipmentNoMerge(equipmentCreate, equipment);
 		return equipment;
 	}
@@ -376,7 +380,7 @@ public class EquipmentService implements IEquipmentService {
 					update = true;
 				}
 			} catch (Exception e) {
-				logger.log(Level.SEVERE, "could not encrypt password", e);
+				logger.error( "could not encrypt password", e);
 			}
 
 		}
@@ -686,7 +690,7 @@ public class EquipmentService implements IEquipmentService {
 		try {
 			return Equipment.class.getMethod(name, String.class);
 		} catch (NoSuchMethodException e) {
-			logger.log(Level.SEVERE, "unable to get setter", e);
+			logger.error(  "unable to get setter", e);
 		}
 		return null;
 	}
@@ -707,17 +711,13 @@ public class EquipmentService implements IEquipmentService {
 
 					}
 				} catch (InvocationTargetException | IllegalAccessException e) {
-					logger.log(Level.SEVERE, "could not set property "
+					logger.error(  "could not set property "
 							+ setterName + " via setter");
 				}
 
 			}
 		} catch (Exception e) {
-			logger.log(
-					Level.SEVERE,
-					"unable to generate geo hash for equipment "
-							+ equipment.getId() + " ("
-							+ equipment.getExternalId() + ")");
+			logger.error("unable to generate geo hash for equipment " + equipment.getId() + " (" + equipment.getExternalId() + ")");
 		}
 	}
 
@@ -913,7 +913,7 @@ public class EquipmentService implements IEquipmentService {
 	public SecurityContext verifyLoggedIn(String userToken) {
 		String opId = Baseclass.generateUUIDFromString(Read.class
 				.getCanonicalName());
-		return securityService.getSecurityContext(userToken, null, opId);
+		return securityService.getSecurityContext(userToken,  opId);
 	}
 
 	@Override
@@ -960,10 +960,8 @@ public class EquipmentService implements IEquipmentService {
 				}
 
 			} catch (ClassNotFoundException e) {
-				logger.log(Level.SEVERE,
-						"unable to get class: " + filtering.getResultType());
-				throw new BadRequestException("No Class with name "
-						+ filtering.getResultType());
+				logger.error("unable to get class: " + filtering.getResultType());
+				throw new BadRequestException("No Class with name " + filtering.getResultType());
 
 			}
 		}

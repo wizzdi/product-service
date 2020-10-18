@@ -13,7 +13,6 @@ import com.flexicore.product.model.ProductType;
 import com.flexicore.product.request.ExternalServerConnectionConfiguration;
 import com.flexicore.product.request.SingleInspectJob;
 import com.flexicore.security.SecurityContext;
-import com.flexicore.service.PluginService;
 import com.flexicore.service.SecurityService;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
@@ -26,6 +25,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pf4j.Extension;
+import org.pf4j.PluginManager;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -54,7 +55,8 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 	private SecurityService securityService;
 
 	@Autowired
-	private PluginService pluginService;
+	@Lazy
+	private PluginManager pluginManager;
 
 	private static ProductStatus connected;
 	private static ProductStatus disconnected;
@@ -154,58 +156,26 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 			while (!stop) {
 
 				for (ExternalServerConnectionConfiguration<?, ?> configuration : configurations) {
-					if (startedConnections.contains(configuration)
-							|| (configuration.getCache() != null && configuration
-									.getCache()
-									.stream()
-									.noneMatch(
-											f -> ExternalServerConnectionManager
-													.connectionManagerShouldCheck(
-															f,
-															configuration
-																	.getSingleInspectJobs())))) {
+					if (startedConnections.contains(configuration) || (configuration.getCache() != null && configuration.getCache().stream().noneMatch(f -> ExternalServerConnectionManager.connectionManagerShouldCheck(f, configuration.getSingleInspectJobs())))) {
 						continue;
 					}
 					try {
 						startedConnections.add(configuration);
-						ExternalServerConnectionHandler connectionHandler = pluginService
-								.instansiate(
-										ExternalServerConnectionHandler.class,
-										null);
+						ExternalServerConnectionHandler connectionHandler = pluginManager.getExtensions(ExternalServerConnectionHandler.class, null).stream().findFirst().orElse(null);
 						CompletableFuture
-								.runAsync(
-										() -> connectionHandler.handleConfiguration(
-												configuration, securityContext,
-												connected, disconnected),
-										executorService)
+								.runAsync(() -> connectionHandler.handleConfiguration(configuration, securityContext, connected, disconnected), executorService)
 								.exceptionally(
-										e -> {
-											logger.log(
-													Level.SEVERE,
-													"configuration handling ended with exception",
-													e);
-											return null;
-										})
-								.thenRun(
-										() -> {
-											startedConnections
-													.remove(configuration);
-											pluginService
-													.cleanUpInstance(connectionHandler);
-										});
+										e -> { logger.log(Level.SEVERE, "configuration handling ended with exception", e);return null; })
+								.thenRun(() -> { startedConnections.remove(configuration);});
 
 					} catch (Exception e) {
-						logger.log(Level.SEVERE,
-								"failed calling connection manager", e);
+						logger.log(Level.SEVERE, "failed calling connection manager", e);
 					}
 				}
 				try {
 					Thread.sleep(10000);
 				} catch (InterruptedException e) {
-					logger.log(
-							Level.WARNING,
-							"inturrpted while waiting for next connection check",
-							e);
+					logger.log(Level.WARNING, "inturrpted while waiting for next connection check", e);
 					stop = true;
 				}
 

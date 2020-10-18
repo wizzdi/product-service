@@ -3,6 +3,7 @@ package com.flexicore.product.data;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.interfaces.AbstractRepositoryPlugin;
 import com.flexicore.model.Baselink_;
+import com.flexicore.model.FilteringInformationHolder;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.EquipmentToGroupFiltering;
@@ -76,10 +77,8 @@ public class EquipmentGroupRepository extends AbstractRepositoryPlugin {
 		Predicate predicate = r.get(EquipmentGroup_.parent).isNull();
 		preds.add(predicate);
 
-		QueryInformationHolder<EquipmentGroup> queryInformationHolder = new QueryInformationHolder<>(
-				EquipmentGroup.class, securityContext);
-		queryInformationHolder.setCurrentPage(0);
-		queryInformationHolder.setPageSize(1);
+		QueryInformationHolder<EquipmentGroup> queryInformationHolder = new QueryInformationHolder<>(new FilteringInformationHolder().setPageSize(1).setCurrentPage(0), EquipmentGroup.class, securityContext);
+
 		List<EquipmentGroup> list = getAllFiltered(queryInformationHolder,
 				preds, cb, q, r);
 		return list.isEmpty() ? null : list.get(0);

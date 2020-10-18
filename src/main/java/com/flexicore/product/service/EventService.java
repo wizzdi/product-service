@@ -248,7 +248,7 @@ public class EventService implements IEventService {
 		eventFiltering.setBaseclass(baseclasses);
 
 		if (eventFiltering.getClazzName() != null) {
-			eventFiltering.setClazz(Baseclass.getClazzbyname(eventFiltering
+			eventFiltering.setClazz(Baseclass.getClazzByName(eventFiltering
 					.getClazzName()));
 			if (eventFiltering.getClazz() == null) {
 				throw new BadRequestException("No Clazz by name "
