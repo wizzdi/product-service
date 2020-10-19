@@ -4,6 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.product.data.EquipmentLocationNoSQLRepository;
+import com.flexicore.product.messages.EquipmentLocationChanged;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentLocation;
 import com.flexicore.product.request.EquipmentLocationCreate;
@@ -12,6 +13,8 @@ import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassNoSQLService;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.BadRequestException;
@@ -34,10 +37,14 @@ public class EquipmentLocationService implements ServicePlugin {
     @PluginInfo(version = 1)
     private EquipmentService equipmentService;
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
 
     public EquipmentLocation createEquipmentLocation(EquipmentLocationCreate equipmentLocationCreate) {
         EquipmentLocation equipmentLocation = createEquipmentLocationNoMerge(equipmentLocationCreate);
         equipmentLocationNoSQLRepository.merge(equipmentLocation);
+        applicationEventPublisher.publishEvent(new EquipmentLocationChanged(equipmentLocation));
         return equipmentLocation;
     }
 
@@ -52,6 +59,10 @@ public class EquipmentLocationService implements ServicePlugin {
 
         if (equipmentLocationCreate.getBuildingFloorId() != null && !equipmentLocationCreate.getBuildingFloorId().equals(equipmentLocation.getBuildingFloorId())) {
             equipmentLocation.setBuildingFloorId(equipmentLocationCreate.getBuildingFloorId());
+            update = true;
+        }
+        if (equipmentLocationCreate.getRoomId() != null && !equipmentLocationCreate.getRoomId().equals(equipmentLocation.getRoomId())) {
+            equipmentLocation.setRoomId(equipmentLocationCreate.getRoomId());
             update = true;
         }
 

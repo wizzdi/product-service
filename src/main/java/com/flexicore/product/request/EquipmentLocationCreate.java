@@ -12,6 +12,7 @@ public class EquipmentLocationCreate extends BaseclassNoSQLCreate {
     private Double y;
     private String buildingFloorId;
     private String equipmentId;
+    private String roomId;
 
     public OffsetDateTime getDateAtLocation() {
         return dateAtLocation;
@@ -73,6 +74,15 @@ public class EquipmentLocationCreate extends BaseclassNoSQLCreate {
 
     public <T extends EquipmentLocationCreate> T setEquipmentId(String equipmentId) {
         this.equipmentId = equipmentId;
+        return (T) this;
+    }
+
+    public String getRoomId() {
+        return roomId;
+    }
+
+    public <T extends EquipmentLocationCreate> T setRoomId(String roomId) {
+        this.roomId = roomId;
         return (T) this;
     }
 }
