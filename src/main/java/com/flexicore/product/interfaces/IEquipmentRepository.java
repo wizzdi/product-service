@@ -1,5 +1,9 @@
 package com.flexicore.product.interfaces;
 
+import com.flexicore.building.model.BuildingFloor;
+import com.flexicore.building.model.BuildingFloor_;
+import com.flexicore.building.model.Room;
+import com.flexicore.building.model.Room_;
 import com.flexicore.data.jsoncontainers.SortingOrder;
 import com.flexicore.interfaces.PluginRepository;
 import com.flexicore.iot.ExternalServer;
@@ -58,15 +62,10 @@ public interface IEquipmentRepository extends PluginRepository {
 			preds.add(predicate);
 		}
 
-		if (filtering.getExternalServers() != null
-				&& !filtering.getExternalServers().isEmpty()) {
-			Set<String> externalServersIds = filtering.getExternalServers()
-					.parallelStream().map(f -> f.getId())
-					.collect(Collectors.toSet());
-			Join<T, ExternalServer> externalServerJoin = r
-					.join(Equipment_.externalServer);
-			Predicate predicate = externalServerJoin.get(ExternalServer_.id)
-					.in(externalServersIds);
+		if (filtering.getExternalServers() != null && !filtering.getExternalServers().isEmpty()) {
+			Set<String> externalServersIds = filtering.getExternalServers().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+			Join<T, ExternalServer> externalServerJoin = r.join(Equipment_.externalServer);
+			Predicate predicate = externalServerJoin.get(ExternalServer_.id).in(externalServersIds);
 			preds.add(predicate);
 		}
 		if (filtering.getProductStatusList() != null
@@ -129,6 +128,20 @@ public interface IEquipmentRepository extends PluginRepository {
 		if (filtering.getExcludeZeroLocation()) {
 			preds.add(cb.and(cb.notEqual(r.get(Equipment_.lat), 0),
 					cb.notEqual(r.get(Equipment_.lon), 0)));
+		}
+
+		if (filtering.getBuildingFloors() != null && !filtering.getBuildingFloors().isEmpty()) {
+			Set<String> buildingFloorIds = filtering.getBuildingFloors().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+			Join<T, BuildingFloor> externalServerJoin = r.join(Equipment_.buildingFloor);
+			Predicate predicate = externalServerJoin.get(BuildingFloor_.id).in(buildingFloorIds);
+			preds.add(predicate);
+		}
+
+		if (filtering.getRooms() != null && !filtering.getRooms().isEmpty()) {
+			Set<String> roomIds = filtering.getRooms().parallelStream().map(f -> f.getId()).collect(Collectors.toSet());
+			Join<T, Room> externalServerJoin = r.join(Equipment_.room);
+			Predicate predicate = externalServerJoin.get(Room_.id).in(roomIds);
+			preds.add(predicate);
 		}
 
 	}
