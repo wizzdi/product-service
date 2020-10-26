@@ -1,16 +1,17 @@
 package com.flexicore.product.request;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class SingleInspectJob<S extends com.flexicore.iot.ExternalServer, C extends com.flexicore.product.request.ConnectionHolder<S>> {
 
 	private String id;
 	private String externalServerId;
 	private String configurationId;
-	private LocalDateTime timeToInspect;
+	private OffsetDateTime timeToInspect;
 
 	public SingleInspectJob(String id, String externalServerId,
-			String configurationId, LocalDateTime timeToInspect) {
+			String configurationId, OffsetDateTime timeToInspect) {
 		this.id = id;
 		this.externalServerId = externalServerId;
 		this.configurationId = configurationId;
@@ -36,7 +37,7 @@ public class SingleInspectJob<S extends com.flexicore.iot.ExternalServer, C exte
 		return id;
 	}
 
-	public LocalDateTime getTimeToInspect() {
+	public OffsetDateTime getTimeToInspect() {
 		return timeToInspect;
 	}
 

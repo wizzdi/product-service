@@ -18,6 +18,7 @@ import com.flexicore.security.SecurityContext;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +63,7 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 				inspectAll(securityContext, connected, disconnected,
 						configurationCasted, externalServer);
 			}
-			LocalDateTime now = LocalDateTime.now();
+			OffsetDateTime now = OffsetDateTime.now();
 			List<SingleInspectJob<S, C>> toInspect = configurationCasted
 					.getSingleInspectJobs()
 					.stream()
@@ -124,7 +125,7 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "failed inspecting server " + externalServer.getName() + " (" + externalServer.getId() + ")", e);
 		} finally {
-			LocalDateTime inspectTime = LocalDateTime.now();
+			OffsetDateTime inspectTime = OffsetDateTime.now();
 			externalServer.setLastInspectAttempt(inspectTime);
 			if (success) {
 				externalServer.setLastSuccessfulInspect(inspectTime);

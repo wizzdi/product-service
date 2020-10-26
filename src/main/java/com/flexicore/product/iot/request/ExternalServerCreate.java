@@ -5,6 +5,7 @@ import com.flexicore.interfaces.dynamic.FieldInfo;
 import com.flexicore.product.containers.request.EquipmentCreate;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class ExternalServerCreate extends EquipmentCreate {
 	@FieldInfo
@@ -15,9 +16,9 @@ public class ExternalServerCreate extends EquipmentCreate {
 	@FieldInfo
 	private Long inspectAfterActivateIntervalMs;
 	@JsonIgnore
-	private LocalDateTime lastInspectAttempt;
+	private OffsetDateTime lastInspectAttempt;
 	@JsonIgnore
-	private LocalDateTime lastSuccessfulInspect;
+	private OffsetDateTime lastSuccessfulInspect;
 
 	public String getUrl() {
 		return url;
@@ -39,23 +40,23 @@ public class ExternalServerCreate extends EquipmentCreate {
 	}
 
 	@JsonIgnore
-	public LocalDateTime getLastInspectAttempt() {
+	public OffsetDateTime getLastInspectAttempt() {
 		return lastInspectAttempt;
 	}
 
 	public <T extends ExternalServerCreate> T setLastInspectAttempt(
-			LocalDateTime lastInspectAttempt) {
+			OffsetDateTime lastInspectAttempt) {
 		this.lastInspectAttempt = lastInspectAttempt;
 		return (T) this;
 	}
 
 	@JsonIgnore
-	public LocalDateTime getLastSuccessfulInspect() {
+	public OffsetDateTime getLastSuccessfulInspect() {
 		return lastSuccessfulInspect;
 	}
 
 	public <T extends ExternalServerCreate> T setLastSuccessfulInspect(
-			LocalDateTime lastSuccessfulInspect) {
+			OffsetDateTime lastSuccessfulInspect) {
 		this.lastSuccessfulInspect = lastSuccessfulInspect;
 		return (T) this;
 	}

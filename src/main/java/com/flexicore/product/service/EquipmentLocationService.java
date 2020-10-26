@@ -66,8 +66,13 @@ public class EquipmentLocationService implements ServicePlugin {
             update = true;
         }
 
+        if (equipmentLocationCreate.getEquipmentId() != null && !equipmentLocationCreate.getEquipmentId().equals(equipmentLocation.getEquipmentId())) {
+            equipmentLocation.setEquipmentId(equipmentLocationCreate.getEquipmentId());
+            update = true;
+        }
+
         if (equipmentLocationCreate.getDateAtLocation() != null) {
-            Date date = Date.from(equipmentLocation.getDateAtLocation().toInstant());
+            Date date = Date.from(equipmentLocationCreate.getDateAtLocation().toInstant());
             if (!date.equals(equipmentLocation.getDateAtLocation())) {
                 equipmentLocation.setDateAtLocation(date);
                 update = true;

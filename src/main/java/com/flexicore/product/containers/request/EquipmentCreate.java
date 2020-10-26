@@ -10,6 +10,7 @@ import com.flexicore.model.territories.Address;
 import com.flexicore.product.model.Gateway;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class EquipmentCreate extends ProductCreate {
 
@@ -24,7 +25,7 @@ public class EquipmentCreate extends ProductCreate {
 	private Double y;
 
 	@FieldInfo(description = "warranty Expiration")
-	private LocalDateTime warrantyExpiration;
+	private OffsetDateTime warrantyExpiration;
 
 	private Boolean enable;
 
@@ -84,12 +85,12 @@ public class EquipmentCreate extends ProductCreate {
 		return (T) this;
 	}
 
-	public LocalDateTime getWarrantyExpiration() {
+	public OffsetDateTime getWarrantyExpiration() {
 		return warrantyExpiration;
 	}
 
 	public <T extends EquipmentCreate> T setWarrantyExpiration(
-			LocalDateTime warrantyExpiration) {
+			OffsetDateTime warrantyExpiration) {
 		this.warrantyExpiration = warrantyExpiration;
 		return (T) this;
 	}

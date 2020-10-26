@@ -18,6 +18,7 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Queue;
 import java.util.concurrent.*;
@@ -196,7 +197,7 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 
 	public static <S extends ExternalServer, C extends com.flexicore.product.request.ConnectionHolder<S>> boolean shouldInspectSingle(
 			Queue<SingleInspectJob<S, C>> singleInspectJobs) {
-		LocalDateTime now = LocalDateTime.now();
+		OffsetDateTime now = OffsetDateTime.now();
 		return singleInspectJobs.stream().anyMatch(
 				f -> f.getTimeToInspect().isBefore(now));
 	}
@@ -204,7 +205,7 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 	public static boolean shouldInspectAll(ExternalServer externalServer) {
 		return externalServer.getLastInspectAttempt() == null
 				|| ((System.currentTimeMillis() - externalServer
-						.getLastInspectAttempt().atZone(ZoneId.systemDefault())
+						.getLastInspectAttempt()
 						.toInstant().toEpochMilli()) > externalServer
 						.getInspectIntervalMs());
 	}

@@ -345,6 +345,9 @@ public class EquipmentService implements IEquipmentService {
     @Deprecated
     public <T extends Gateway> boolean updateGatewayNoMerge(
             GatewayCreate equipmentCreate, T equipment) {
+        if(equipmentCreate.getProductType()==null){
+            equipmentCreate.setProductType(EquipmentService.gatewayProductType);
+        }
         boolean update = updateEquipmentNoMerge(equipmentCreate, equipment);
         if (equipmentCreate.getIp() != null
                 && !equipmentCreate.getIp().equals(equipment.getId())) {
