@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.wizzdi</groupId>
   <artifactId>product-service</artifactId>
-  <version>3.3.7</version>
+  <version>3.3.8</version>
   <distributionManagement>
     <repository>
       <id>flexicore-local</id>

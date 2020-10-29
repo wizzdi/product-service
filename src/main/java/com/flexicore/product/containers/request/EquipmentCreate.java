@@ -48,11 +48,11 @@ public class EquipmentCreate extends ProductCreate {
 	private String addressId;
 
 	private String descriptor3D;
-	@IdRefFieldInfo(refType = Room.class)
+	@IdRefFieldInfo(refType = Room.class,list = false)
 	private String roomId;
 	@JsonIgnore
 	private Room room;
-	@IdRefFieldInfo(refType = BuildingFloor.class)
+	@IdRefFieldInfo(refType = BuildingFloor.class,list = false)
 	private String buildingFloorId;
 	@JsonIgnore
 	private BuildingFloor buildingFloor;
