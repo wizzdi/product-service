@@ -8,6 +8,7 @@ import com.flexicore.interfaces.dynamic.ListingInvoker;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentLocation;
 import com.flexicore.product.request.EquipmentLocationFiltering;
+import com.flexicore.product.response.EquipmentLocationContainer;
 import com.flexicore.product.service.EquipmentLocationService;
 import com.flexicore.security.SecurityContext;
 import org.pf4j.Extension;
@@ -24,10 +25,17 @@ public class EquipmentLocationInvoker implements ListingInvoker<EquipmentLocatio
 	@Autowired
 	private EquipmentLocationService equipmentLocationService;
 
+
+
 	@Override
 	@InvokerMethodInfo(displayName = "List Equipment Location", description = "lists all EquipmentLocation", relatedClasses = {Equipment.class})
 	public PaginationResponse<EquipmentLocation> listAll(EquipmentLocationFiltering equipmentLocationFiltering, SecurityContext securityContext) {
 		return equipmentLocationService.getAllEquipmentLocations(equipmentLocationFiltering);
+	}
+
+	@InvokerMethodInfo(displayName = "List Equipment Location", description = "lists all EquipmentLocation", relatedClasses = {Equipment.class})
+	public PaginationResponse<EquipmentLocationContainer> listAllContained(EquipmentLocationFiltering equipmentLocationFiltering, SecurityContext securityContext) {
+		return equipmentLocationService.getAllEquipmentLocationsContainers(equipmentLocationFiltering);
 	}
 
 	@Override

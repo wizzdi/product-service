@@ -1,6 +1,8 @@
 package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
+import com.flexicore.building.model.BuildingFloor;
+import com.flexicore.building.model.Room;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.product.data.EquipmentLocationNoSQLRepository;
@@ -9,6 +11,7 @@ import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.EquipmentLocation;
 import com.flexicore.product.request.EquipmentLocationCreate;
 import com.flexicore.product.request.EquipmentLocationFiltering;
+import com.flexicore.product.response.EquipmentLocationContainer;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.BaseclassNoSQLService;
 import org.pf4j.Extension;
@@ -118,5 +121,36 @@ public class EquipmentLocationService implements ServicePlugin {
     private List<EquipmentLocation> listAllEquipmentLocations(EquipmentLocationFiltering equipmentLocationFiltering) {
 
         return equipmentLocationNoSQLRepository.getAllEquipmentLocation(equipmentLocationFiltering);
+    }
+
+    public PaginationResponse<EquipmentLocationContainer> getAllEquipmentLocationsContainers(EquipmentLocationFiltering equipmentLocationFiltering) {
+        PaginationResponse<EquipmentLocation> paginationResponse = getAllEquipmentLocations(equipmentLocationFiltering);
+        List<EquipmentLocation> equipmentLocations = paginationResponse.getList();
+        Set<String> equipmentIds = equipmentLocations.stream().map(EquipmentLocation::getEquipmentId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<String,Equipment> equipmentMap=equipmentLocations.isEmpty()?new HashMap<>():equipmentService.listByIds(Equipment.class, equipmentIds, null).stream().collect(Collectors.toMap(f->f.getId(), f->f));
+        Set<String> floorIds = equipmentLocations.stream().map(EquipmentLocation::getBuildingFloorId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<String, BuildingFloor> floorMap=equipmentLocations.isEmpty()?new HashMap<>():equipmentService.listByIds(BuildingFloor.class, floorIds, null).stream().collect(Collectors.toMap(f->f.getId(), f->f));
+        Set<String> roomIds = equipmentLocations.stream().map(EquipmentLocation::getRoomId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<String, Room> roomMap=equipmentLocations.isEmpty()?new HashMap<>():equipmentService.listByIds(Room.class, roomIds, null).stream().collect(Collectors.toMap(f->f.getId(), f->f));
+        List<EquipmentLocationContainer> containers = equipmentLocations.stream().map(f -> contain(f, equipmentMap, floorMap, roomMap)).collect(Collectors.toList());
+        return new PaginationResponse<>(containers,equipmentLocationFiltering, paginationResponse.getTotalRecords());
+
+
+
+    }
+
+    private EquipmentLocationContainer contain(EquipmentLocation equipmentLocation, Map<String, Equipment> equipmentMap, Map<String, BuildingFloor> floorMap, Map<String, Room> roomMap) {
+        EquipmentLocationContainer equipmentLocationContainer=new EquipmentLocationContainer().setEquipmentLocation(equipmentLocation);
+        if(equipmentLocation.getEquipmentId()!=null){
+            equipmentLocationContainer.setEquipment(equipmentMap.get(equipmentLocation.getEquipmentId()));
+        }
+        if(equipmentLocation.getRoomId()!=null){
+            equipmentLocationContainer.setRoom(roomMap.get(equipmentLocation.getRoomId()));
+        }
+        if(equipmentLocation.getBuildingFloorId()!=null){
+            equipmentLocationContainer.setBuildingFloor(floorMap.get(equipmentLocation.getBuildingFloorId()));
+        }
+        return equipmentLocationContainer;
+
     }
 }
