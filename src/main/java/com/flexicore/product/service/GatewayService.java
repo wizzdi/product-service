@@ -110,6 +110,9 @@ public class GatewayService implements IGatewayService {
 	@Override
 	public boolean updateGatewayNoMerge(GatewayCreate gatewayCreate,
 			Gateway gateway) {
+		if(gatewayCreate.getProductType()==null){
+			gatewayCreate.setProductType(equipmentService.getGatewayProductType());
+		}
 		boolean update = equipmentService.updateEquipmentNoMerge(gatewayCreate,
 				gateway);
 		if (gatewayCreate.getIp() != null

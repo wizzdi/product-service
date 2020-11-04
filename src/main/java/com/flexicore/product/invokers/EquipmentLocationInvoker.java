@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @PluginInfo(version = 1)
-@InvokerInfo(displayName = "EquipmentLocation Invoker", description = "Invoker for Equipment Groups")
+@InvokerInfo(displayName = "EquipmentLocation Invoker", description = "Invoker for Equipment Locations")
 @Extension
 @Component
 public class EquipmentLocationInvoker implements ListingInvoker<EquipmentLocation, EquipmentLocationFiltering> {
@@ -31,11 +31,6 @@ public class EquipmentLocationInvoker implements ListingInvoker<EquipmentLocatio
 	@InvokerMethodInfo(displayName = "List Equipment Location", description = "lists all EquipmentLocation", relatedClasses = {Equipment.class})
 	public PaginationResponse<EquipmentLocation> listAll(EquipmentLocationFiltering equipmentLocationFiltering, SecurityContext securityContext) {
 		return equipmentLocationService.getAllEquipmentLocations(equipmentLocationFiltering);
-	}
-
-	@InvokerMethodInfo(displayName = "List Equipment Location", description = "lists all EquipmentLocation", relatedClasses = {Equipment.class})
-	public PaginationResponse<EquipmentLocationContainer> listAllContained(EquipmentLocationFiltering equipmentLocationFiltering, SecurityContext securityContext) {
-		return equipmentLocationService.getAllEquipmentLocationsContainers(equipmentLocationFiltering);
 	}
 
 	@Override

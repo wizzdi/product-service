@@ -17,6 +17,8 @@ public class EquipmentShort {
 	private String name;
 	private double lon;
 	private double lat;
+	private double x;
+	private double y;
 	private String type;
 	private List<ProductStatus> currentStatus;
 	private Map<String, String> iconMap;
@@ -31,6 +33,8 @@ public class EquipmentShort {
 		this.name = other.getName();
 		this.lon = other.getLon();
 		this.lat = other.getLat();
+		this.x=other.getX();
+		this.y=other.getY();
 		this.type = other.getClass().getCanonicalName();
 		currentStatus = statuses != null ? statuses : new ArrayList<>();
 		this.iconMap = iconMap != null ? iconMap : new HashMap<>();
@@ -109,6 +113,24 @@ public class EquipmentShort {
 	public EquipmentShort setDefaultIcon(String defaultIcon) {
 		this.defaultIcon = defaultIcon;
 		return this;
+	}
+
+	public double getX() {
+		return x;
+	}
+
+	public <T extends EquipmentShort> T setX(double x) {
+		this.x = x;
+		return (T) this;
+	}
+
+	public double getY() {
+		return y;
+	}
+
+	public <T extends EquipmentShort> T setY(double y) {
+		this.y = y;
+		return (T) this;
 	}
 
 	@JsonProperty("json-type")
