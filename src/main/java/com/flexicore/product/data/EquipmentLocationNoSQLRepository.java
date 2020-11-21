@@ -2,6 +2,7 @@ package com.flexicore.product.data;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.BaseclassNoSQLRepository;
+import com.flexicore.events.BaseclassNoSQLCreated;
 import com.flexicore.events.PluginsLoadedEvent;
 import com.flexicore.interfaces.AbstractNoSqlRepositoryPlugin;
 import com.flexicore.model.nosql.BaseclassNoSQL;
@@ -18,6 +19,7 @@ import org.bson.conversions.Bson;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -61,6 +63,9 @@ public class EquipmentLocationNoSQLRepository extends AbstractNoSqlRepositoryPlu
 	@Autowired
 	private String mongoDBName;
 
+	@Autowired
+	private ApplicationEventPublisher applicationEventPublisher;
+
 
 	@PostConstruct
 	private void postConstruct() {
@@ -92,11 +97,14 @@ public class EquipmentLocationNoSQLRepository extends AbstractNoSqlRepositoryPlu
 	public void merge(Object o) {
 
 		if (o instanceof EquipmentLocation) {
+			EquipmentLocation equipmentLocation = (EquipmentLocation) o;
+
 			MongoDatabase db = mongoClient.getDatabase(mongoDBName);
 			MongoCollection<EquipmentLocation> collection = db.getCollection(
 					COLLECTION_NAME, EquipmentLocation.class).withCodecRegistry(
 					pojoCodecRegistry);
-			collection.insertOne((EquipmentLocation) o);
+			collection.insertOne(equipmentLocation);
+			applicationEventPublisher.publishEvent(new BaseclassNoSQLCreated<>(equipmentLocation));
 		}
 
 	}

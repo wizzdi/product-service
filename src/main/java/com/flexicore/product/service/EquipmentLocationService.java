@@ -47,7 +47,6 @@ public class EquipmentLocationService implements ServicePlugin {
     public EquipmentLocation createEquipmentLocation(EquipmentLocationCreate equipmentLocationCreate) {
         EquipmentLocation equipmentLocation = createEquipmentLocationNoMerge(equipmentLocationCreate);
         equipmentLocationNoSQLRepository.merge(equipmentLocation);
-        applicationEventPublisher.publishEvent(new EquipmentLocationChanged(equipmentLocation));
         return equipmentLocation;
     }
 
