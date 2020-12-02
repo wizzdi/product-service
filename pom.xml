@@ -54,7 +54,7 @@
     <scm>
         <connection>scm:git:git://wizzdi/product-service.git</connection>
         <developerConnection>scm:git:git@github.com:wizzdi/product-service.git</developerConnection>
-        <url>https://github.com/wizzdi/service-model</url>
+        <url>https://github.com/wizzdi/product-service</url>
         <tag>product-service-{version}</tag>
     </scm>
     <dependencyManagement>
@@ -177,20 +177,6 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>flexicore-local</id>
-            <name>flexicore-local</name>
-            <url>https://artifactory.wizzdi.com/artifactory/flexicore-local</url>
-        </repository>
-    </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>flexicore-local</id>
-            <name>flexicore-local</name>
-            <url>https://artifactory.wizzdi.com/artifactory/flexicore-local</url>
-        </pluginRepository>
-    </pluginRepositories>
     <build>
         <resources>
             <resource>
