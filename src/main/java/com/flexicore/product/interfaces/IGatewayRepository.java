@@ -11,8 +11,8 @@ import java.util.List;
 
 public interface IGatewayRepository extends PluginRepository {
 
-	static void addGatewayPredicates(List<Predicate> preds, Root<Gateway> r,
-			CriteriaBuilder cb, GatewayFiltering filtering) {
-		IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
-	}
+    static <T extends Gateway> void addGatewayPredicates(List<Predicate> preds, Root<T> r,
+                                                         CriteriaBuilder cb, GatewayFiltering filtering) {
+        IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
+    }
 }

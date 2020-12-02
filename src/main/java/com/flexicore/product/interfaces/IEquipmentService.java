@@ -2,7 +2,6 @@ package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.ServicePlugin;
-import com.flexicore.iot.model.FlexiCoreServer;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
@@ -31,18 +30,12 @@ public interface IEquipmentService extends ServicePlugin {
 
 	ProductType getBuildingProductType();
 
-	FlexiCoreServer getFlexiCoreServerToSync(Equipment equipment);
-
-	FlexiCoreGateway getThisFlexiCoreGateway(SecurityContext securityContext);
 
 	<T extends Equipment> PaginationResponse<T> getAllEquipments(Class<T> c,
 			EquipmentFiltering filtering, SecurityContext securityContext);
 
 	<T extends Equipment> List<T> listAllEquipments(Class<T> c,
 			EquipmentFiltering filtering, SecurityContext securityContext);
-
-	List<FlexiCoreGateway> listAllFlexiCoreGateways(
-			FlexiCoreGatewayFiltering filtering, SecurityContext securityContext);
 
 	<T extends Equipment> PaginationResponse<EquipmentGroupHolder> getAllEquipmentsGrouped(
 			Class<T> c, EquipmentGroupFiltering filtering,
@@ -181,9 +174,6 @@ public interface IEquipmentService extends ServicePlugin {
 
 	void massMerge(List<?> toMerge);
 
-	FlexiCoreGateway createFlexiCoreGateway(
-			FlexiCoreGatewayCreate gatewayCreate,
-			SecurityContext securityContext);
 
 	<T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndType(
 			Class<T> c, EquipmentFiltering equipmentFiltering,

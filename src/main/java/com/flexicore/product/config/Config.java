@@ -15,7 +15,6 @@ import com.flexicore.product.containers.response.EquipmentShort;
 import com.flexicore.product.interfaces.IEventService;
 import com.flexicore.product.model.*;
 import com.flexicore.product.request.EquipmentLocationFiltering;
-import com.flexicore.product.request.FlexiCoreGatewayCreateParameters;
 import com.flexicore.product.request.UpdateEquipmentParameters;
 import com.flexicore.product.response.EquipmentLocationContainer;
 import com.flexicore.service.BaseclassService;
@@ -58,8 +57,6 @@ public class Config implements ServicePlugin {
 					keySetFilePath);
 
 			CrossLoaderResolver.registerClass(InspectEquipmentRequest.class);
-			CrossLoaderResolver
-					.registerClass(FlexiCoreGatewayCreateParameters.class);
 			CrossLoaderResolver.registerClass(UpdateEquipmentParameters.class);
 			BaseclassService.registerFilterClass(EquipmentFiltering.class,
 					Equipment.class);

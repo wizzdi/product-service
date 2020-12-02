@@ -240,34 +240,6 @@ public class EquipmentRepository extends AbstractRepositoryPlugin
 
 	}
 
-	public List<FlexiCoreGateway> getAllFlexiCoreGateways(
-			FlexiCoreGatewayFiltering filtering, SecurityContext securityContext) {
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<FlexiCoreGateway> q = cb
-				.createQuery(FlexiCoreGateway.class);
-		Root<FlexiCoreGateway> r = q.from(FlexiCoreGateway.class);
-
-		List<Predicate> preds = new ArrayList<>();
-		IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
-
-		addFlexiCoreGatewayFiltering(filtering, cb, r, preds);
-		QueryInformationHolder<FlexiCoreGateway> queryInformationHolder = new QueryInformationHolder<>(
-				filtering, FlexiCoreGateway.class, securityContext);
-		return getAllFiltered(queryInformationHolder, preds, cb, q, r);
-
-	}
-
-	public void addFlexiCoreGatewayFiltering(
-			FlexiCoreGatewayFiltering filtering, CriteriaBuilder cb,
-			Root<FlexiCoreGateway> r, List<Predicate> preds) {
-		addGatewayFiltering(filtering, r, preds);
-		if (filtering.getFlexiCoreServer() != null) {
-			preds.add(cb.equal(r.get(FlexiCoreGateway_.flexiCoreServer),
-					filtering.getFlexiCoreServer()));
-		}
-
-	}
-
 	public <T extends Gateway> void addGatewayFiltering(
 			GatewayFiltering filtering, Root<T> r, List<Predicate> preds) {
 		if (filtering.getConsoleIds() != null
@@ -295,20 +267,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin
 		return countAllFiltered(queryInformationHolder, preds, cb, q, r);
 	}
 
-	public long countAllFlexiCoreGateways(FlexiCoreGatewayFiltering filtering,
-			SecurityContext securityContext) {
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<Long> q = cb.createQuery(Long.class);
-		Root<FlexiCoreGateway> r = q.from(FlexiCoreGateway.class);
 
-		List<Predicate> preds = new ArrayList<>();
-		IEquipmentRepository.addEquipmentFiltering(filtering, cb, r, preds);
-
-		addFlexiCoreGatewayFiltering(filtering, cb, r, preds);
-		QueryInformationHolder<FlexiCoreGateway> queryInformationHolder = new QueryInformationHolder<>(
-				filtering, FlexiCoreGateway.class, securityContext);
-		return countAllFiltered(queryInformationHolder, preds, cb, q, r);
-	}
 
 	@Override
 	public List<ProductToStatus> getStatusLinks(Set<String> equipmentIds) {

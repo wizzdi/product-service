@@ -8,7 +8,6 @@ import com.flexicore.building.model.Room;
 import com.flexicore.data.jsoncontainers.CreatePermissionGroupLinkRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.iot.ExternalServer;
-import com.flexicore.iot.model.FlexiCoreServer;
 import com.flexicore.model.*;
 import com.flexicore.model.territories.Address;
 import com.flexicore.model.territories.Neighbourhood;
@@ -99,7 +98,6 @@ public class EquipmentService implements IEquipmentService {
     private static Map<String, Method> setterCache = new ConcurrentHashMap<>();
     private static AtomicBoolean init = new AtomicBoolean(false);
     private static ProductType gatewayProductType;
-    private static ProductType fcGatewayType;
     private static ProductStatus onProductStatus;
     private static ProductStatus offProductStatus;
     private static ProductStatus commErrorProductStatus;
@@ -147,9 +145,6 @@ public class EquipmentService implements IEquipmentService {
 
         gatewayProductType = getOrCreateProductType(new ProductTypeCreate()
                 .setName("Gateway").setDescription("Gateway"), securityContext);
-        fcGatewayType = getOrCreateProductType(
-                new ProductTypeCreate().setName("FlexiCore Gateway")
-                        .setDescription("FlexiCore Gateway"), securityContext);
         buildingProductType = getOrCreateProductType(new ProductTypeCreate()
                         .setName("Building").setDescription("Building"),
                 securityContext);
@@ -178,16 +173,6 @@ public class EquipmentService implements IEquipmentService {
                         gatewayProductType).setProductStatus(
                         commErrorProductStatus), securityContext);
 
-        linkProductTypeToProductStatus(new ProductStatusToTypeCreate()
-                .setProductType(fcGatewayType)
-                .setProductStatus(onProductStatus), securityContext);
-        linkProductTypeToProductStatus(
-                new ProductStatusToTypeCreate().setProductType(fcGatewayType)
-                        .setProductStatus(offProductStatus), securityContext);
-        linkProductTypeToProductStatus(
-                new ProductStatusToTypeCreate().setProductType(fcGatewayType)
-                        .setProductStatus(commErrorProductStatus),
-                securityContext);
 
     }
 
@@ -199,43 +184,7 @@ public class EquipmentService implements IEquipmentService {
         return buildingProductType;
     }
 
-    @Override
-    public FlexiCoreServer getFlexiCoreServerToSync(Equipment equipment) {
 
-        for (Gateway current = equipment.getCommunicationGateway(); current != null; current = current
-                .getCommunicationGateway()) {
-            if (current instanceof FlexiCoreGateway) {
-                FlexiCoreGateway flexiCoreGateway = (FlexiCoreGateway) current;
-                FlexiCoreServer flexiCoreServer = flexiCoreGateway
-                        .getFlexiCoreServer();
-                if (flexiCoreServer != null
-                        && iotExternalId != null && !iotExternalId.equals(flexiCoreServer
-                        .getExternalId())) {
-                    return flexiCoreServer;
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public FlexiCoreGateway getThisFlexiCoreGateway(
-            SecurityContext securityContext) {
-        if (iotExternalId == null) {
-            return null;
-        }
-        FlexiCoreGateway flexiCoreGateway = null;
-        Optional<FlexiCoreGateway> gateways = listAllFlexiCoreGateways(
-                new FlexiCoreGatewayFiltering().setExternalEquipmentIds(Collections
-                        .singleton(new EquipmentExternalIdFiltering()
-                                .setId(iotExternalId))), null)
-                .parallelStream().findFirst();
-
-        if (gateways.isPresent()) {
-            flexiCoreGateway = gateways.get();
-        }
-        return flexiCoreGateway;
-    }
 
     public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
                                                    SecurityContext securityContext) {
@@ -277,21 +226,6 @@ public class EquipmentService implements IEquipmentService {
         return new PaginationResponse<>(list, filtering, total);
     }
 
-    public PaginationResponse<FlexiCoreGateway> getAllFlexiCoreGateways(
-            FlexiCoreGatewayFiltering filtering, SecurityContext securityContext) {
-        List<FlexiCoreGateway> list = listAllFlexiCoreGateways(filtering,
-                securityContext);
-        long total = equipmentRepository.countAllFlexiCoreGateways(filtering,
-                securityContext);
-        return new PaginationResponse<>(list, filtering, total);
-    }
-
-    @Override
-    public List<FlexiCoreGateway> listAllFlexiCoreGateways(
-            FlexiCoreGatewayFiltering filtering, SecurityContext securityContext) {
-        return equipmentRepository.getAllFlexiCoreGateways(filtering,
-                securityContext);
-    }
 
     public <T extends Equipment> long countAllEquipments(Class<T> c,
                                                          EquipmentFiltering filtering, SecurityContext securityContext) {
@@ -521,21 +455,6 @@ public class EquipmentService implements IEquipmentService {
 
     }
 
-    public void validateCreate(FlexiCoreGatewayCreate equipmentCreate,
-                               SecurityContext securityContext) {
-        validateEquipmentCreate(equipmentCreate, securityContext);
-        FlexiCoreServer flexiCoreServer = equipmentCreate
-                .getFlexicoreServerId() != null ? getByIdOrNull(
-                equipmentCreate.getFlexicoreServerId(), FlexiCoreServer.class,
-                null, securityContext) : null;
-        if (flexiCoreServer == null
-                && equipmentCreate.getFlexicoreServerId() != null) {
-            throw new BadRequestException("No FlexiCoreServer with Id "
-                    + equipmentCreate.getFlexicoreServerId());
-        }
-        equipmentCreate.setFlexiCoreServer(flexiCoreServer);
-
-    }
 
     @Override
     public boolean updateProductNoMerge(ProductCreate productCreate,
@@ -1515,37 +1434,6 @@ public class EquipmentService implements IEquipmentService {
         return enableLights.getEquipmentList();
     }
 
-    @Override
-    public FlexiCoreGateway createFlexiCoreGateway(
-            FlexiCoreGatewayCreate gatewayCreate,
-            SecurityContext securityContext) {
-        FlexiCoreGateway flexiCoreGateway = new FlexiCoreGateway(gatewayCreate.getName(), securityContext);
-        if (gatewayCreate.getProductType() == null) {
-            flexiCoreGateway.setProductType(fcGatewayType);
-        }
-
-        updateFlexiCoreGatewayNoMerge(gatewayCreate, flexiCoreGateway);
-        equipmentRepository.merge(flexiCoreGateway);
-        return flexiCoreGateway;
-    }
-
-    private boolean updateFlexiCoreGatewayNoMerge(
-            FlexiCoreGatewayCreate gatewayCreate,
-            FlexiCoreGateway flexiCoreGateway) {
-        boolean update = updateGatewayNoMerge(gatewayCreate, flexiCoreGateway);
-
-        if (gatewayCreate.getFlexiCoreServer() != null
-                && (flexiCoreGateway.getFlexiCoreServer() == null || !gatewayCreate
-                .getFlexiCoreServer().getId()
-                .equals(flexiCoreGateway.getFlexiCoreServer().getId()))) {
-            flexiCoreGateway.setFlexiCoreServer(gatewayCreate
-                    .getFlexiCoreServer());
-            update = true;
-        }
-
-        return update;
-    }
-
     public void validate(UpdateProductStatus updateProductStatus,
                          SecurityContext securityContext) {
         ProductStatus productStatus = updateProductStatus.getStatusId() != null
@@ -1581,29 +1469,6 @@ public class EquipmentService implements IEquipmentService {
         gatewayCreate.setMultiLatLonEquipment(multiLatLonEquipment);
     }
 
-    public void validate(FlexiCoreGatewayUpdate gatewayCreate,
-                         SecurityContext securityContext) {
-
-        FlexiCoreGateway flexiCoreGateway = gatewayCreate.getId() != null
-                ? getByIdOrNull(gatewayCreate.getId(), FlexiCoreGateway.class,
-                null, securityContext) : null;
-        if (flexiCoreGateway == null) {
-            throw new BadRequestException("No FlexiCoreGateway with Id "
-                    + gatewayCreate.getId());
-        }
-        gatewayCreate.setFlexiCoreGateway(flexiCoreGateway);
-        validateCreate(gatewayCreate, securityContext);
-    }
-
-    public FlexiCoreGateway updateFlexiCoreGateway(
-            FlexiCoreGatewayUpdate gatewayCreate,
-            SecurityContext securityContext) {
-        FlexiCoreGateway flexiCoreGateway = gatewayCreate.getFlexiCoreGateway();
-        if (updateFlexiCoreGatewayNoMerge(gatewayCreate, flexiCoreGateway)) {
-            equipmentRepository.merge(flexiCoreGateway);
-        }
-        return flexiCoreGateway;
-    }
 
     public <T extends Equipment> List<EquipmentStatusGroup> getProductGroupedByStatusAndTenant(
             Class<T> c, EquipmentFiltering equipmentFiltering,
