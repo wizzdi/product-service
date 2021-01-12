@@ -24,6 +24,13 @@ import java.util.stream.Collectors;
 
 public interface IEquipmentRepository extends PluginRepository {
 
+
+	static <T extends Equipment> void addEquipmentFiltering(
+			EquipmentFiltering filtering, CriteriaBuilder cb, Root<T> r,
+			List<Predicate> preds) {
+		addEquipmentFiltering(filtering,cb,(From<?,T>)r,preds);
+
+	}
 	static <T extends Equipment> void addEquipmentFiltering(
 			EquipmentFiltering filtering, CriteriaBuilder cb, From<?,T> r,
 			List<Predicate> preds) {
