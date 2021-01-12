@@ -15,10 +15,7 @@ import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.model.*;
 import com.flexicore.security.SecurityContext;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +25,7 @@ import java.util.stream.Collectors;
 public interface IEquipmentRepository extends PluginRepository {
 
 	static <T extends Equipment> void addEquipmentFiltering(
-			EquipmentFiltering filtering, CriteriaBuilder cb, Root<T> r,
+			EquipmentFiltering filtering, CriteriaBuilder cb, From<?,T> r,
 			List<Predicate> preds) {
 		if (filtering.getEquipmentIds() != null&&!filtering.getEquipmentIds().isEmpty()) {
 			Set<String> ids = filtering.getEquipmentIds().parallelStream().map(EquipmentIdFiltering::getId).filter(Objects::nonNull).collect(Collectors.toSet());
@@ -41,15 +38,16 @@ public interface IEquipmentRepository extends PluginRepository {
 			Predicate pred = join.get(Baselink_.rightside).in(filtering.getEquipmentGroups());
 			preds.add(pred);
 		}
-		if (filtering.getLocationArea() != null
-				&& filtering.getLocationArea() != null) {
-			Predicate predicate = cb.between(r.get(Equipment_.lat), filtering
-					.getLocationArea().getLatStart(), filtering
-					.getLocationArea().getLatEnd());
-			predicate = cb.and(predicate, cb.between(r.get(Equipment_.lon),
-					filtering.getLocationArea().getLonStart(), filtering
-							.getLocationArea().getLonEnd()));
-			preds.add(predicate);
+		LocationArea locationArea = filtering.getLocationArea();
+		if (locationArea != null ) {
+			if(locationArea.getLatStart()!=null&&locationArea.getLatEnd()!=null){
+				preds.add(cb.between(r.get(Equipment_.lat), locationArea.getLatStart(), locationArea.getLatEnd()));
+			}
+			if(locationArea.getLonStart()!=null&&locationArea.getLonEnd()!=null){
+				preds.add(cb.between(r.get(Equipment_.lon),
+						locationArea.getLonStart(), locationArea.getLonEnd()));
+			}
+
 		}
 		if (filtering.getProductType() != null) {
 			Predicate predicate = cb.equal(r.get(Equipment_.productType),
