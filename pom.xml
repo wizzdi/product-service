@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.wizzdi</groupId>
     <artifactId>product-service</artifactId>
-    <version>3.4.1-SNAPSHOT</version>
+    <version>3.4.1</version>
     <name>product-service</name>
     <description>FlexiCore service plugin , manages products and equipments</description>
     <url>https://wizzdi.com</url>
@@ -54,7 +54,7 @@
         <connection>scm:git:git://wizzdi/product-service.git</connection>
         <developerConnection>scm:git:git@github.com:wizzdi/product-service.git</developerConnection>
         <url>https://github.com/wizzdi/product-service</url>
-        <tag>product-service-{version}</tag>
+        <tag>product-service-3.4.1</tag>
     </scm>
     <dependencyManagement>
         <dependencies>
