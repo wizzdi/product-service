@@ -21,6 +21,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,21 +30,15 @@ public interface IEquipmentRepository extends PluginRepository {
 	static <T extends Equipment> void addEquipmentFiltering(
 			EquipmentFiltering filtering, CriteriaBuilder cb, Root<T> r,
 			List<Predicate> preds) {
-		Set<String> ids;
-		if (filtering.getEquipmentIds() != null
-				&& !(ids = filtering.getEquipmentIds().parallelStream()
-						.filter(f -> f.getId() != null).map(f -> f.getId())
-						.collect(Collectors.toSet())).isEmpty()) {
-
+		if (filtering.getEquipmentIds() != null&&!filtering.getEquipmentIds().isEmpty()) {
+			Set<String> ids = filtering.getEquipmentIds().parallelStream().map(EquipmentIdFiltering::getId).filter(Objects::nonNull).collect(Collectors.toSet());
 			Predicate pred = r.get(Equipment_.id).in(ids);
 			preds.add(pred);
 		}
-		if (filtering.getEquipmentIds() != null
+		if (filtering.getEquipmentGroups() != null
 				&& !filtering.getEquipmentGroups().isEmpty()) {
-			Join<T, EquipmentToGroup> join = r
-					.join(Equipment_.equipmentToGroupList);
-			Predicate pred = join.get(Baselink_.rightside).in(
-					filtering.getEquipmentGroups());
+			Join<T, EquipmentToGroup> join = r.join(Equipment_.equipmentToGroupList);
+			Predicate pred = join.get(Baselink_.rightside).in(filtering.getEquipmentGroups());
 			preds.add(pred);
 		}
 		if (filtering.getLocationArea() != null
