@@ -3,6 +3,8 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.CreatePermissionGroupLinkRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.events.BaseclassCreated;
+import com.flexicore.events.BaseclassUpdated;
 import com.flexicore.model.Baseclass;
 import com.flexicore.model.FileResource;
 import com.flexicore.model.PermissionGroup;
@@ -18,15 +20,23 @@ import com.flexicore.product.request.StatusLinksToImageFilter;
 import com.flexicore.product.request.StatusLinksToImageUpdate;
 import com.flexicore.request.PermissionGroupsFilter;
 import com.flexicore.security.SecurityContext;
+import com.flexicore.security.SecurityContextBase;
 import com.flexicore.service.PermissionGroupService;
+import com.wizzdi.flexicore.security.request.PermissionGroupToBaseclassCreate;
+import com.wizzdi.flexicore.security.request.PermissionGroupToBaseclassFilter;
+import com.wizzdi.flexicore.security.service.PermissionGroupToBaseclassService;
 import org.pf4j.Extension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.BadRequestException;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @PluginInfo(version = 1)
@@ -34,15 +44,18 @@ import java.util.stream.Collectors;
 @Component
 public class StatusLinkToImageService implements IStatusLinkToImageService {
 
+	private static final Logger logger= LoggerFactory.getLogger(StatusLinkToImageService.class);
+
 	@PluginInfo(version = 1)
 	@Autowired
 	private StatusLinkToImageRepository repository;
 
 	@Autowired
-	private Logger logger;
+	@Qualifier("adminSecurityContext")
+	private SecurityContextBase<?, ?, ?, ?> securityContextBase;
 
 	@Autowired
-	private PermissionGroupService permissionGroupService;
+	private PermissionGroupToBaseclassService permissionGroupToBaseclassService;
 
 	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
 			List<String> batchString, SecurityContext securityContext) {
@@ -61,7 +74,7 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 						.collect(Collectors.toMap(f -> f.getId(), f -> f));
 		statusIds.removeAll(statusMap.keySet());
 		if (!statusIds.isEmpty()) {
-			logger.warning("No ProductStatus ids " + statusIds);
+			logger.warn("No ProductStatus ids " + statusIds);
 
 			// throw new BadRequestException("No ProductStatus ids " +
 			// statusIds);
@@ -76,7 +89,7 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 				.collect(Collectors.toMap(f -> f.getId(), f -> f));
 		statusLinkIds.removeAll(productTypeToProductStatusMap.keySet());
 		if (!statusLinkIds.isEmpty()) {
-			logger.warning("No ProductTypeToProductStatus ids " + statusLinkIds);
+			logger.warn("No ProductTypeToProductStatus ids " + statusLinkIds);
 
 			// throw new
 			// BadRequestException("No ProductTypeToProductStatus ids " +
@@ -94,7 +107,7 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 						.collect(Collectors.toMap(f -> f.getId(), f -> f));
 		productTypeIds.removeAll(productTypeMap.keySet());
 		if (!productTypeIds.isEmpty()) {
-			logger.warning("No ProductType ids " + statusLinkIds);
+			logger.warn("No ProductType ids " + statusLinkIds);
 
 			// throw new BadRequestException("No ProductType ids " +
 			// productTypeIds);
@@ -180,26 +193,10 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 		StatusLinkToImage statusLinkToImage = createStatusLinkToImageNoMerge(
 				statusLinksToImageCreate, securityContext);
 		repository.merge(statusLinkToImage);
-		updatePermissionGroup(securityContext, statusLinkToImage);
 
 		return statusLinkToImage;
 	}
 
-	public void updatePermissionGroup(SecurityContext securityContext, StatusLinkToImage statusLinkToImage) {
-		if(statusLinkToImage.getStatusLink()!=null){
-			List<PermissionGroup> permissionGroups=permissionGroupService.listPermissionGroups(new PermissionGroupsFilter().setBaseclasses(Collections.singletonList(statusLinkToImage.getStatusLink())),null);
-			if(!permissionGroups.isEmpty()){
-				List<Baseclass> baseclasses = new ArrayList<>();
-				baseclasses.add(statusLinkToImage);
-				if(statusLinkToImage.getImage()!=null){
-					baseclasses.add(statusLinkToImage.getImage());
-				}
-				List<PermissionGroupToBaseclass> permissionGroupToBaseclasses = permissionGroupService.connectPermissionGroupsToBaseclasses(new CreatePermissionGroupLinkRequest().setBaseclasses(baseclasses).setPermissionGroups(permissionGroups), securityContext);
-				logger.info("StatusLinkToImage is connected to "+permissionGroupToBaseclasses.size() +"permission groups");
-			}
-
-		}
-	}
 
 	@Override
 	public StatusLinkToImage createStatusLinkToImageNoMerge(
@@ -251,8 +248,60 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 				statusLinkToImage)) {
 			repository.merge(statusLinkToImage);
 		}
-		updatePermissionGroup(securityContext,statusLinkToImage);
 
 		return statusLinkToImage;
+	}
+
+
+	@Async
+	@org.springframework.context.event.EventListener
+	public void onPermissionGroupToBaseclassCreated(BaseclassUpdated<StatusLinkToImage> baseclassUpdated) {
+		List<PermissionGroupToBaseclass> permissionGroupToBaseclasses = permissionGroupToBaseclassService.listAllPermissionGroupToBaseclass(new PermissionGroupToBaseclassFilter().setRightside(Collections.singletonList(baseclassUpdated.getBaseclass())), null);
+		addProductTypeToStatusItemsToPermissionGroup(permissionGroupToBaseclasses);
+	}
+
+	@Async
+	@EventListener
+	public void onPermissionGroupToBaseclassCreated(BaseclassCreated<PermissionGroupToBaseclass> baseclassBaseclassCreated) {
+		PermissionGroupToBaseclass link = baseclassBaseclassCreated.getBaseclass();
+		if (link.getRightside() instanceof StatusLinkToImage) {
+			addProductTypeToStatusItemsToPermissionGroup(Collections.singletonList(link));
+		}
+	}
+
+	private void addProductTypeToStatusItemsToPermissionGroup(List<PermissionGroupToBaseclass> links) {
+		List<Baseclass> stuffToAdd = new ArrayList<>();
+		List<PermissionGroup> permissionGroups=links.stream().map(f->f.getLeftside()).collect(Collectors.toList());
+		for (PermissionGroupToBaseclass link : links) {
+			StatusLinkToImage productType = (StatusLinkToImage) link.getRightside();
+			if (productType.getStatusLink() != null) {
+				stuffToAdd.add(productType.getStatusLink());
+			}
+			if (productType.getImage() != null) {
+				stuffToAdd.add(productType.getImage());
+			}
+		}
+
+		if (!stuffToAdd.isEmpty()) {
+			Map<String,Map<String, PermissionGroupToBaseclass>> map = permissionGroupToBaseclassService.listAllPermissionGroupToBaseclass(new PermissionGroupToBaseclassFilter().setLeftside(new ArrayList<>(permissionGroups)).setRightside(stuffToAdd), null).stream().collect(Collectors.groupingBy(f -> f.getRightside().getId(), Collectors.toMap(f->f.getLeftside().getId(), f->f,(a, b)->a)));
+			List<Object> toMerge = new ArrayList<>();
+			for (Baseclass baseclass : stuffToAdd) {
+				Map<String,PermissionGroupToBaseclass> permissionGroupToBaseclassMap = map.computeIfAbsent(baseclass.getId(),f->new HashMap<>());
+				for (PermissionGroup permissionGroup : permissionGroups) {
+					PermissionGroupToBaseclass permissionGroupToBaseclass=permissionGroupToBaseclassMap.get(permissionGroup.getId());
+					PermissionGroupToBaseclassCreate permissionGroupToBaseclassCreate = new PermissionGroupToBaseclassCreate()
+							.setBaseclass(baseclass)
+							.setPermissionGroup(permissionGroup);
+					if (permissionGroupToBaseclass == null) {
+						permissionGroupToBaseclass = permissionGroupToBaseclassService.createPermissionGroupToBaseclassNoMerge(permissionGroupToBaseclassCreate, securityContextBase);
+						toMerge.add(permissionGroupToBaseclass);
+					}
+				}
+
+			}
+			logger.info("added total of " + toMerge.size() + " to permission groups " + permissionGroups.stream().map(f->f.getName()+"("+f.getId()+")").collect(Collectors.joining(",")));
+			permissionGroupToBaseclassService.massMerge(toMerge);
+
+		}
 	}
 }

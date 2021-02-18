@@ -345,7 +345,7 @@ public class EquipmentRepository extends AbstractRepositoryPlugin
 		Join<T, ProductToStatus> join = r.join(Equipment_.productToStatusList);
 		Join<ProductToStatus, ProductStatus> statusJoin = cb.treat(
 				join.join(Baselink_.rightside), ProductStatus.class);
-		Join<T, Tenant> tenantJoin = r.join(Equipment_.tenant);
+		Join<T, SecurityTenant> tenantJoin = r.join(Equipment_.tenant);
 
 		List<Predicate> preds = new ArrayList<>();
 		Predicate enabledOnly = cb.isTrue(join.get(ProductToStatus_.enabled));
