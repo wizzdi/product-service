@@ -18,8 +18,10 @@ import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.pf4j.Extension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,8 +39,7 @@ public class GatewayService implements IGatewayService {
 	@Autowired
 	private IEquipmentService equipmentService;
 
-	@Autowired
-	private Logger logger;
+	private static final Logger logger= LoggerFactory.getLogger(GatewayService.class);
 
 	@Autowired
 	private EncryptionService encryptionService;
@@ -144,7 +145,7 @@ public class GatewayService implements IGatewayService {
 					update = true;
 				}
 			} catch (Exception e) {
-				logger.log(Level.SEVERE, "could not encrypt password", e);
+				logger.error( "could not encrypt password", e);
 			}
 
 		}

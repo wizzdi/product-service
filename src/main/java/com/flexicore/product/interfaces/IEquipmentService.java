@@ -1,7 +1,7 @@
 package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentStatusGroup;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface IEquipmentService extends ServicePlugin {
+public interface IEquipmentService extends Plugin {
 
 	ProductType getGatewayProductType();
 

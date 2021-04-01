@@ -16,6 +16,8 @@ import com.flexicore.security.SecurityContext;
 import com.flexicore.service.EncryptionService;
 
 import com.flexicore.service.SecurityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -26,7 +28,7 @@ import java.security.GeneralSecurityException;
 import java.util.Base64;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.pf4j.Extension;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ExternalServerService implements IExternalServerService {
 
 	public static final String SALT = "test";
-	@Autowired
-	private Logger logger;
+	private static final Logger logger= LoggerFactory.getLogger(ExternalServerService.class);
 
 	@PluginInfo(version = 1)
 	@Autowired
@@ -155,7 +156,7 @@ public class ExternalServerService implements IExternalServerService {
 				update = true;
 			}
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "could not encrypt password", e);
+			logger.error( "could not encrypt password", e);
 		}
 		return update;
 	}

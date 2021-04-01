@@ -1,7 +1,7 @@
 package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.product.containers.request.AlertFiltering;
 import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.model.Alert;
@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
-public interface IEventService extends ServicePlugin {
+public interface IEventService extends Plugin {
 
 	static Queue<Class<?>> clazzToRegister = new ConcurrentLinkedQueue<>();
 	static Map<String, Class<?>> clazzToRegisterMap = new ConcurrentHashMap<>();

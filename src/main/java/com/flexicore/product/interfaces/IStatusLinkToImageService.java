@@ -1,7 +1,7 @@
 package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.product.model.StatusLinkToImage;
 import com.flexicore.product.request.StatusLinksToImageCreate;
 import com.flexicore.product.request.StatusLinksToImageFilter;
@@ -10,7 +10,7 @@ import com.flexicore.security.SecurityContext;
 
 import java.util.List;
 
-public interface IStatusLinkToImageService extends ServicePlugin {
+public interface IStatusLinkToImageService extends Plugin {
 	void validate(StatusLinksToImageFilter filtering,
 			SecurityContext securityContext);
 

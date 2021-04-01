@@ -1,14 +1,14 @@
 package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.organization.model.Manufacturer;
 import com.flexicore.product.request.ManufacturerCreate;
 import com.flexicore.product.request.ManufacturerFiltering;
 import com.flexicore.product.request.ManufacturerUpdate;
 import com.flexicore.security.SecurityContext;
 
-public interface IManufacturerService extends ServicePlugin {
+public interface IManufacturerService extends Plugin {
 	PaginationResponse<Manufacturer> getAllManufacturers(
 			ManufacturerFiltering filtering, SecurityContext securityContext);
 

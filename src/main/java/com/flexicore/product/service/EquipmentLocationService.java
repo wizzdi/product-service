@@ -4,7 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.building.model.BuildingFloor;
 import com.flexicore.building.model.Room;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.product.data.EquipmentLocationNoSQLRepository;
 import com.flexicore.product.messages.EquipmentLocationChanged;
 import com.flexicore.product.model.Equipment;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @PluginInfo(version = 1)
 @Component
 @Extension
-public class EquipmentLocationService implements ServicePlugin {
+public class EquipmentLocationService implements Plugin {
 
     @Autowired
     @PluginInfo(version = 1)

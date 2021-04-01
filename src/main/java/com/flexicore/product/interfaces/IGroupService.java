@@ -1,7 +1,7 @@
 package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.product.model.EquipmentGroup;
 import com.flexicore.product.model.EquipmentToGroup;
 import com.flexicore.product.model.GroupFiltering;
@@ -11,7 +11,7 @@ import com.flexicore.security.SecurityContext;
 import java.util.List;
 import java.util.Set;
 
-public interface IGroupService extends ServicePlugin {
+public interface IGroupService extends Plugin {
 	PaginationResponse<EquipmentGroup> getAllEquipmentGroups(
 			GroupFiltering filtering, SecurityContext securityContext);
 

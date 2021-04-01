@@ -39,9 +39,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.pf4j.Extension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,8 +65,7 @@ public class EventService implements IEventService {
 	@Autowired
 	private TenantService tenantService;
 
-	@Autowired
-	private Logger logger;
+	private static final Logger logger= LoggerFactory.getLogger(EventService.class);
 	@Autowired
 	private FileResourceService fileResourceService;
 
@@ -167,7 +167,7 @@ public class EventService implements IEventService {
 			}
 			csvPrinter.flush();
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "unable to create csv");
+			logger.error( "unable to create csv");
 		}
 		FileResource fileResource = fileResourceService.createDontPersist(
 				file.getAbsolutePath(), securityContext);

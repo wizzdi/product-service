@@ -3,7 +3,7 @@ package com.flexicore.product.config;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.CrossLoaderResolver;
 import com.flexicore.events.PluginsLoadedEvent;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.model.FilteringInformationHolder;
 import com.flexicore.model.territories.Neighbourhood;
@@ -32,7 +32,7 @@ import org.springframework.core.env.Environment;
 @PluginInfo(version = 1)
 @Extension
 @Component
-public class Config implements ServicePlugin {
+public class Config implements Plugin {
 
 
 	private static AtomicBoolean init = new AtomicBoolean(false);

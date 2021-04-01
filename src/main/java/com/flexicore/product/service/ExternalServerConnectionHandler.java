@@ -1,7 +1,7 @@
 package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.model.Baseclass;
 import com.flexicore.product.model.Equipment;
@@ -15,13 +15,14 @@ import com.flexicore.product.request.SingleInspectJob;
 import com.flexicore.product.response.GenericInspectResponse;
 import com.flexicore.security.SecurityContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
@@ -32,10 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 @PluginInfo(version = 1)
 @Extension
 @Component
-public class ExternalServerConnectionHandler implements ServicePlugin {
+public class ExternalServerConnectionHandler implements Plugin {
 
-	@Autowired
-	private Logger logger;
+	private static final Logger logger= LoggerFactory.getLogger(ExternalServerConnectionHandler.class);
 	@PluginInfo(version = 1)
 	@Autowired
 	private EquipmentService equipmentService;
@@ -103,7 +103,7 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 				connectionHolder = configurationCasted.getOnConnect().apply(
 						externalServer);
 				if (connectionHolder == null) {
-					logger.warning("Failed Getting Connection Holder for " + externalServer.getName() + " (" + externalServer.getId() + ")");
+					logger.warn("Failed Getting Connection Holder for " + externalServer.getName() + " (" + externalServer.getId() + ")");
 					return;
 				}
 				configurationCasted.getConnectionHolders().put(id, connectionHolder);
@@ -123,7 +123,7 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 			}
 
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "failed inspecting server " + externalServer.getName() + " (" + externalServer.getId() + ")", e);
+			logger.error( "failed inspecting server " + externalServer.getName() + " (" + externalServer.getId() + ")", e);
 		} finally {
 			OffsetDateTime inspectTime = OffsetDateTime.now();
 			externalServer.setLastInspectAttempt(inspectTime);
@@ -180,7 +180,7 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 				connectionHolder = configurationCasted.getOnConnect().apply(
 						externalServer);
 				if (connectionHolder == null) {
-					logger.warning("Failed Getting Connection Holder for "
+					logger.warn("Failed Getting Connection Holder for "
 							+ externalServer.getName() + " ("
 							+ externalServer.getId() + ")");
 					return;
@@ -204,7 +204,7 @@ public class ExternalServerConnectionHandler implements ServicePlugin {
 					+ singleInspectJob.getId());
 
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "failed single inspecting server "
+			logger.error( "failed single inspecting server "
 					+ externalServer.getName() + " (" + externalServer.getId()
 					+ ")", e);
 		}

@@ -3,7 +3,7 @@ package com.flexicore.product.websocket.service;
 import com.flexicore.annotations.Baseclassroot;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.BaseclassRepository;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.product.interfaces.IEvent;
 import com.flexicore.product.model.Event;
@@ -32,10 +32,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 
 @PluginInfo(version = 1)
-@ApplicationScoped
+
 @Extension
 @Component
-public class EventSender implements ServicePlugin {
+public class EventSender implements Plugin {
 
 	private static final Logger logger= LoggerFactory.getLogger(EventSender.class);
 	@Autowired

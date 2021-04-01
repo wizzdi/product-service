@@ -2,7 +2,7 @@ package com.flexicore.organization.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.organization.data.SupplierToProductRepository;
 import com.flexicore.organization.model.Supplier;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Extension
 @Component
 @Primary
-public class SupplierToProductService implements ServicePlugin {
+public class SupplierToProductService implements Plugin {
 
 	@PluginInfo(version = 1)
 	@Autowired

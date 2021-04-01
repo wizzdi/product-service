@@ -2,7 +2,6 @@ package com.flexicore.product.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.events.PluginsLoadedEvent;
-import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.product.config.Config;
 import com.flexicore.product.containers.request.ProductStatusCreate;
@@ -14,39 +13,34 @@ import com.flexicore.product.request.ExternalServerConnectionConfiguration;
 import com.flexicore.product.request.SingleInspectJob;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.service.SecurityService;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.pf4j.Extension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 
-import javax.enterprise.context.ApplicationScoped;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.pf4j.Extension;
-import org.pf4j.PluginManager;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
+
 
 @PluginInfo(version = 1)
-@ApplicationScoped
 @Extension
 @Component
-public class ExternalServerConnectionManager implements ServicePlugin {
+public class ExternalServerConnectionManager implements Plugin {
 
 	private static final AtomicBoolean init = new AtomicBoolean(false);
 
 	private static final LinkedBlockingQueue<ExternalServerConnectionConfiguration<?, ?>> configurations = new LinkedBlockingQueue<>();
 	private boolean stop;
 
-	@Autowired
-	private Logger logger;
+	private static final Logger logger= LoggerFactory.getLogger(ExternalServerConnectionManager.class);
 
 	@PluginInfo(version = 1)
 	@Autowired
@@ -166,17 +160,17 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 						CompletableFuture
 								.runAsync(() -> externalServerConnectionHandler.handleConfiguration(configuration, securityContext, connected, disconnected), executorService)
 								.exceptionally(
-										e -> { logger.log(Level.SEVERE, "configuration handling ended with exception", e);return null; })
+										e -> { logger.error( "configuration handling ended with exception", e);return null; })
 								.thenRun(() -> { startedConnections.remove(configuration);});
 
 					} catch (Exception e) {
-						logger.log(Level.SEVERE, "failed calling connection manager", e);
+						logger.error( "failed calling connection manager", e);
 					}
 				}
 				try {
 					Thread.sleep(10000);
 				} catch (InterruptedException e) {
-					logger.log(Level.WARNING, "inturrpted while waiting for next connection check", e);
+					logger.warn( "inturrpted while waiting for next connection check", e);
 					stop = true;
 				}
 
@@ -229,7 +223,7 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 				try {
 					executor.getQueue().put(r);
 				} catch (InterruptedException e) {
-					logger.log(Level.SEVERE,
+					logger.error(
 							"error while adding process to queue:", e);
 					// keep the interrupt status
 				Thread.currentThread().interrupt();

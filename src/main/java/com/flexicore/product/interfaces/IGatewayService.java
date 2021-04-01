@@ -1,7 +1,7 @@
 package com.flexicore.product.interfaces;
 
 import com.flexicore.data.jsoncontainers.PaginationResponse;
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.product.containers.request.GatewayCreate;
 import com.flexicore.product.model.Gateway;
 import com.flexicore.product.model.GatewayFiltering;
@@ -11,7 +11,7 @@ import com.flexicore.security.SecurityContext;
 import java.security.GeneralSecurityException;
 import java.util.List;
 
-public interface IGatewayService extends ServicePlugin {
+public interface IGatewayService extends Plugin {
 	void validate(GatewayFiltering filtering, SecurityContext securityContext);
 
 	PaginationResponse<Gateway> getAllGateways(GatewayFiltering filtering,

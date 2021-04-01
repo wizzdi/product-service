@@ -1,6 +1,6 @@
 package com.flexicore.product.interfaces;
 
-import com.flexicore.interfaces.ServicePlugin;
+import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.iot.ExternalServerUser;
 import com.flexicore.product.iot.request.ExternalServerCreate;
@@ -9,7 +9,7 @@ import com.flexicore.security.SecurityContext;
 
 import java.security.GeneralSecurityException;
 
-public interface IExternalServerService extends ServicePlugin {
+public interface IExternalServerService extends Plugin {
 	boolean updateExternalServerNoMerge(
 			ExternalServerCreate externalServerCreate,
 			ExternalServer externalServer);

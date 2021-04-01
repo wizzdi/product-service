@@ -32,9 +32,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.pf4j.Extension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,12 +60,8 @@ public class EquipmentRESTService implements RestServicePlugin {
 	@Autowired
 	private GroupService groupService;
 
-	@PluginInfo(version = 1)
-	@Autowired
-	private EventService eventService;
 
-	@Autowired
-	private Logger logger;
+	private static final Logger logger= LoggerFactory.getLogger(EquipmentRESTService.class);
 
 	@POST
 	@Produces("application/json")
@@ -326,7 +323,7 @@ public class EquipmentRESTService implements RestServicePlugin {
 			try {
 				c = (Class<T>) Class.forName(equipmentCreate.getClazzName());
 			} catch (ClassNotFoundException e) {
-				logger.log(Level.SEVERE, "unable to get class: "
+				logger.error( "unable to get class: "
 						+ equipmentCreate.getClazzName(), e);
 				throw new BadRequestException("No Class with name "
 						+ equipmentCreate.getClazzName());
