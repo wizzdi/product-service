@@ -97,9 +97,11 @@ public class ExternalServerConnectionManager implements Plugin {
 
 	}
 
+	@Async
 	@EventListener
 	public void onExternalServerConnectionRegistration(
 			ExternalServerConnectionConfiguration<?, ?> externalServerConnectionRegistration) {
+		logger.info("added external connection configuration "+externalServerConnectionRegistration);
 		configurations.add(externalServerConnectionRegistration);
 
 	}
@@ -112,6 +114,7 @@ public class ExternalServerConnectionManager implements Plugin {
 		return disconnected;
 	}
 
+	@Async
 	@EventListener
 	public void onSingleJobAdded(SingleInspectJob<?, ?> singleInspectJob) {
 		ExternalServerConnectionConfiguration<?, ?> connectionConfiguration = configurations
