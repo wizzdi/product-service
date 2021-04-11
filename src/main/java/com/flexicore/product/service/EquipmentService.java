@@ -9,9 +9,7 @@ import com.flexicore.data.jsoncontainers.CreatePermissionGroupLinkRequest;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.iot.ExternalServer;
 import com.flexicore.model.*;
-import com.flexicore.model.territories.Address;
-import com.flexicore.model.territories.Neighbourhood;
-import com.flexicore.model.territories.Street;
+import com.flexicore.model.territories.*;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
@@ -27,10 +25,13 @@ import com.flexicore.product.response.TypeHolder;
 import com.flexicore.request.GetClassInfo;
 import com.flexicore.security.RunningUser;
 import com.flexicore.security.SecurityContext;
-import com.flexicore.service.*;
-import com.flexicore.territories.request.NeighbourhoodFiltering;
-import com.flexicore.territories.request.StreetFiltering;
+import com.flexicore.service.impl.*;
+import com.flexicore.territories.request.NeighbourhoodFilter;
+import com.flexicore.territories.request.StreetFilter;
+import com.flexicore.territories.service.NeighbourhoodService;
+import com.flexicore.territories.service.StreetService;
 import com.flexicore.utils.InheritanceUtils;
+import com.wizzdi.flexicore.security.data.SecuredBasicRepository;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,12 @@ public class EquipmentService implements IEquipmentService {
     private EquipmentRepository equipmentRepository;
 
     @Autowired
+    private NeighbourhoodService neighbourhoodService;
+
+    @Autowired
+    private StreetService streetService;
+
+    @Autowired
     private BaselinkService baselinkService;
 
     @Autowired
@@ -77,6 +84,9 @@ public class EquipmentService implements IEquipmentService {
 
     @Autowired
     private SecurityService securityService;
+
+    @Autowired
+    private SecuredBasicRepository securedBasicRepository;
 
 
     private static final Logger logger = LoggerFactory.getLogger(EquipmentService.class);
@@ -412,8 +422,8 @@ public class EquipmentService implements IEquipmentService {
         equipmentCreate.setRoom(room);
 
         Address address = equipmentCreate.getAddressId() != null
-                ? getByIdOrNull(equipmentCreate.getAddressId(), Address.class,
-                null, securityContext) : null;
+                ? securedBasicRepository.getByIdOrNull(equipmentCreate.getAddressId(), Address.class,
+                Address_.security, securityContext) : null;
         if (address == null && equipmentCreate.getAddressId() != null) {
             throw new BadRequestException("No address with Id "
                     + equipmentCreate.getAddressId());
@@ -1025,8 +1035,8 @@ public class EquipmentService implements IEquipmentService {
 
     private List<Street> getStreets(Set<String> ids,
                                     SecurityContext securityContext) {
-        return equipmentRepository
-                .listByIds(Street.class, ids, securityContext);
+        return securedBasicRepository
+                .listByIds(Street.class, ids, Street_.security, securityContext);
     }
 
     private List<Gateway> getGateways(Set<String> ids,
@@ -1037,7 +1047,7 @@ public class EquipmentService implements IEquipmentService {
 
     private List<Neighbourhood> getNeighbourhoods(Set<String> ids,
                                                   SecurityContext securityContext) {
-        return equipmentRepository.listByIds(Neighbourhood.class, ids,
+        return securedBasicRepository.listByIds(Neighbourhood.class, ids,Neighbourhood_.security,
                 securityContext);
     }
 
@@ -1392,26 +1402,14 @@ public class EquipmentService implements IEquipmentService {
     }
 
     public PaginationResponse<Neighbourhood> getAllNeighbourhoods(
-            NeighbourhoodFiltering neighbourhoodFiltering,
+            NeighbourhoodFilter neighbourhoodFiltering,
             SecurityContext securityContext) {
-        QueryInformationHolder<Neighbourhood> queryInformationHolder = new QueryInformationHolder<>(
-                neighbourhoodFiltering, Neighbourhood.class, securityContext);
-        List<Neighbourhood> list = equipmentRepository
-                .getAllFiltered(queryInformationHolder);
-        long count = equipmentRepository
-                .countAllFiltered(queryInformationHolder);
-        return new PaginationResponse<>(list, neighbourhoodFiltering, count);
+        return new PaginationResponse<>(neighbourhoodService.getAllNeighbourhoods(securityContext,neighbourhoodFiltering));
     }
 
     public PaginationResponse<Street> getAllStreets(
-            StreetFiltering streetFiltering, SecurityContext securityContext) {
-        QueryInformationHolder<Street> queryInformationHolder = new QueryInformationHolder<>(
-                streetFiltering, Street.class, securityContext);
-        List<Street> list = equipmentRepository
-                .getAllFiltered(queryInformationHolder);
-        long count = equipmentRepository
-                .countAllFiltered(queryInformationHolder);
-        return new PaginationResponse<>(list, streetFiltering, count);
+            StreetFilter streetFiltering, SecurityContext securityContext) {
+      return new PaginationResponse<>(streetService.getAllStreets(securityContext,streetFiltering));
     }
 
     public List<Equipment> getEquipmentByIds(Set<String> ids,
