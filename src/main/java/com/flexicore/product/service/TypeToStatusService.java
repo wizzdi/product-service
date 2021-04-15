@@ -64,8 +64,8 @@ public class TypeToStatusService implements Plugin {
 			if (productType.getRightside() != null) {
 				stuffToAdd.add(productType.getRightside());
 			}
-			if (productType.getImage() != null) {
-				stuffToAdd.add(productType.getImage());
+			if (productType.getImage() != null&&productType.getImage().getSecurity()!=null) {
+				stuffToAdd.add(productType.getImage().getSecurity());
 			}
 		}
 

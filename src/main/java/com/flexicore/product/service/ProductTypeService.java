@@ -57,11 +57,11 @@ public class ProductTypeService implements Plugin {
 		List<PermissionGroup> permissionGroups=links.stream().map(f->f.getLeftside()).collect(Collectors.toList());
 		for (PermissionGroupToBaseclass link : links) {
 			ProductType productType = (ProductType) link.getRightside();
-			if (productType.getDiagram3D() != null) {
-				stuffToAdd.add(productType.getDiagram3D());
+			if (productType.getDiagram3D() != null&&productType.getDiagram3D().getSecurity()!=null) {
+				stuffToAdd.add(productType.getDiagram3D().getSecurity());
 			}
-			if (productType.getImage() != null) {
-				stuffToAdd.add(productType.getImage());
+			if (productType.getImage() != null&&productType.getImage().getSecurity()!=null) {
+				stuffToAdd.add(productType.getImage().getSecurity());
 			}
 		}
 

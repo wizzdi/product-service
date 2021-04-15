@@ -4,6 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.Baseclass;
 import com.flexicore.organization.model.Manufacturer;
+import com.flexicore.organization.model.Manufacturer_;
 import com.flexicore.product.data.ModelRepository;
 import com.flexicore.product.interfaces.IModelService;
 import com.flexicore.product.model.Model;
@@ -17,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.wizzdi.flexicore.security.data.SecuredBasicRepository;
 import org.pf4j.Extension;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,8 @@ public class ModelService implements IModelService {
 	@PluginInfo(version = 1)
 	@Autowired
 	private ModelRepository modelRepository;
+	@Autowired
+	private SecuredBasicRepository securedBasicRepository;
 
 	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
 			SecurityContext securityContext) {
@@ -98,7 +103,7 @@ public class ModelService implements IModelService {
 		Set<String> ids = filtering.getManufacturersIds();
 		List<Manufacturer> groups = ids.isEmpty()
 				? new ArrayList<>()
-				: listByIds(Manufacturer.class, ids, securityContext);
+				: securedBasicRepository.listByIds(Manufacturer.class, ids, Manufacturer_.security, securityContext);
 		ids.removeAll(groups.parallelStream().map(f -> f.getId())
 				.collect(Collectors.toSet()));
 		if (!ids.isEmpty()) {
@@ -125,8 +130,8 @@ public class ModelService implements IModelService {
 	public void validate(ModelCreate modelCreate,
 			SecurityContext securityContext) {
 		Manufacturer manufacturer = modelCreate.getManufacturerId() != null
-				? getByIdOrNull(modelCreate.getManufacturerId(),
-						Manufacturer.class, null, securityContext) : null;
+				? securedBasicRepository.getByIdOrNull(modelCreate.getManufacturerId(),
+						Manufacturer.class, Manufacturer_.security, securityContext) : null;
 		if (manufacturer == null) {
 			throw new BadRequestException("No Manufacturer with id "
 					+ modelCreate.getManufacturerId());

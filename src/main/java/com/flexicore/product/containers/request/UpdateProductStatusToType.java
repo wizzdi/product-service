@@ -1,7 +1,7 @@
 package com.flexicore.product.containers.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.model.FileResource;
+import com.wizzdi.flexicore.file.model.FileResource;
 
 public class UpdateProductStatusToType extends ProductStatusToTypeCreate {
 

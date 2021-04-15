@@ -10,11 +10,11 @@ public class SupplierToProductContainer {
 
 	public SupplierToProductContainer(SupplierToProduct supplierToProduct) {
 		this.id = supplierToProduct.getId();
-		this.supplierId = supplierToProduct.getLeftside() != null
-				? supplierToProduct.getLeftside().getId()
+		this.supplierId = supplierToProduct.getSupplier() != null
+				? supplierToProduct.getSupplier().getId()
 				: null;
-		this.productId = supplierToProduct.getRightside() != null
-				? supplierToProduct.getRightside().getId()
+		this.productId = supplierToProduct.getProduct() != null
+				? supplierToProduct.getProduct().getId()
 				: null;
 		this.price = supplierToProduct.getPrice();
 	}

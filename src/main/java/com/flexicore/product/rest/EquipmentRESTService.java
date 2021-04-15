@@ -7,7 +7,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 
 import com.flexicore.annotations.ProtectedREST;
 import com.flexicore.interfaces.RestServicePlugin;
-import com.flexicore.model.FileResource;
+import com.wizzdi.flexicore.file.model.FileResource;
 import com.flexicore.product.containers.request.*;
 import com.flexicore.product.containers.response.EquipmentGroupHolder;
 import com.flexicore.product.containers.response.EquipmentShort;
@@ -20,6 +20,8 @@ import com.flexicore.product.service.EquipmentService;
 import com.flexicore.product.service.EventService;
 import com.flexicore.product.service.GroupService;
 import com.flexicore.security.SecurityContext;
+import com.wizzdi.flexicore.file.model.FileResource_;
+import com.wizzdi.flexicore.security.data.SecuredBasicRepository;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,6 +61,8 @@ public class EquipmentRESTService implements RestServicePlugin {
 	@PluginInfo(version = 1)
 	@Autowired
 	private GroupService groupService;
+	@Autowired
+	private SecuredBasicRepository securedBasicRepository;
 
 
 	private static final Logger logger= LoggerFactory.getLogger(EquipmentRESTService.class);
@@ -462,8 +466,8 @@ public class EquipmentRESTService implements RestServicePlugin {
 		}
 		updateProductStatus.setProductType(productType);
 		FileResource newIcon = updateProductStatus.getIconId() != null
-				? service.getByIdOrNull(updateProductStatus.getIconId(),
-						FileResource.class, null, securityContext) : null;
+				? securedBasicRepository.getByIdOrNull(updateProductStatus.getIconId(),
+						FileResource.class, FileResource_.security, securityContext) : null;
 		if (newIcon == null) {
 			throw new BadRequestException("no file resource with id "
 					+ updateProductStatus.getIconId());

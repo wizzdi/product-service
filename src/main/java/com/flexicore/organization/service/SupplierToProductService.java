@@ -2,6 +2,9 @@ package com.flexicore.organization.service;
 
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
+import com.flexicore.model.Basic;
+import com.flexicore.organization.model.Supplier_;
+import com.flexicore.security.SecurityContextBase;
 import com.wizzdi.flexicore.boot.base.interfaces.Plugin;
 import com.flexicore.model.Baseclass;
 import com.flexicore.organization.data.SupplierToProductRepository;
@@ -13,11 +16,14 @@ import com.flexicore.organization.request.SupplierToProductFilter;
 import com.flexicore.organization.request.SupplierToProductUpdate;
 import com.flexicore.product.model.Product;
 import com.flexicore.security.SecurityContext;
+import com.wizzdi.flexicore.security.data.SecuredBasicRepository;
 import org.pf4j.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.metamodel.SingularAttribute;
 import javax.ws.rs.BadRequestException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -33,26 +39,51 @@ public class SupplierToProductService implements Plugin {
 	@Autowired
 	private SupplierToProductRepository repository;
 	@Autowired
+	private SecuredBasicRepository securedBasicRepository;
+	@Autowired
 	private Logger logger;
 
-	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c,
-			List<String> batch, SecurityContext securityContext) {
-		return repository.getByIdOrNull(id, c, batch, securityContext);
+
+	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids, SecurityContextBase securityContext) {
+		return securedBasicRepository.listByIds(c, ids, securityContext);
 	}
 
-	public <T extends Baseclass> List<T> listByIds(Class<T> c, Set<String> ids,
-			SecurityContext securityContext) {
-		return repository.listByIds(c, ids, securityContext);
+	public <T extends Baseclass> T getByIdOrNull(String id, Class<T> c, SecurityContextBase securityContext) {
+		return securedBasicRepository.getByIdOrNull(id, c, securityContext);
 	}
 
+	public <D extends Basic, E extends Baseclass, T extends D> T getByIdOrNull(String id, Class<T> c, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return securedBasicRepository.getByIdOrNull(id, c, baseclassAttribute, securityContext);
+	}
 
-	
+	public <D extends Basic, E extends Baseclass, T extends D> List<T> listByIds(Class<T> c, Set<String> ids, SingularAttribute<D, E> baseclassAttribute, SecurityContextBase securityContext) {
+		return securedBasicRepository.listByIds(c, ids, baseclassAttribute, securityContext);
+	}
+
+	public <D extends Basic, T extends D> List<T> findByIds(Class<T> c, Set<String> ids, SingularAttribute<D, String> idAttribute) {
+		return securedBasicRepository.findByIds(c, ids, idAttribute);
+	}
+
+	public <T extends Basic> List<T> findByIds(Class<T> c, Set<String> requested) {
+		return securedBasicRepository.findByIds(c, requested);
+	}
+
+	public <T> T findByIdOrNull(Class<T> type, String id) {
+		return securedBasicRepository.findByIdOrNull(type, id);
+	}
+
+	@Transactional
+	public void merge(Object base) {
+		securedBasicRepository.merge(base);
+	}
+
 	public List<SupplierToProduct> getAllSupplierToProducts(
 			SecurityContext securityContext, SupplierToProductFilter filtering) {
 		return repository.getAllSupplierToProducts(securityContext, filtering);
 	}
 
 	
+	@Transactional
 	public void massMerge(List<?> toMerge) {
 		repository.massMerge(toMerge);
 	}
@@ -74,7 +105,7 @@ public class SupplierToProductService implements Plugin {
 		Set<String> supplierIds = filtering.getSupplierIds();
 		Map<String, Supplier> suppliers = supplierIds.isEmpty()
 				? new HashMap<>()
-				: listByIds(Supplier.class, supplierIds, securityContext)
+				: securedBasicRepository.listByIds(Supplier.class, supplierIds, Supplier_.security, securityContext)
 						.parallelStream().collect(
 								Collectors.toMap(f -> f.getId(), f -> f));
 		supplierIds.removeAll(suppliers.keySet());
@@ -98,8 +129,8 @@ public class SupplierToProductService implements Plugin {
 		creationContainer.setProduct(product);
 
 		String supplierId = creationContainer.getSupplierId();
-		Supplier supplier = supplierId == null ? null : getByIdOrNull(
-				supplierId, Supplier.class, null, securityContext);
+		Supplier supplier = supplierId == null ? null : securedBasicRepository.getByIdOrNull(
+				supplierId, Supplier.class, Supplier_.security, securityContext);
 		if (supplier == null && supplierId != null) {
 			throw new BadRequestException("No Supplier with id " + supplierId);
 		}
@@ -122,8 +153,8 @@ public class SupplierToProductService implements Plugin {
 			SupplierToProductCreate creationContainer,
 			SecurityContext securityContext) {
 		SupplierToProduct supplierToProduct = new SupplierToProduct("link", securityContext);
-		supplierToProduct.setLeftside(creationContainer.getSupplier());
-		supplierToProduct.setRightside(creationContainer.getProduct());
+		supplierToProduct.setSupplier(creationContainer.getSupplier());
+		supplierToProduct.setProduct(creationContainer.getProduct());
 		updateSupplierToProductNoMerge(supplierToProduct, creationContainer);
 		return supplierToProduct;
 	}
@@ -139,17 +170,17 @@ public class SupplierToProductService implements Plugin {
 			update = true;
 		}
 		if (creationContainer.getProduct() != null
-				&& (supplierToProduct.getRightside() == null || !creationContainer
+				&& (supplierToProduct.getProduct() == null || !creationContainer
 						.getProduct().getId()
-						.equals(supplierToProduct.getRightside().getId()))) {
-			supplierToProduct.setRightside(creationContainer.getProduct());
+						.equals(supplierToProduct.getProduct().getId()))) {
+			supplierToProduct.setProduct(creationContainer.getProduct());
 			update = true;
 		}
 		if (creationContainer.getSupplier() != null
-				&& (supplierToProduct.getLeftside() == null || !creationContainer
+				&& (supplierToProduct.getSupplier() == null || !creationContainer
 						.getSupplier().getId()
-						.equals(supplierToProduct.getLeftside().getId()))) {
-			supplierToProduct.setLeftside(creationContainer.getSupplier());
+						.equals(supplierToProduct.getSupplier().getId()))) {
+			supplierToProduct.setSupplier(creationContainer.getSupplier());
 			update = true;
 		}
 		return update;

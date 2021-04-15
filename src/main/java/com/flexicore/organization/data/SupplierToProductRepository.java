@@ -6,6 +6,7 @@ import com.flexicore.model.Baselink_;
 import com.flexicore.model.QueryInformationHolder;
 import com.flexicore.organization.model.Supplier;
 import com.flexicore.organization.model.SupplierToProduct;
+import com.flexicore.organization.model.SupplierToProduct_;
 import com.flexicore.organization.model.Supplier_;
 import com.flexicore.organization.request.SupplierToProductFilter;
 import com.flexicore.product.model.Product;
@@ -60,7 +61,7 @@ public class SupplierToProductRepository extends AbstractRepositoryPlugin {
 			Set<String> ids = filtering.getProducts().parallelStream()
 					.map(f -> f.getId()).collect(Collectors.toSet());
 			Join<SupplierToProduct, Product> productJoin = cb.treat(
-					r.join(Baselink_.rightside), Product.class);
+					r.join(SupplierToProduct_.product), Product.class);
 			preds.add(productJoin.get(Product_.id).in(ids));
 		}
 
@@ -69,7 +70,7 @@ public class SupplierToProductRepository extends AbstractRepositoryPlugin {
 			Set<String> ids = filtering.getSuppliers().parallelStream()
 					.map(f -> f.getId()).collect(Collectors.toSet());
 			Join<SupplierToProduct, Supplier> productJoin = cb.treat(
-					r.join(Baselink_.leftside), Supplier.class);
+					r.join(SupplierToProduct_.supplier), Supplier.class);
 			preds.add(productJoin.get(Supplier_.id).in(ids));
 		}
 

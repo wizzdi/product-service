@@ -6,7 +6,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.events.BaseclassCreated;
 import com.flexicore.events.BaseclassUpdated;
 import com.flexicore.model.Baseclass;
-import com.flexicore.model.FileResource;
+import com.wizzdi.flexicore.file.model.FileResource;
 import com.flexicore.model.PermissionGroup;
 import com.flexicore.model.PermissionGroupToBaseclass;
 import com.flexicore.product.data.StatusLinkToImageRepository;
@@ -22,6 +22,8 @@ import com.flexicore.request.PermissionGroupsFilter;
 import com.flexicore.security.SecurityContext;
 import com.flexicore.security.SecurityContextBase;
 import com.flexicore.service.PermissionGroupService;
+import com.wizzdi.flexicore.file.model.FileResource_;
+import com.wizzdi.flexicore.security.data.SecuredBasicRepository;
 import com.wizzdi.flexicore.security.request.PermissionGroupToBaseclassCreate;
 import com.wizzdi.flexicore.security.request.PermissionGroupToBaseclassFilter;
 import com.wizzdi.flexicore.security.service.PermissionGroupToBaseclassService;
@@ -49,6 +51,9 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 	@PluginInfo(version = 1)
 	@Autowired
 	private StatusLinkToImageRepository repository;
+
+	@Autowired
+	private SecuredBasicRepository securedBasicRepository;
 
 	@Autowired
 	@Qualifier("adminSecurityContext")
@@ -142,8 +147,8 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 		statusLinksToImageCreate.setProductTypeToProductStatus(statusLink);
 
 		String imageId = statusLinksToImageCreate.getImageId();
-		FileResource image = imageId == null ? null : getByIdOrNull(imageId,
-				FileResource.class, null, securityContext);
+		FileResource image = imageId == null ? null : securedBasicRepository.getByIdOrNull(imageId,
+				FileResource.class, FileResource_.security, securityContext);
 		statusLinksToImageCreate.setImage(image);
 	}
 
@@ -277,8 +282,8 @@ public class StatusLinkToImageService implements IStatusLinkToImageService {
 			if (productType.getStatusLink() != null) {
 				stuffToAdd.add(productType.getStatusLink());
 			}
-			if (productType.getImage() != null) {
-				stuffToAdd.add(productType.getImage());
+			if (productType.getImage() != null&&productType.getImage().getSecurity()!=null) {
+				stuffToAdd.add(productType.getImage().getSecurity());
 			}
 		}
 

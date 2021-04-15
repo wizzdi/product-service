@@ -1,7 +1,7 @@
 package com.flexicore.product.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.flexicore.model.FileResource;
+import com.wizzdi.flexicore.file.model.FileResource;
 import com.flexicore.product.model.ProductTypeToProductStatus;
 
 public class StatusLinksToImageCreate {

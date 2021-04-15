@@ -3,7 +3,7 @@ package com.flexicore.product.service;
 import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.model.Baseclass;
-import com.flexicore.model.FileResource;
+import com.wizzdi.flexicore.file.model.FileResource;
 import com.flexicore.model.TenantIdFiltering;
 import com.flexicore.model.User;
 import com.flexicore.product.containers.request.AlertFiltering;

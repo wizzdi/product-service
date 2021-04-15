@@ -2,16 +2,17 @@ package com.flexicore.product.rest;
 
 import com.flexicore.annotations.OperationsInside;
 import com.flexicore.annotations.plugins.PluginInfo;
-import com.flexicore.data.jsoncontainers.PaginationResponse;
 
 import com.flexicore.annotations.ProtectedREST;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.organization.model.Manufacturer;
+import com.flexicore.organization.model.Manufacturer_;
 import com.flexicore.product.request.ManufacturerCreate;
 import com.flexicore.product.request.ManufacturerFiltering;
 import com.flexicore.product.request.ManufacturerUpdate;
 import com.flexicore.product.service.ManufacturerService;
 import com.flexicore.security.SecurityContext;
+import com.wizzdi.flexicore.security.response.PaginationResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -79,7 +80,7 @@ public class ManufacturerRESTService implements RestServicePlugin {
 			@Context SecurityContext securityContext) {
 
 		Manufacturer manufacturer = service.getByIdOrNull(
-				manufacturerUpdate.getId(), Manufacturer.class, null,
+				manufacturerUpdate.getId(), Manufacturer.class, Manufacturer_.security,
 				securityContext);
 		if (manufacturer == null) {
 			throw new BadRequestException("No Manufacturer With id "

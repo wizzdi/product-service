@@ -1,6 +1,6 @@
 package com.flexicore.product.response;
 
-import com.flexicore.model.FileResource;
+import com.wizzdi.flexicore.file.model.FileResource;
 import com.flexicore.product.model.ProductTypeToProductStatus;
 import com.flexicore.product.model.StatusLinkToImage;
 

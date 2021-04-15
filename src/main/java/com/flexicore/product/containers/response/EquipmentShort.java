@@ -1,7 +1,7 @@
 package com.flexicore.product.containers.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.flexicore.model.FileResource;
+import com.wizzdi.flexicore.file.model.FileResource;
 import com.flexicore.product.model.Equipment;
 import com.flexicore.product.model.ProductStatus;
 

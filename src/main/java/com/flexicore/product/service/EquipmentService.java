@@ -31,6 +31,8 @@ import com.flexicore.territories.request.StreetFilter;
 import com.flexicore.territories.service.NeighbourhoodService;
 import com.flexicore.territories.service.StreetService;
 import com.flexicore.utils.InheritanceUtils;
+import com.wizzdi.flexicore.file.model.FileResource;
+import com.wizzdi.flexicore.file.model.FileResource_;
 import com.wizzdi.flexicore.security.data.SecuredBasicRepository;
 import org.pf4j.Extension;
 import org.slf4j.Logger;
@@ -1657,16 +1659,16 @@ public class EquipmentService implements IEquipmentService {
     public void validate(ProductTypeCreate updateProductType,
                          SecurityContext securityContext) {
         String iconId = updateProductType.getIconId();
-        FileResource newIcon = iconId != null ? getByIdOrNull(iconId,
-                FileResource.class, null, securityContext) : null;
+        FileResource newIcon = iconId != null ? securedBasicRepository.getByIdOrNull(iconId,
+                FileResource.class, FileResource_.security, securityContext) : null;
         if (newIcon == null && iconId != null) {
             throw new BadRequestException("no file resource with id " + iconId);
         }
         updateProductType.setIcon(newIcon);
 
         String diagram3DId = updateProductType.getDiagram3DId();
-        FileResource diagram3d = diagram3DId != null ? getByIdOrNull(
-                diagram3DId, FileResource.class, null, securityContext) : null;
+        FileResource diagram3d = diagram3DId != null ? securedBasicRepository.getByIdOrNull(
+                diagram3DId, FileResource.class, FileResource_.security, securityContext) : null;
         if (diagram3d == null && diagram3DId != null) {
             throw new BadRequestException("no file resource with id "
                     + diagram3DId);

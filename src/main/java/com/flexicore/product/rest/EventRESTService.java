@@ -5,7 +5,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.data.jsoncontainers.PaginationResponse;
 
 import com.flexicore.annotations.ProtectedREST;
-import com.flexicore.model.FileResource;
+import com.wizzdi.flexicore.file.model.FileResource;
 import com.flexicore.product.containers.request.CreateAggregatedReport;
 import com.flexicore.product.containers.request.EventFiltering;
 import com.flexicore.product.containers.response.AggregationReport;

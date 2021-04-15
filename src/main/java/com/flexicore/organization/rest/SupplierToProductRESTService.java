@@ -8,6 +8,7 @@ import com.flexicore.data.jsoncontainers.PaginationResponse;
 import com.flexicore.interfaces.RestServicePlugin;
 import com.flexicore.organization.model.Supplier;
 import com.flexicore.organization.model.SupplierToProduct;
+import com.flexicore.organization.model.Supplier_;
 import com.flexicore.organization.request.*;
 import com.flexicore.organization.service.SupplierToProductService;
 import com.flexicore.security.SecurityContext;
@@ -97,7 +98,7 @@ public class SupplierToProductRESTService implements RestServicePlugin {
 	public void deleteSupplier(
 			@HeaderParam("authenticationKey") String authenticationKey,
 			@PathParam("id") String id, @Context SecurityContext securityContext) {
-		Supplier supplier = service.getByIdOrNull(id, Supplier.class, null,
+		Supplier supplier = service.getByIdOrNull(id, Supplier.class, Supplier_.security,
 				securityContext);
 		if (supplier == null) {
 			throw new BadRequestException("no Supplier with id " + id);
