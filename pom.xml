@@ -19,10 +19,9 @@
     <properties>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>
-        <flexicore-territories-service.version>4.0.0</flexicore-territories-service.version>
         <spring-boot-dependencies.version>2.5.2</spring-boot-dependencies.version>
         <organization-model.version>3.0.0</organization-model.version>
-        <product-model.version>5.0.0-SNAPSHOT</product-model.version>
+        <product-model.version>5.0.0</product-model.version>
         <flexicore-territories-model.version>3.0.0</flexicore-territories-model.version>
         <flexicore-boot-dependencies.version>2.1.2</flexicore-boot-dependencies.version>
     </properties>
@@ -100,12 +99,6 @@
 
         <dependency>
             <groupId>com.wizzdi</groupId>
-            <artifactId>flexicore-territories-service</artifactId>
-            <version>${flexicore-territories-service.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.wizzdi</groupId>
             <artifactId>flexicore-territories-model</artifactId>
             <version>${flexicore-territories-model.version}</version>
             <scope>provided</scope>
@@ -113,13 +106,13 @@
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>pricing-model</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>product-model</artifactId>
-            <version>5.0.0-SNAPSHOT</version>
+            <version>${product-model.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -228,7 +221,7 @@
                                         <Plugin-Id>${artifactId}</Plugin-Id>
                                         <Plugin-Version>${version}</Plugin-Version>
                                         <!--suppress UnresolvedMavenProperty -->
-                                        <Plugin-Dependencies>flexicore-territories-service@&gt;=${flexicore-territories-service.version}</Plugin-Dependencies>
+                                        <Plugin-Dependencies></Plugin-Dependencies>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>
