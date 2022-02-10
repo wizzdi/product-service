@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.wizzdi</groupId>
             <artifactId>flexicore-base-service</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.8-HOTFIX1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
