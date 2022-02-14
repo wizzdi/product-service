@@ -9,6 +9,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @Extension
 @EnableTransactionManagement(proxyTargetClass = true)
-public class TransactionSupportSupport implements ServicePlugin {
+public class ProductTransactionSupportSupport implements ServicePlugin {
 
 }

@@ -32,7 +32,7 @@ import org.springframework.core.env.Environment;
 @PluginInfo(version = 1)
 @Extension
 @Component
-public class Config implements ServicePlugin {
+public class ProductConfig implements ServicePlugin {
 
 
 	private static AtomicBoolean init = new AtomicBoolean(false);

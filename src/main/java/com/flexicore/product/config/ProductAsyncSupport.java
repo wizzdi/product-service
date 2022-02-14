@@ -8,6 +8,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @Configuration
 @Extension
 @EnableAsync(proxyTargetClass = true)
-public class AsyncSupport implements ServicePlugin {
+public class ProductAsyncSupport implements ServicePlugin {
 
 }

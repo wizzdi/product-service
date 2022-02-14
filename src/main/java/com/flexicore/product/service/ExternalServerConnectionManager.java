@@ -4,7 +4,7 @@ import com.flexicore.annotations.plugins.PluginInfo;
 import com.flexicore.events.PluginsLoadedEvent;
 import com.flexicore.interfaces.ServicePlugin;
 import com.flexicore.iot.ExternalServer;
-import com.flexicore.product.config.Config;
+import com.flexicore.product.config.ProductConfig;
 import com.flexicore.product.containers.request.ProductStatusCreate;
 import com.flexicore.product.containers.request.ProductStatusToTypeCreate;
 import com.flexicore.product.containers.request.ProductTypeCreate;
@@ -17,17 +17,13 @@ import com.flexicore.service.SecurityService;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.pf4j.Extension;
-import org.pf4j.PluginManager;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -96,8 +92,8 @@ public class ExternalServerConnectionManager implements ServicePlugin {
 					.getAdminUserSecurityContext();
 
 			ExecutorService executorService = createExecutor(
-					Config.MAX_CONNECTION_MANAGER_THREADS,
-					Config.MAX_CONNECTION_MANAGER_THREADS, logger, 60 * 1000);
+					ProductConfig.MAX_CONNECTION_MANAGER_THREADS,
+					ProductConfig.MAX_CONNECTION_MANAGER_THREADS, logger, 60 * 1000);
 			new Thread(new ConnectionManager(executorService,
 					adminUserSecurityContext)).start();
 
